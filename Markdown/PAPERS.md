@@ -1,3 +1,5 @@
+# Papers
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -51,8 +53,6 @@
         -   [Neural Text Generation: Past, Present and Beyond](#neural-text-generation-past-present-and-beyond)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Papers
 
 ## Transformers
 
