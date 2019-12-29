@@ -1,3 +1,57 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
+
+-   [Papers](#papers)
+    -   [Transformers](#transformers)
+        -   [GPT-2](#gpt-2)
+        -   [Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism](#megatron-lm-training-multi-billion-parameter-language-models-using-model-parallelism)
+        -   [CTRL: A Conditional Transformer Language Model for Controllable Generation](#ctrl-a-conditional-transformer-language-model-for-controllable-generation)
+        -   [T5 - Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer](#t5---exploring-the-limits-of-transfer-learning-with-a-unified-text-to-text-transformer)
+        -   [Grover - Defending Against Neural Fake News](#grover---defending-against-neural-fake-news)
+        -   [Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context](#transformer-xl-attentive-language-models-beyond-a-fixed-length-context)
+        -   [KERMIT: Generative Insertion-Based Modeling for Sequences](#kermit-generative-insertion-based-modeling-for-sequences)
+        -   [Plug and Play Language Models: a Simple Approach to Controlled Text Generation](#plug-and-play-language-models-a-simple-approach-to-controlled-text-generation)
+        -   [XLNet: Generalized Autoregressive Pretraining for Language Understanding](#xlnet-generalized-autoregressive-pretraining-for-language-understanding)
+    -   [LM applied to areas](#lm-applied-to-areas)
+        -   [DialoGPT: Large-Scale Generative Pre-training for Conversational Response Generation](#dialogpt-large-scale-generative-pre-training-for-conversational-response-generation)
+        -   [DLGNet: A Transformer-based Model for Dialogue Response Generation](#dlgnet-a-transformer-based-model-for-dialogue-response-generation)
+        -   [A Pre-training Based Personalized Dialogue Generation Model with Persona-sparse Data](#a-pre-training-based-personalized-dialogue-generation-model-with-persona-sparse-data)
+        -   [Generating Sentiment-Preserving Fake Online Reviews Using Neural Language Models and Their Human- and Machine-based Detection](#generating-sentiment-preserving-fake-online-reviews-using-neural-language-models-and-their-human--and-machine-based-detection)
+        -   [Automated Speech Generation from UN General Assembly Statements: Mapping Risks in AI Generated Texts](#automated-speech-generation-from-un-general-assembly-statements-mapping-risks-in-ai-generated-texts)
+        -   [Language models and Automated Essay Scoring](#language-models-and-automated-essay-scoring)
+        -   [Read, Attend and Comment: A Deep Architecture for Automatic News Comment Generation](#read-attend-and-comment-a-deep-architecture-for-automatic-news-comment-generation)
+        -   [Generating More Interesting Responses in Neural Conversation Models with Distributional Constraints](#generating-more-interesting-responses-in-neural-conversation-models-with-distributional-constraints)
+        -   [Towards Controllable Story Generation](#towards-controllable-story-generation)
+        -   [The Book of Endless History: Authorial Use of GPT2 for Interactive Storytelling](#the-book-of-endless-history-authorial-use-of-gpt2-for-interactive-storytelling)
+        -   [Transfer Learning from Transformers to Fake News Challenge Stance Detection (FNC-1) Task](#transfer-learning-from-transformers-to-fake-news-challenge-stance-detection-fnc-1-task)
+        -   [Zero-Shot Paraphrase Generation with Multilingual Language Models](#zero-shot-paraphrase-generation-with-multilingual-language-models)
+    -   [Training objectives](#training-objectives)
+        -   [Neural Text Generation with Unlikelihood Training](#neural-text-generation-with-unlikelihood-training)
+    -   [Controlled generation/style tranfer](#controlled-generationstyle-tranfer)
+        -   [XL-Editor: Post-editing Sentences with XLNet](#xl-editor-post-editing-sentences-with-xlnet)
+        -   [Controlling Output Length in Neural Encoder-Decoders](#controlling-output-length-in-neural-encoder-decoders)
+        -   [Delete, Retrieve, Generate: A Simple Approach to Sentiment and Style Transfer](#delete-retrieve-generate-a-simple-approach-to-sentiment-and-style-transfer)
+        -   [Controlling Linguistic Style Aspects in Neural Language Generation](#controlling-linguistic-style-aspects-in-neural-language-generation)
+        -   [Controllable Text Generation](#controllable-text-generation)
+        -   [Style Transformer: Unpaired Text Style Transfer without Disentangled Latent Representation](#style-transformer-unpaired-text-style-transfer-without-disentangled-latent-representation)
+        -   [Learning to Control the Fine-grained Sentiment for Story Ending Generation](#learning-to-control-the-fine-grained-sentiment-for-story-ending-generation)
+        -   [Multiple-Attribute Text Rewriting](#multiple-attribute-text-rewriting)
+        -   [Plan-And-Write: Towards Better Automatic Storytelling](#plan-and-write-towards-better-automatic-storytelling)
+    -   [Discrimination](#discrimination)
+        -   [The Detection of Distributional Discrepancy for Text Generation](#the-detection-of-distributional-discrepancy-for-text-generation)
+        -   [Real or Fake? Learning to Discriminate Machine from Human Generated Text](#real-or-fake-learning-to-discriminate-machine-from-human-generated-text)
+    -   [Sampling](#sampling)
+        -   [The Curious Case of Neural Text Degeneration](#the-curious-case-of-neural-text-degeneration)
+    -   [Evaluation](#evaluation)
+        -   [Dynamic Evaluation of Transformer Language Models](#dynamic-evaluation-of-transformer-language-models)
+        -   [How NOT To Evaluate Your Dialogue System: An Empirical Study of Unsupervised Evaluation Metrics for Dialogue Response Generation](#how-not-to-evaluate-your-dialogue-system-an-empirical-study-of-unsupervised-evaluation-metrics-for-dialogue-response-generation)
+    -   [Other](#other)
+        -   [Neural Text Generation: Past, Present and Beyond](#neural-text-generation-past-present-and-beyond)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Papers
 
 ## Transformers
