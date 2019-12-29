@@ -1,12 +1,23 @@
 # Papers
 
-## GPT-2
+## Transformers
 
-### Paper: https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf
+### GPT-2
 
-## Neural Text Generation with Unlikelihood Training
+-   Paper: https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf
+-   Blog: https://openai.com/blog/better-language-models/
+
+## Dialog
 
 ## dialogpt
+
+## Training
+
+### Neural Text Generation with Unlikelihood Training
+
+-   Arxiv: https://arxiv.org/abs/1908.04319
+-   OpenReview: https://openreview.net/forum?id=SJeYe0NtvH
+-   Github: https://github.com/facebookresearch/unlikelihood_training
 
 ## Generating Sentiment-Preserving Fake Online Reviews Using Neural Language Models and Their Human- and Machine-based Detection
 
@@ -73,3 +84,5 @@
 ## Multiple-Attribute Text Rewriting
 
 ## Plan-And-Write: Towards Better Automatic Storytelling
+
+## Neural Text Generation: Past, Present and Beyond
