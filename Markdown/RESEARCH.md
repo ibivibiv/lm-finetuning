@@ -2,7 +2,7 @@
 
 ## Objective
 
-Find the best way to finetune a language model for text generation.
+Find best practices for finetuning language models for text generation.
 
 ## What to try
 
