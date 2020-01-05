@@ -120,6 +120,12 @@
 -   Site: https://mlexplained.com/2019/06/30/paper-dissected-xlnet-generalized-autoregressive-pretraining-for-language-understanding-explained/
 -   Github: https://github.com/zihangdai/xlnet
 
+### ALBERT: A Lite BERT for Self-supervised Learning of Language Representations 
+
+-   Paper: https://arxiv.org/abs/1909.11942
+-   Paperswithcode: https://paperswithcode.com/paper/albert-a-lite-bert-for-self-supervised
+-   Openreview: https://openreview.net/forum?id=H1eA7AEtvS
+
 ## LM applied to areas
 
 ### DialoGPT: Large-Scale Generative Pre-training for Conversational Response Generation
