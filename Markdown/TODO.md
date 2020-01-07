@@ -1,6 +1,6 @@
 # ToDo
 
--   Read papers
+-   How to compute perplexity on specific datasets
 -   Find other guides and papers on how to finetune
 -   find old papers
 
@@ -9,3 +9,4 @@
 -   look at citations for gpt2
 -   Find papers
 -   find repositories
+-   Read papers
