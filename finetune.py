@@ -35,8 +35,7 @@ def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpo
         import ptvsd
 
         print("Waiting for debugger attach")
-        ptvsd.enable_attach(address=('localhost', 5678),
-                            redirect_output=True)
+        ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
         ptvsd.wait_for_attach()
         breakpoint()
 
@@ -47,8 +46,7 @@ def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpo
         device = xm.xla_device()
 
     elif accelerator == 'GPU':
-        device = torch.device(
-            "cuda:0" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         from apex import amp
 

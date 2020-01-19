@@ -1,9 +1,13 @@
 # ToDo
 
+-   annotate MASS
 -   How to compute perplexity on specific datasets
 -   Find other guides and papers on how to finetune
 -   find old papers
 -   get a constant code format
+
+-   download datasets
+-   customize/improve code
 
 # Done
 
