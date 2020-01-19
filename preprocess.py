@@ -29,7 +29,7 @@ def imdb(path, save_dir,  model_type='gpt2', control_code=None):
         for i, review in tqdm(enumerate(reviews), total=len(reviews)):
 
             if model_type == 'gpt2':
-                review = "<|endoftext|> " + review
+                review = "<|endoftext|>" + review
             elif model_type == 'ctrl':
                 review = control_code + " " + review
 

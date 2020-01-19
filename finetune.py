@@ -25,7 +25,6 @@ MODEL_CLASSES = {
 }
 
 
-# @profile
 def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator, logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug):
     wandb.init(project="transformer-experiments")
 
