@@ -26,7 +26,7 @@ MODEL_CLASSES = {
 
 
 def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator, logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug):
-    wandb.init(project="transformer-experiments")
+    wandb.init(project="lm-finetuning")
 
     if save_dir == None:
         save_dir = wandb.run.dir
@@ -72,8 +72,7 @@ def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpo
 
     model, tokenizer = MODEL_CLASSES[model_type]
 
-    if model_type != 'test':
-        model = model.from_pretrained(checkpoint).to(device)
+    model = model.from_pretrained(checkpoint).to(device)
     tokenizer = tokenizer.from_pretrained(checkpoint)
 
     no_decay = ["bias", "LayerNorm.weight"]

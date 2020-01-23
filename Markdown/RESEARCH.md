@@ -24,6 +24,10 @@ Find best practices for finetuning language models for text generation.
 -   optimizers
     -   adagrad
     -   adafactor
+-   see if biases and layernorm should be finetuned
+-   learning rate decay strategies
+-   warmup
+-   pure fp16 training
 
 ## Finetuning Datasets
 
@@ -36,7 +40,7 @@ Some language models might have been pretrained on some of these datasets.
 -   wikitext2
 -   Penn Treebank
 -   text8 (Cleaned version of enwiki8)
--   enwiki8 (Looks like this has all the XML?)
+-   enwiki8 (Looks like this has all the XML? or not)
 -   Project Gutenberg
 -   Amazon reviews (McAuley et al, 2015)
 -   CNN/Daily Mail (Hermann et al, 2015)
