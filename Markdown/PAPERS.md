@@ -62,6 +62,45 @@
 -   Paperwithcode: https://paperswithcode.com/paper/language-models-are-unsupervised-multitask
 -   Site: https://openai.com/blog/better-language-models/
 
+#### Hyperparameters
+
+-   seqlen: 1024 subword units
+-   batch size: 512
+-   iterations: 300k
+-   optimizer: Adam
+-   weight decay: 0.01
+-   gradient clipping: 1
+-   learning rate: 1.5e-4
+-   warmup: 3000 iterations (1%)
+-   lr schedule: cosine linear decay
+-   dropout: 0.1
+-   stop decay at lr 1e-5
+
+#### Dataset
+
+-   Combining Wikipedia (Devlin et al 2018), RealNews, and OpenWebText
+-   byte pair tokenization
+-   29:1 train-val ratio
+-   1024 token portions
+-   wikitext103 perplexity calculation: see section 4.2.1
+
+#### Model
+
+-   attention head size: 96
+-   vocab size: 50257
+
+-   num heads and layers varied
+
+#### Notes
+
+-   uses GELU nonlinearities and layer norm to the inputs to distinct it from the transformer
+-   layernorm params are duplicated to each gpu
+-   perplexity decreases with model size: see section 5.2
+-   possible future work:
+    -   pretraining different model families
+    -   different downstream tasks
+    -   knowledge distillation
+
 ### Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism
 
 -   Paper: https://arxiv.org/abs/1909.08053
@@ -120,7 +159,7 @@
 -   Site: https://mlexplained.com/2019/06/30/paper-dissected-xlnet-generalized-autoregressive-pretraining-for-language-understanding-explained/
 -   Github: https://github.com/zihangdai/xlnet
 
-### ALBERT: A Lite BERT for Self-supervised Learning of Language Representations 
+### ALBERT: A Lite BERT for Self-supervised Learning of Language Representations
 
 -   Paper: https://arxiv.org/abs/1909.11942
 -   Paperswithcode: https://paperswithcode.com/paper/albert-a-lite-bert-for-self-supervised

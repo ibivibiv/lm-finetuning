@@ -28,6 +28,8 @@ Find best practices for finetuning language models for text generation.
 -   learning rate decay strategies
 -   warmup
 -   pure fp16 training
+-   effect of gpt-2's gelu and layernorm to inputs
+-   double descent
 
 ## Finetuning Datasets
 
@@ -48,6 +50,17 @@ Some language models might have been pretrained on some of these datasets.
 -   One billion words
 -   Yelp reviews (Character level convolutional networks... Zhang et al, 2015)
 -   WritingsPrompts (Heiarchichal neural story generation. Fan et al 2018)
+-   CC-Stories (Trinh and Lee 2018)
+-   OpenWebText (Megatron LM version)
+    -   openwebtext repo
+    -   newspaper to download text
+    -   langdetect to filter content
+    -   ftfy for unicode normalization
+    -   filter out docs under 128 tokens
+    -   lsh to deduplicate content with jaccard similarity more than 0.7
+    -   end of text token to end of document
+    -   174 GB of text
+-   Wikipedia (Devlin et al 2018)
 
 ### Resources
 
