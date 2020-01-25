@@ -62,6 +62,13 @@
 -   Paperwithcode: https://paperswithcode.com/paper/language-models-are-unsupervised-multitask
 -   Site: https://openai.com/blog/better-language-models/
 
+### Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism
+
+-   Paper: https://arxiv.org/abs/1909.08053
+-   Paperwithcode: https://paperswithcode.com/paper/megatron-lm-training-multi-billion-parameter
+-   Site: https://nv-adlr.github.io/MegatronLM
+-   Github: https://github.com/NVIDIA/Megatron-LM
+
 #### Hyperparameters
 
 -   seqlen: 1024 subword units
@@ -101,19 +108,36 @@
     -   different downstream tasks
     -   knowledge distillation
 
-### Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism
-
--   Paper: https://arxiv.org/abs/1909.08053
--   Paperwithcode: https://paperswithcode.com/paper/megatron-lm-training-multi-billion-parameter
--   Site: https://nv-adlr.github.io/MegatronLM
--   Github: https://github.com/NVIDIA/Megatron-LM
-
 ### CTRL: A Conditional Transformer Language Model for Controllable Generation
 
 -   Paper: https://arxiv.org/abs/1909.05858
 -   Paperswithcode: https://paperswithcode.com/paper/ctrl-a-conditional-transformer-language-model
 -   Site: https://blog.einstein.ai/introducing-a-conditional-transformer-language-model-for-controllable-generation/
 -   Github: https://github.com/salesforce/ctrl
+
+#### Dataset
+
+-   full list: Appendix A, table 7
+-   ~140GB of data
+
+-   Wikipedia
+-   Project gutenberg
+-   news data (Hermann et al 2015, Barrault et al 2019, Sandhaus et al 2008, Grusky et al 2018)
+-   Amazon reviews (McAuley et al 2015)
+-   Europal and UN data from WMT (en-de, en-es, en-fr)
+-   Question pairs from ELI5
+-   MRQA
+-   OpenWebText
+
+-   BPE tokenization with fastbpe
+
+    -   english wikipedia and 5% split of OpenWebText for learning bpe tokens
+
+-   filter out sequences with more thatn 2 unknown tokens
+
+#### Model
+
+-   vocab size: 250k
 
 ### T5 - Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer
 
