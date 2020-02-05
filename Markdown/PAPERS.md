@@ -1,5 +1,38 @@
 # Papers
 
+### Name
+
+#### Hyperparameters
+
+-   seqlen:
+-   batch size:
+-   iterations:
+-   optimizer:
+-   weight decay:
+-   gradient clipping:
+-   learning rate:
+-   warmup:
+-   lr schedule:
+-   dropout:
+-   stop decay at lr
+
+#### Dataset
+
+-   byte pair tokenization
+-   train-val ratio
+-   token portions
+-   perplexity calculation
+
+#### Model
+
+-   vocab size:
+-   attention heads / layer:
+-   layers:
+-   model dimension:
+-   feedforward dimension:
+
+#### Notes
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -62,6 +95,44 @@
 -   Paperwithcode: https://paperswithcode.com/paper/language-models-are-unsupervised-multitask
 -   Site: https://openai.com/blog/better-language-models/
 
+#### Hyperparameters
+
+-   seqlen: 1024 tokens
+-   batch size: 512
+
+#### Dataset
+
+-   Webtext
+
+    -   all reddit links with > 3 karma
+    -   dragnet and newspaper to extract data
+    -   8 million documents and 40GB text
+
+-   byte pair tokenization
+    -   byte-level bpe
+    -   prevent bpe from merging across char categories (A, 1, !)
+-   train-val ratio
+-   token portions
+-   perplexity calculation
+
+#### Model
+
+-   vocab size: 50,257
+-   attention heads / layer:
+-   layers:
+-   model dimension:
+-   feedforward dimension:
+
+-   Differences from original transformer
+    -   Layer norm to input of each sub-block
+    -   Additional Layer norm after the final self-attention block
+    -   Scale weights of residual layers by 1 / sqrt(number of residual)
+    -   context size from 512 -> 1024 tokens
+
+#### Notes
+
+-   All models underfit
+
 ### Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism
 
 -   Paper: https://arxiv.org/abs/1909.08053
@@ -95,7 +166,6 @@
 
 -   attention head size: 96
 -   vocab size: 50257
-
 -   num heads and layers varied
 
 #### Notes
@@ -115,11 +185,24 @@
 -   Site: https://blog.einstein.ai/introducing-a-conditional-transformer-language-model-for-controllable-generation/
 -   Github: https://github.com/salesforce/ctrl
 
+#### Hyperparameters
+
+-   seqlen:
+-   batch size: 1024
+-   iterations: 800k
+-   optimizer: Adagrad
+-   weight decay:
+-   gradient clipping:
+-   learning rate: 0.05
+-   warmup:
+-   lr schedule: warmup 25k steps
+-   dropout:
+-   no lr decay
+
 #### Dataset
 
 -   full list: Appendix A, table 7
 -   ~140GB of data
-
 -   Wikipedia
 -   Project gutenberg
 -   news data (Hermann et al 2015, Barrault et al 2019, Sandhaus et al 2008, Grusky et al 2018)
@@ -128,22 +211,93 @@
 -   Question pairs from ELI5
 -   MRQA
 -   OpenWebText
-
 -   BPE tokenization with fastbpe
-
     -   english wikipedia and 5% split of OpenWebText for learning bpe tokens
-
 -   filter out sequences with more thatn 2 unknown tokens
+-   control codes prepended to text
 
 #### Model
 
 -   vocab size: 250k
+-   attention heads / layer: 16
+-   layers: 48
+-   model dimension: 1280
+-   feedforward dimension: 4192
+
+#### Notes
+
+-   little difference in quality in first 256 tokens when trained using 256 or 512 tokens
+    -   possible b/c of 4x size of dataset
+-   trained on 256 core tpuv3 pod
+-   penalized sampling
+    -   theta: 1.2
 
 ### T5 - Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer
 
 -   Paper: https://arxiv.org/abs/1910.10683
 -   Paperswithcode: https://paperswithcode.com/paper/exploring-the-limits-of-transfer-learning
 -   Github: https://github.com/google-research/text-to-text-transfer-transformer
+
+#### Hyperparameters
+
+-   seqlen: 512
+-   batch size: 128
+-   iterations: ~500k
+-   optimizer: Adafactor
+-   weight decay:
+-   gradient clipping:
+-   learning rate: 1e-2
+-   warmup: 10^4 steps
+-   lr schedule: inverse square root
+-   dropout:
+-   exponential decay until training ends
+-   finetuning
+    -   iterations: 250k
+    -   seqlen: 128
+    -   batch size: 512 (2^16 tokens/batch)
+    -   learning rate: 1e-3
+
+#### Dataset
+
+-   Colossal Clean Crawled Corpus (C4)
+
+    -   From Common Crawl April 2019
+    -   cleaned using heuristics (see Section 2.2)
+    -   langdetect to filter out non english text (0.99)
+    -   750 GB of data
+
+-   SentencePiece to encode data as wordpiece tokens
+-   train-val ratio
+-   token portions
+-   perplexity calculation
+
+#### Model
+
+-   Encoder-decoder Vaswani
+
+-   Baseline - 220M params - ~BERT base
+    -   vocab size: 32k wordpieces
+    -   attention heads / layer: 12
+    -   layers: 12 (encoder and decoder each)
+    -   model dimension: 768
+    -   feedforward dimension: 3072
+    -   dropout: 0.1
+
+#### Notes
+
+-   simplified positional encoding (see section 2.1)
+-   Trained on 1024 TPUs with mesh tensorflow
+-   Trained using maximum liklihood
+    -   Teacher forcing
+-   Task specific prefix to input
+-   All tasks use greedy decoding
+-   Pack multiple sequences into batch to fill 2^16 tokens/batch
+-   Total tokens trained on is ~34B
+-   BERT was pretrained on a total of 137B tokens and RoBERTa had 2.2T tokens
+-   never repeat data during training
+-   save checkpoints every 5k steps
+-   SentencePiece
+    -   trained on 10 parts english and 1 part german french or romanian
 
 ### Grover - Defending Against Neural Fake News
 
@@ -152,6 +306,31 @@
 -   Site: https://rowanzellers.com/grover/
 -   Site: https://thegradient.pub/why-we-released-grover/
 -   Github: https://github.com/rowanz/grover
+
+#### Hyperparameters
+
+-   seqlen: 1024
+-   batch size: 512
+-   iterations: 800k
+-   optimizer: Adafactor
+-   weight decay: 0.01
+-   learning rate: 1e-4
+-   warmup: 10k
+
+#### Dataset
+
+-   RealNews
+    -   scraping data from 5000 news domains from common crawl
+    -   used newspaper
+    -   120 GB
+
+#### Model
+
+-   same as gpt2
+
+#### Notes
+
+-   256 tpu cores for two weeks
 
 ### Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context
 
@@ -196,6 +375,34 @@
 -   Paper: https://arxiv.org/abs/1911.00536
 -   Github: https://github.com/microsoft/DialoGPT
 -   ResearchGate: https://www.researchgate.net/publication/337019571_DialoGPT_Large-Scale_Generative_Pre-training_for_Conversational_Response_Generation
+
+#### Hyperparameters
+
+-   mostly unknown
+
+#### Dataset
+
+-   scraped from Reddit
+    -   total of 1.8B words
+    -   more info in Section 2
+-   byte pair tokenization
+-   train-val ratio
+-   token portions
+-   perplexity calculation
+
+#### Model
+
+-   based on gpt2
+-   vocab size: 50,257
+
+#### Notes
+
+-   trained on 16 V100s
+-   trained until no progress in validation sets
+-   117M and 345M models trained for 5 epochs
+-   1.5B for 3 epochs
+-   All training data is compressed and lazy-loaded
+-   dynamic batching
 
 ### DLGNet: A Transformer-based Model for Dialogue Response Generation
 
@@ -338,6 +545,10 @@
 -   Paperwithcode: https://paperswithcode.com/paper/the-curious-case-of-neural-text-degeneration-1
 -   Openreview: https://openreview.net/forum?id=rygGQyrFvH
 -   ResearchGate: https://www.researchgate.net/publication/332590110_The_Curious_Case_of_Neural_Text_Degeneration
+
+#### Notes
+
+-   Nucleus sampling
 
 ## Evaluation
 

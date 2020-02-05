@@ -1,5 +1,6 @@
 # ToDo
 
+-   table to compare papers
 -   annotate MASS
 -   summarize major contributions from papers
 -   look at notes
