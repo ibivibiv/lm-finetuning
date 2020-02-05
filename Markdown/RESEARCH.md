@@ -1,8 +1,14 @@
 # Research
 
-## Objective
+## Objectives
 
-Find best practices for finetuning language models for text generation.
+-   Find best practices for finetuning tranformer language models for text generation.
+-   Understand the "theory" of how language models can be finetuned
+-   Present a finetuned LM that can generate coherent text across a range of domains
+-   Understand the effect of model and dataset size on generating coherent text
+-   Understand the effect of loss and sampling stategies on generating coherent text
+-   Present the smallest and most resource efficient LM that can generate coherent text
+-   The extent of language models needing to be large to generate coherent text
 
 ## What to try
 
