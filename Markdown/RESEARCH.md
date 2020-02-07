@@ -12,6 +12,7 @@
 
 ## What to try
 
+-   Try leaking data to the lm by training on contigous sequences (move the start position of input sequence 1 step up
 -   context size
 -   datasets
     -   large
