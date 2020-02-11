@@ -5,6 +5,7 @@
 -   download datasets
 -   customize/improve code
 -   use tokenizers repo
+-   https://github.com/deepmind/pg19
 
 # Done
 
