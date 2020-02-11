@@ -7,6 +7,7 @@
 -   use tokenizers repo
 -   https://github.com/deepmind/pg19
 -   turing nlg
+-   https://colab.research.google.com/drive/1-ROO7L09EupLFLQM-TWgDHa5-FIOdLLh
 
 # Done
 
