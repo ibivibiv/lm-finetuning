@@ -2,6 +2,8 @@
 
 ## Objectives
 
+-   If I wanted to finetune a LM to generate text of a specific style/content, what good defaults would I choose?
+
 -   Find best practices for finetuning tranformer language models for text generation.
 -   Understand the "theory" of how language models can be finetuned
 -   Present a finetuned LM that can generate coherent text across a range of domains
@@ -9,6 +11,12 @@
 -   Understand the effect of loss and sampling stategies on generating coherent text
 -   Present the smallest and most resource efficient LM that can generate coherent text
 -   The extent of language models needing to be large to generate coherent text
+
+## Roadmap
+
+-   Implement code to train LMs on different datasets
+-   Start with a single dataset and a single transformer
+-   See how text quality changes
 
 ## What to try
 
@@ -37,6 +45,8 @@
 -   pure fp16 training
 -   effect of gpt-2's gelu and layernorm to inputs
 -   double descent
+-   effect of tokenizing approach (line by line, seq_len length chunks)
+    -   might have an effect on efficiency
 
 ## Finetuning Datasets
 
@@ -68,6 +78,7 @@ Some language models might have been pretrained on some of these datasets.
     -   end of text token to end of document
     -   174 GB of text
 -   Wikipedia (Devlin et al 2018)
+-   PG-19 Language Modelling Benchmark
 
 ### Resources
 

@@ -1,6 +1,10 @@
+# Some code taken from Huggingface/transformers
 import os
 import fire
 import pickle
+import argparse
+import time
+import glob
 
 import numpy as np
 from tqdm import tqdm
@@ -8,16 +12,18 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.utils.rnn import pad_sequence
+
 from torch.optim import SGD
 
 from torch.utils.tensorboard import SummaryWriter
-
-from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
-
-from dataset import TextDataset
-from sample import sample
+from torch.utils.data import Dataset
 
 import wandb
+
+from sample import sample
+from dataset import TextDataset
+from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
 MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
@@ -25,55 +31,66 @@ MODEL_CLASSES = {
 }
 
 
-def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator, logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug):
+class TextDataset(Dataset):
+    def __init__(self, path, tokenizer, seq_len, line_by_line=False):
+
+        start = time.time()
+
+        if os.path.isdir(path):
+            self.batches = []
+            for f in glob.glob(os.path.join(path, '*.txt')):
+                self.batches += self._tokenize(f,
+                                               tokenizer, seq_len, line_by_line)
+
+        else:
+            self.batches = self._tokenize(
+                path, tokenizer, seq_len, line_by_line)
+
+        end = time.time()
+
+        print(f'Dataset created in {int(end - start)} seconds')
+        print(f'Dataset length: {len(self.batches)}')
+
+    def _tokenize(self, path, tokenizer, seq_len, line_by_line):
+        batches = []
+        with open(path, encoding="utf-8") as handle:
+            if line_by_line:
+                text = [line for line in handle.read().splitlines() if (
+                    len(line) > 0 and not line.isspace())]
+            else:
+                text = handle.read()
+
+        if line_by_line:
+            batches = tokenizer.batch_encode_plus(
+                text, add_special_tokens=True, max_length=seq_len)["input_ids"]
+        else:
+            tokenized_text = tokenizer.convert_tokens_to_ids(
+                tokenizer.tokenize(text))
+
+            for i in range(len(tokenized_text) // seq_len):
+                batches.append(tokenizer.build_inputs_with_special_tokens(
+                    tokenized_text[i * seq_len: (i + 1) * seq_len]))
+                break
+
+        return batches
+
+    def __len__(self):
+        return len(self.batches)
+
+    def __getitem__(self, index):
+        return torch.tensor(self.batches[index])
+
+
+def finetune(args):
     wandb.init(project="lm-finetuning")
 
-    if save_dir == None:
+    if args.save_dir == None:
         save_dir = wandb.run.dir
 
-    if debug:
-        import ptvsd
+    model, tokenizer = MODEL_CLASSES[args.model_type]
 
-        print("Waiting for debugger attach")
-        ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
-        ptvsd.wait_for_attach()
-        breakpoint()
-
-    if accelerator == 'TPU':
-        import torch_xla.core.xla_model as xm
-        import torch_xla.distributed.parallel_loader as pl
-
-        device = xm.xla_device()
-
-    elif accelerator == 'GPU':
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        from apex import amp
-
-    elif accelerator == 'CPU':
-        device = torch.device("cpu")
-
-    train_dataset = TextDataset(train_dataset_path)
-    val_dataset = TextDataset(val_dataset_path)
-
-    train_dataloader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
-    val_dataloader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
-
-    if accelerator == 'TPU':
-        # from: https://github.com/pytorch/xla/issues/1191
-        def len_parallelloader(self):
-            return len(self._loader._loader)
-        pl.PerDeviceLoader.__len__ = len_parallelloader
-
-        train_dataloader = pl.ParallelLoader(
-            train_dataloader, [device]).per_device_loader(device)
-
-    model, tokenizer = MODEL_CLASSES[model_type]
-
-    model = model.from_pretrained(checkpoint).to(device)
-    tokenizer = tokenizer.from_pretrained(checkpoint)
+    model = model.from_pretrained(args.checkpoint).to(args.device)
+    tokenizer = tokenizer.from_pretrained(args.checkpoint)
 
     no_decay = ["bias", "LayerNorm.weight"]
     optimizer_grouped_parameters = [
@@ -83,26 +100,50 @@ def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpo
             nd in n for nd in no_decay)], "weight_decay": 0.0},
     ]
 
-    train_steps = int(len(train_dataloader) /
-                      gradient_accumulation_steps * epochs)
+    train_dataset = TextDataset(
+        args.train_path, tokenizer, args.seq_len, args.line_by_line)
+    val_dataset = TextDataset(args.val_path, tokenizer,
+                              args.seq_len, args.line_by_line)
 
-    if optimizer == 'AdamW':
-        optimizer = AdamW(optimizer_grouped_parameters, lr=lr, eps=1e-8)
-    elif optimizer == 'SGD':
-        optimizer = SGD(optimizer_grouped_parameters, lr=lr)
+    def collate(examples):
+        if tokenizer._pad_token is None:
+            return pad_sequence(examples, batch_first=True)
+        return pad_sequence(examples, batch_first=True, padding_value=tokenizer.pad_token_id)
+
+    train_dataloader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, collate_fn=collate)
+    val_dataloader = torch.utils.data.DataLoader(
+        val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, collate_fn=collate)
+
+    if args.accelerator == 'TPU':
+        # from: https://github.com/pytorch/xla/issues/1191
+        def len_parallelloader(self):
+            return len(self._loader._loader)
+        pl.PerDeviceLoader.__len__ = len_parallelloader
+
+        train_dataloader = pl.ParallelLoader(
+            train_dataloader, [args.device]).per_device_loader(args.device)
+
+    train_steps = int(len(train_dataloader) /
+                      args.grad_steps * args.epochs)
+
+    if args.optimizer == 'AdamW':
+        optimizer = AdamW(optimizer_grouped_parameters, lr=args.lr, eps=1e-8)
+    elif args.optimizer == 'SGD':
+        optimizer = SGD(optimizer_grouped_parameters, lr=args.lr)
 
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(
         0.1 * train_steps), num_training_steps=train_steps)
 
-    if os.path.exists(checkpoint):
+    if os.path.exists(args.checkpoint):
         print('Loading optimizer and scheduler')
 
         optimizer.load_state_dict(torch.load(
-            os.path.join(checkpoint, 'optimizer.pt')))
+            os.path.join(args.checkpoint, 'optimizer.pt')))
         scheduler.load_state_dict(torch.load(
-            os.path.join(checkpoint, 'scheduler.pt')))
+            os.path.join(args.checkpoint, 'scheduler.pt')))
 
-    if accelerator == 'GPU':
+    if args.accelerator == 'GPU':
         model, optimizer = amp.initialize(
             model, optimizer, opt_level="O1", loss_scale="dynamic")
 
@@ -113,60 +154,60 @@ def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpo
     global_step = 0
     epochs_trained = 0
     steps_trained_in_current_epoch = 0
-    if os.path.exists(checkpoint):
-        global_step = int(checkpoint.split('-')[-1].split('/')[0])
+    if os.path.exists(args.checkpoint):
+        global_step = int(args.checkpoint.split('-')[-1].split('/')[0])
 
         epochs_trained = global_step // (len(train_dataloader) //
-                                         gradient_accumulation_steps)
+                                         args.grad_steps)
         steps_trained_in_current_epoch = global_step % (
-            len(train_dataloader) // gradient_accumulation_steps) * gradient_accumulation_steps
+            len(train_dataloader) // args.grad_steps) * args.grad_steps
 
-    for epoch in range(epochs_trained, epochs):
+    for epoch in range(epochs_trained, args.epochs):
         train_loss = 0
         val_loss = 0
 
         print(f"Epoch: {epoch}")
 
         model.train()
-        for i, batch in tqdm(enumerate(train_dataloader), total=int(len(train_dataset) / batch_size)):
+        for i, batch in tqdm(enumerate(train_dataloader), total=int(len(train_dataset) / args.batch_size)):
             if steps_trained_in_current_epoch > 0:
                 steps_trained_in_current_epoch -= 1
                 continue
 
-            inputs, labels = batch.to(device), batch.to(device)
+            inputs, labels = batch.to(args.device), batch.to(args.device)
 
             out = model(inputs, labels=labels)
             loss = out[0]
 
-            loss = loss / gradient_accumulation_steps
+            loss = loss / args.grad_steps
 
             train_loss += loss.item()
 
-            if accelerator == 'GPU':
+            if args.accelerator == 'GPU':
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
                     scaled_loss.backward()
             else:
                 loss.backward()
 
-            if (i + 1) % gradient_accumulation_steps == 0:
-                if accelerator == 'GPU':
+            if (i + 1) % args.grad_steps == 0:
+                if args.accelerator == 'GPU':
                     torch.nn.utils.clip_grad_norm_(
                         amp.master_params(optimizer), 1)
                 else:
                     torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
 
-                if accelerator == 'TPU':
+                if args.accelerator == 'TPU':
                     xm.optimizer_step(optimizer, barrier=True)
                 else:
                     optimizer.step()
 
                 scheduler.step()
 
-                if global_step % logging_steps == 0:
-                    wandb.log({"train_loss": loss.item() * gradient_accumulation_steps,
+                if global_step % args.logging_steps == 0:
+                    wandb.log({"train_loss": loss.item() * args.grad_steps,
                                "learning_rate": scheduler.get_lr()[0]}, step=global_step)
 
-                    if global_step % histogram_steps == 0:
+                    if global_step % args.hist_steps == 0:
                         for name, param in model.named_parameters():
                             if param.grad is not None:
                                 try:
@@ -182,7 +223,7 @@ def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpo
                 global_step += 1
 
                 # Must be in grad_accum block b/c if it is > 0, the model will get saved multiple times
-                if global_step % save_steps == 0:
+                if global_step % args.save_steps == 0:
                     print(f'Saving model at global step: {global_step}')
                     checkpoint_dir = os.path.join(
                         save_dir, f'checkpoint-{global_step}')
@@ -199,8 +240,8 @@ def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpo
 
         model.eval()
         with torch.no_grad():
-            for j, batch in tqdm(enumerate(val_dataloader), total=int(len(val_dataset) / batch_size)):
-                inputs, labels = batch.to(device), batch.to(device)
+            for j, batch in tqdm(enumerate(val_dataloader), total=int(len(val_dataset) / args.batch_size)):
+                inputs, labels = batch.to(args.device), batch.to(args.device)
 
                 out = model(inputs, labels=labels)
                 loss = out[0]
@@ -210,7 +251,7 @@ def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpo
         train_loss /= (i + 1)
         val_loss /= (j + 1)
 
-        train_loss *= gradient_accumulation_steps
+        train_loss *= args.grad_steps
 
         train_perplexity = torch.exp(torch.tensor(train_loss))
         val_perplexity = torch.exp(torch.tensor(val_loss))
@@ -222,33 +263,91 @@ def finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpo
         print(message)
 
         print('Sampling from model:\n')
-        sample(" ", model, tokenizer, length=sample_len, temperature=temperature,
-               top_k=top_k, top_p=top_p, repetition_penalty=repetition_penalty, n_samples=n_samples)
+        sample(" ", model, tokenizer, length=args.sample_len, temperature=args.temperature,
+               top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, n_samples=args.n_samples)
         print('\n')
 
     model.save_pretrained(save_dir)
-    tokenizer.save_pretrained(save_dir)
+    # tokenizer.save_pretrained(save_dir)
     torch.save(optimizer.state_dict(), os.path.join(save_dir, 'optimizer.pt'))
     torch.save(scheduler.state_dict(), os.path.join(save_dir, 'scheduler.pt'))
 
 
-def tpu(index, train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator, logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug):
-    print(index)
-    finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator,
-             logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug)
+# def tpu(index, train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator, logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug):
+#     print(index)
+#     finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator,
+#              logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug)
 
 
-def main(train_dataset_path=None, val_dataset_path=None, save_dir=None, model_type='gpt2', checkpoint='distilgpt2', optimizer='AdamW', lr=5e-5, batch_size=4, gradient_accumulation_steps=1, epochs=1, accelerator='GPU', logging_steps=10, histogram_steps=100, save_steps=100, n_samples=1, sample_len=256, temperature=1, top_k=0, top_p=0, repetition_penalty=1, debug=False, n_cores=1):
-    if accelerator == 'CPU' or accelerator == 'GPU':
-        finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator,
-                 logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug)
-    else:
+# def main(train_dataset_path=None, val_dataset_path=None, save_dir=None, model_type='gpt2', checkpoint='distilgpt2', optimizer='AdamW', lr=5e-5, batch_size=4, gradient_accumulation_steps=1, epochs=1, accelerator='GPU', logging_steps=10, histogram_steps=100, save_steps=100, n_samples=1, sample_len=256, temperature=1, top_k=0, top_p=0, repetition_penalty=1, debug=False, n_cores=1):
+#     if accelerator == 'CPU' or accelerator == 'GPU':
+#         finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator,
+#                  logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug)
+#     else:
+#         import torch_xla.core.xla_model as xm
+#         import torch_xla.distributed.xla_multiprocessing as xmp
+
+#         xmp.spawn(tpu, args=(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator, logging_steps,
+#                              histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug), nprocs=n_cores)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--train_path', default=None, type=str, required=True)
+    parser.add_argument('--val_path', default=None, type=str, required=True)
+    parser.add_argument('--save_dir', default=None, type=str, required=False)
+    parser.add_argument('--seq_len', default=256, type=int, required=False)
+    parser.add_argument('--line_by_line', default=False,
+                        action="store_true", required=False)
+
+    parser.add_argument('--model_type', default='gpt2', type=str)
+    parser.add_argument('--checkpoint', default='distilgpt2', type=str)
+    parser.add_argument('--optimizer', default='AdamW', type=str)
+    parser.add_argument('--lr', default=5e-5, type=float)
+    parser.add_argument('--batch_size', default=4, type=float)
+    parser.add_argument('--grad_steps', default=1, type=int)
+    parser.add_argument('--epochs', default=1, type=int)
+
+    parser.add_argument('--accelerator', default='GPU', type=str)
+    parser.add_argument('--logging_steps', default=10, type=int)
+    parser.add_argument('--hist_steps', default=100, type=int)
+    parser.add_argument('--save_steps', default=100, type=int)
+
+    parser.add_argument('--n_samples', default=1, type=int)
+    parser.add_argument('--sample_len', default=256, type=int)
+    parser.add_argument('--temperature', default=1, type=int)
+    parser.add_argument('--top_k', default=1, type=int)
+    parser.add_argument('--top_p', default=1, type=int)
+    parser.add_argument('--repetition_penalty', default=1, type=int)
+
+    parser.add_argument('--debug', default=False, action="store_true")
+
+    parser.add_argument('--n_cores', default=1, type=int)
+
+    args = parser.parse_args()
+
+    if args.debug:
+        import ptvsd
+        ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+        ptvsd.wait_for_attach()
+        breakpoint()
+
+    if args.accelerator == 'TPU':
         import torch_xla.core.xla_model as xm
-        import torch_xla.distributed.xla_multiprocessing as xmp
+        import torch_xla.distributed.parallel_loader as pl
 
-        xmp.spawn(tpu, args=(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator, logging_steps,
-                             histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug), nprocs=n_cores)
+        args.device = xm.xla_device()
+    elif args.accelerator == 'GPU':
+        args.device = torch.device(
+            "cuda:0" if torch.cuda.is_available() else "cpu")
+
+        from apex import amp
+    else:
+        args.device = torch.device("cpu")
+
+    finetune(args)
 
 
 if __name__ == "__main__":
-    fire.Fire(main)
+    main()

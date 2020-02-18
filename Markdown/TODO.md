@@ -1,14 +1,14 @@
 # ToDo
 
--   annotate MASS
 -   How to compute perplexity on specific datasets
 -   download datasets
+    -   Drive?
 -   customize/improve code
--   use tokenizers repo
--   https://github.com/deepmind/pg19
--   turing nlg
--   https://colab.research.google.com/drive/1-ROO7L09EupLFLQM-TWgDHa5-FIOdLLh
--   https://github.com/pytorch/xla/pull/1650
+    -   TPU support: https://github.com/pytorch/xla/pull/1650
+    -   update wandb code
+    -   tokenize on the fly?
+        -   check ctrl control codes
+    -   deal with multiple files
 
 # Done
 
@@ -19,13 +19,19 @@
 -   get a constant code format
 -   summarize major contributions from papers
 -   look at notes
+-   https://github.com/deepmind/pg19
+-   use tokenizers repo
 
 # Wont do
 
 -   find colab notebooks on finetuning
+-   annotate MASS
+-   https://colab.research.google.com/drive/1-ROO7L09EupLFLQM-TWgDHa5-FIOdLLh
 
 # Later
 
 -   find old papers
 -   Find other guides and papers on how to finetune
 -   table to compare papers
+-   turing nlg - not available yet
+-   think about data that's to large to fit in RAM later
