@@ -227,6 +227,7 @@ def finetune(args):
     wandb.watch(model, log='parameters')
 
     gradients = {}
+    table_data = []
 
     global_step = 0
     epochs_trained = 0
@@ -339,8 +340,9 @@ def finetune(args):
         out = sample(" ", model, tokenizer, args)
         print('\n')
 
-        wandb.log({"train_epoch_loss": train_loss, "train_epoch_perplexity": train_perplexity, 'val_epoch_loss': val_loss, 'val_epoch_perplexity': val_perplexity, "samples": wandb.Table(columns=['Epoch', 'Text'], data=[
-            f'{epoch}', out])}, step=global_step)
+        table_data.append([f'{epoch}', out])
+        wandb.log({"train_epoch_loss": train_loss, "train_epoch_perplexity": train_perplexity, 'val_epoch_loss': val_loss,
+                   'val_epoch_perplexity': val_perplexity, "samples": wandb.Table(columns=['Epoch', 'Text'], data=table_data)}, step=global_step)
 
         message = f'Finished epoch {epoch} | Train loss: {train_loss} | Train perplexity: {train_perplexity} | Val Loss: {val_loss} | Val Perplexity: {val_perplexity}'
         print(message)

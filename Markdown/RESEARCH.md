@@ -48,6 +48,8 @@
 -   effect of tokenizing approach (line by line, seq_len length chunks)
     -   might have an effect on efficiency
 -   Compare a small finetuned lm to a larger non-finetuned lm
+-   Can lms where train loss is close to 0 generate text well?
+-   based on a user's computation budget, should they finetune a small lm or use a large lm
 
 ## Finetuning Datasets
 
