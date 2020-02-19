@@ -6,9 +6,8 @@
 -   customize/improve code
     -   TPU support: https://github.com/pytorch/xla/pull/1650
     -   update wandb code
-    -   tokenize on the fly?
-        -   check ctrl control codes
-    -   deal with multiple files
+    -   check ctrl control codes
+-   colab remote tool
 
 # Done
 
@@ -21,6 +20,7 @@
 -   look at notes
 -   https://github.com/deepmind/pg19
 -   use tokenizers repo
+-   deal with multiple files
 
 # Wont do
 
@@ -35,3 +35,4 @@
 -   table to compare papers
 -   turing nlg - not available yet
 -   think about data that's to large to fit in RAM later
+-   tokenize on the fly?

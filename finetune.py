@@ -22,7 +22,6 @@ from torch.utils.data import Dataset
 import wandb
 
 from sample import sample
-from dataset import TextDataset
 from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
 MODEL_CLASSES = {
@@ -32,45 +31,42 @@ MODEL_CLASSES = {
 
 
 class TextDataset(Dataset):
-    def __init__(self, path, tokenizer, seq_len, line_by_line=False):
+    def __init__(self, path, tokenizer, args):
 
         start = time.time()
 
         if os.path.isdir(path):
             self.batches = []
             for f in glob.glob(os.path.join(path, '*.txt')):
-                self.batches += self._tokenize(f,
-                                               tokenizer, seq_len, line_by_line)
+                self.batches += self._tokenize(f, tokenizer, args)
 
         else:
-            self.batches = self._tokenize(
-                path, tokenizer, seq_len, line_by_line)
+            self.batches = self._tokenize(path, tokenizer, args)
 
         end = time.time()
 
         print(f'Dataset created in {int(end - start)} seconds')
         print(f'Dataset length: {len(self.batches)}')
 
-    def _tokenize(self, path, tokenizer, seq_len, line_by_line):
+    def _tokenize(self, path, tokenizer, args):
         batches = []
         with open(path, encoding="utf-8") as handle:
-            if line_by_line:
+            if args.line_by_line:
                 text = [line for line in handle.read().splitlines() if (
                     len(line) > 0 and not line.isspace())]
             else:
                 text = handle.read()
 
-        if line_by_line:
+        if args.line_by_line:
             batches = tokenizer.batch_encode_plus(
-                text, add_special_tokens=True, max_length=seq_len)["input_ids"]
+                text, add_special_tokens=True, max_length=args.seq_len)["input_ids"]
         else:
             tokenized_text = tokenizer.convert_tokens_to_ids(
                 tokenizer.tokenize(text))
 
-            for i in range(len(tokenized_text) // seq_len):
+            for i in range(len(tokenized_text) // args.seq_len):
                 batches.append(tokenizer.build_inputs_with_special_tokens(
-                    tokenized_text[i * seq_len: (i + 1) * seq_len]))
-                break
+                    tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
 
         return batches
 
@@ -100,10 +96,8 @@ def finetune(args):
             nd in n for nd in no_decay)], "weight_decay": 0.0},
     ]
 
-    train_dataset = TextDataset(
-        args.train_path, tokenizer, args.seq_len, args.line_by_line)
-    val_dataset = TextDataset(args.val_path, tokenizer,
-                              args.seq_len, args.line_by_line)
+    train_dataset = TextDataset(args.train_path, tokenizer, args)
+    val_dataset = TextDataset(args.val_path, tokenizer, args)
 
     def collate(examples):
         if tokenizer._pad_token is None:
@@ -256,16 +250,16 @@ def finetune(args):
         train_perplexity = torch.exp(torch.tensor(train_loss))
         val_perplexity = torch.exp(torch.tensor(val_loss))
 
-        wandb.log({"train_epoch_loss": train_loss,
-                   "train_epoch_perplexity": train_perplexity, 'val_epoch_loss': val_loss, 'val_epoch_perplexity': val_perplexity}, step=global_step)
+        print('Sampling from model:\n')
+        out = sample(" ", model, tokenizer, length=args.sample_len, temperature=args.temperature,
+                     top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, n_samples=args.n_samples)
+        print('\n')
+
+        wandb.log({"train_epoch_loss": train_loss, "train_epoch_perplexity": train_perplexity, 'val_epoch_loss': val_loss, 'val_epoch_perplexity': val_perplexity, "samples": wandb.Table(columns=['Epoch', 'Text'], data=[
+            f'{epoch}', out])}, step=global_step)
 
         message = f'Finished epoch {epoch} | Train loss: {train_loss} | Train perplexity: {train_perplexity} | Val Loss: {val_loss} | Val Perplexity: {val_perplexity}'
         print(message)
-
-        print('Sampling from model:\n')
-        sample(" ", model, tokenizer, length=args.sample_len, temperature=args.temperature,
-               top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, n_samples=args.n_samples)
-        print('\n')
 
     model.save_pretrained(save_dir)
     # tokenizer.save_pretrained(save_dir)
@@ -294,10 +288,14 @@ def finetune(args):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--train_path', default=None, type=str, required=True)
-    parser.add_argument('--val_path', default=None, type=str, required=True)
-    parser.add_argument('--save_dir', default=None, type=str, required=False)
-    parser.add_argument('--seq_len', default=256, type=int, required=False)
+    parser.add_argument('--train_path', default=None,
+                        type=str, required=True)
+    parser.add_argument('--val_path', default=None,
+                        type=str, required=True)
+    parser.add_argument('--save_dir', default=None,
+                        type=str, required=False)
+    parser.add_argument('--seq_len', default=256,
+                        type=int, required=False)
     parser.add_argument('--line_by_line', default=False,
                         action="store_true", required=False)
 
@@ -329,7 +327,8 @@ def main():
 
     if args.debug:
         import ptvsd
-        ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+        ptvsd.enable_attach(address=('localhost', 5678),
+                            redirect_output=True)
         ptvsd.wait_for_attach()
         breakpoint()
 

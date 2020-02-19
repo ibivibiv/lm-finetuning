@@ -84,10 +84,13 @@ def sample(prompt, model, tokenizer, length, temperature, top_k, top_p, repetiti
             generated = torch.cat([generated, next_token], dim=1)
 
         print("Generated:\n")
-        samples = generated.tolist()
-        for i, sample in enumerate(samples):
-            sample = tokenizer.decode(sample)
-            print(f"Sample: {sample}")
+        samples = ""
+        for i, sample in enumerate(generated.tolist()):
+            samples += tokenizer.decode(sample) + "\n"
+
+        print(samples)
+
+    return samples
 
 
 def main(checkpoint="gpt2", prompt=None, length=100, temperature=0, top_k=0, top_p=0, repetition_penalty=1.2, n_samples=1, debug=False):
