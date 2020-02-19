@@ -336,8 +336,7 @@ def finetune(args):
             val_loss) * ((val_dataset.n_tokens - 1) / (val_dataset.n_original_tokens - 1)))
 
         print('Sampling from model:\n')
-        out = sample(" ", model, tokenizer, length=args.sample_len, temperature=args.temperature,
-                     top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, n_samples=args.n_samples)
+        out = sample(" ", model, tokenizer, args)
         print('\n')
 
         wandb.log({"train_epoch_loss": train_loss, "train_epoch_perplexity": train_perplexity, 'val_epoch_loss': val_loss, 'val_epoch_perplexity': val_perplexity, "samples": wandb.Table(columns=['Epoch', 'Text'], data=[

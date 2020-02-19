@@ -1,6 +1,5 @@
 # ToDo
 
--   How to compute perplexity on specific datasets
 -   download datasets
     -   Drive?
 
@@ -17,6 +16,7 @@
 -   use tokenizers repo
 -   deal with multiple files
 -   customize/improve code
+-   How to compute perplexity on specific datasets
 
 # Wont do
 
