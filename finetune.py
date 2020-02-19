@@ -29,6 +29,62 @@ MODEL_CLASSES = {
 }
 
 
+class TextDataset(Dataset):
+    def __init__(self, path, tokenizer, args):
+
+        start = time.time()
+
+        self.n_original_tokens = 0
+        self.n_tokens = 0
+
+        if os.path.isdir(path):
+            self.batches = []
+            for f in glob.glob(os.path.join(path, '*.txt')):
+                self.batches += self._tokenize(f, tokenizer, args)
+
+        else:
+            self.batches = self._tokenize(path, tokenizer, args)
+
+        end = time.time()
+
+        print(f'Dataset created in {int(end - start)} seconds')
+        print(f'Dataset length: {len(self.batches)}')
+        print(
+            f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
+
+    def _tokenize(self, path, tokenizer, args):
+        batches = []
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+
+            self.n_original_tokens += len(text.strip().split(" "))
+
+            if args.line_by_line:
+                text = [line for line in text.splitlines() if (
+                    len(line) > 0 and not line.isspace())]
+
+        if args.line_by_line:
+            batches = tokenizer.batch_encode_plus(
+                text, add_special_tokens=True, max_length=args.seq_len)["input_ids"]
+        else:
+            tokenized_text = tokenizer.convert_tokens_to_ids(
+                tokenizer.tokenize(text))
+
+            for i in range(len(tokenized_text) // args.seq_len):
+                batches.append(tokenizer.build_inputs_with_special_tokens(
+                    tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
+
+        self.n_tokens += sum([len(batch) for batch in batches])
+
+        return batches
+
+    def __len__(self):
+        return len(self.batches)
+
+    def __getitem__(self, index):
+        return torch.tensor(self.batches[index])
+
+
 def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
     """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
         Args:
@@ -110,60 +166,44 @@ def sample(prompt, model, tokenizer, args):
     return samples
 
 
-class TextDataset(Dataset):
-    def __init__(self, path, tokenizer, args):
+def run_eval(args):
+    model, tokenizer = MODEL_CLASSES[args.model_type]
 
-        start = time.time()
+    model = model.from_pretrained(args.checkpoint).to(args.device)
+    tokenizer = tokenizer.from_pretrained(args.checkpoint)
 
-        self.n_original_tokens = 0
-        self.n_tokens = 0
+    val_dataset = TextDataset(args.val_path, tokenizer, args)
 
-        if os.path.isdir(path):
-            self.batches = []
-            for f in glob.glob(os.path.join(path, '*.txt')):
-                self.batches += self._tokenize(f, tokenizer, args)
+    def collate(examples):
+        if tokenizer._pad_token is None:
+            return pad_sequence(examples, batch_first=True)
+        return pad_sequence(examples, batch_first=True, padding_value=tokenizer.pad_token_id)
+    val_dataloader = torch.utils.data.DataLoader(
+        val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, collate_fn=collate)
 
-        else:
-            self.batches = self._tokenize(path, tokenizer, args)
+    val_loss = 0
 
-        end = time.time()
+    model.eval()
+    with torch.no_grad():
+        for j, batch in tqdm(enumerate(val_dataloader), total=int(len(val_dataset) / args.batch_size)):
+            inputs, labels = batch.to(args.device), batch.to(args.device)
 
-        print(f'Dataset created in {int(end - start)} seconds')
-        print(f'Dataset length: {len(self.batches)}')
-        print(
-            f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
+            out = model(inputs, labels=labels)
+            loss = out[0]
 
-    def _tokenize(self, path, tokenizer, args):
-        batches = []
-        with open(path, encoding="utf-8") as handle:
-            text = handle.read()
+            val_loss += loss.item()
 
-            self.n_original_tokens += len(text.strip().split(" "))
+    val_loss /= (j + 1)
 
-            if args.line_by_line:
-                text = [line for line in text.splitlines() if (
-                    len(line) > 0 and not line.isspace())]
+    val_perplexity = torch.exp(torch.tensor(
+        val_loss) * ((val_dataset.n_tokens - 1) / (val_dataset.n_original_tokens - 1)))
 
-        if args.line_by_line:
-            batches = tokenizer.batch_encode_plus(
-                text, add_special_tokens=True, max_length=args.seq_len)["input_ids"]
-        else:
-            tokenized_text = tokenizer.convert_tokens_to_ids(
-                tokenizer.tokenize(text))
+    print('Sampling from model:\n')
+    out = sample(" ", model, tokenizer, args)
+    print('\n')
 
-            for i in range(len(tokenized_text) // args.seq_len):
-                batches.append(tokenizer.build_inputs_with_special_tokens(
-                    tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
-
-        self.n_tokens += sum([len(batch) for batch in batches])
-
-        return batches
-
-    def __len__(self):
-        return len(self.batches)
-
-    def __getitem__(self, index):
-        return torch.tensor(self.batches[index])
+    message = f'Loss: {val_loss} | Perplexity: {val_perplexity}'
+    print(message)
 
 
 def finetune(args):
@@ -357,9 +397,9 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--train_path', default=None,
-                        type=str, required=True)
+                        type=str, required=False)
     parser.add_argument('--val_path', default=None,
-                        type=str, required=True)
+                        type=str, required=False)
     parser.add_argument('--save_dir', default=None,
                         type=str, required=False)
     parser.add_argument('--seq_len', default=256,
@@ -374,6 +414,8 @@ def main():
     parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--grad_steps', default=1, type=int)
     parser.add_argument('--epochs', default=1, type=int)
+
+    parser.add_argument('--eval_only', default=False, action="store_true")
 
     parser.add_argument('--accelerator', default='GPU', type=str)
     parser.add_argument('--logging_steps', default=10, type=int)
@@ -406,7 +448,10 @@ def main():
         args.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
 
-    finetune(args)
+    if args.eval_only:
+        run_eval(args)
+    else:
+        finetune(args)
 
 
 if __name__ == "__main__":

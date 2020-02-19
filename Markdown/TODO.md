@@ -1,7 +1,6 @@
 # ToDo
 
--   download datasets
-    -   Drive?
+-   find lm trained with unlikelihood objective
 
 # Done
 
@@ -17,6 +16,9 @@
 -   deal with multiple files
 -   customize/improve code
 -   How to compute perplexity on specific datasets
+-   download datasets
+    -   Drive?
+-   test model
 
 # Wont do
 
