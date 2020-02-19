@@ -22,10 +22,10 @@ from torch.utils.data import Dataset
 import wandb
 
 from sample import sample
-from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
+from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2Tokenizer, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
 MODEL_CLASSES = {
-    'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
+    'gpt2': (GPT2LMHeadModel, GPT2Tokenizer),
     'ctrl': (CTRLLMHeadModel, CTRLTokenizer)
 }
 
@@ -78,7 +78,7 @@ class TextDataset(Dataset):
 
 
 def finetune(args):
-    wandb.init(project="lm-finetuning")
+    wandb.init(project="lm-finetuning", config=args)
 
     if args.save_dir == None:
         save_dir = wandb.run.dir

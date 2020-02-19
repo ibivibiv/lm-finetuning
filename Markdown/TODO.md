@@ -5,6 +5,9 @@
     -   Drive?
 -   customize/improve code
     -   check ctrl control codes
+    -   fix tokenizer saving
+        -   use old tokenizer until new tokenizer fixed
+    -   fix resuming
 -   colab remote tool
 
 # Done
