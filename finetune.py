@@ -22,10 +22,10 @@ from torch.utils.data import Dataset
 import wandb
 
 from sample import sample
-from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2Tokenizer, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
+from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
 MODEL_CLASSES = {
-    'gpt2': (GPT2LMHeadModel, GPT2Tokenizer),
+    'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
     'ctrl': (CTRLLMHeadModel, CTRLTokenizer)
 }
 
