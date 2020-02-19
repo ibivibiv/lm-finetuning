@@ -138,6 +138,7 @@ def finetune(args):
             os.path.join(args.checkpoint, 'scheduler.pt')))
 
     if args.accelerator == 'GPU':
+        from apex import amp
         model, optimizer = amp.initialize(
             model, optimizer, opt_level="O1", loss_scale="dynamic")
 
@@ -340,8 +341,6 @@ def main():
     elif args.accelerator == 'GPU':
         args.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
-
-        from apex import amp
     else:
         args.device = torch.device("cpu")
 
