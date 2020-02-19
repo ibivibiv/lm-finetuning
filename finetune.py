@@ -109,14 +109,16 @@ def finetune(args):
     val_dataloader = torch.utils.data.DataLoader(
         val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, collate_fn=collate)
 
-    if args.accelerator == 'TPU':
-        # from: https://github.com/pytorch/xla/issues/1191
-        def len_parallelloader(self):
-            return len(self._loader._loader)
-        pl.PerDeviceLoader.__len__ = len_parallelloader
+    # if args.accelerator == 'TPU':
+    # from: https://github.com/pytorch/xla/issues/1191
+    # import torch_xla.distributed.parallel_loader as pl
 
-        train_dataloader = pl.ParallelLoader(
-            train_dataloader, [args.device]).per_device_loader(args.device)
+    # def len_parallelloader(self):
+    #     return len(self._loader._loader)
+    # pl.PerDeviceLoader.__len__ = len_parallelloader
+
+    # train_dataloader = pl.ParallelLoader(
+    #     train_dataloader, [args.device]).per_device_loader(args.device)
 
     train_steps = int(len(train_dataloader) /
                       args.grad_steps * args.epochs)
@@ -335,7 +337,6 @@ def main():
 
     if args.accelerator == 'TPU':
         import torch_xla.core.xla_model as xm
-        import torch_xla.distributed.parallel_loader as pl
 
         args.device = xm.xla_device()
     elif args.accelerator == 'GPU':
