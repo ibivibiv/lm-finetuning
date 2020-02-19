@@ -143,6 +143,8 @@ def finetune(args):
         from apex import amp
         model, optimizer = amp.initialize(
             model, optimizer, opt_level="O1", loss_scale="dynamic")
+    elif args.accelerator == 'TPU':
+        import torch_xla.core.xla_model as xm
 
     wandb.watch(model, log='parameters')
 
