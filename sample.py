@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 import torch
-from transformers import GPT2LMHeadModel, GPT2TokenizerFast
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
