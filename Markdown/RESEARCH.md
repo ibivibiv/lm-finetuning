@@ -56,8 +56,10 @@ Some language models might have been pretrained on some of these datasets.
 -   IMDB
 -   AG News
 -   Yahoo answers
--   Wikitext103
--   wikitext2
+-   Wikitext
+    -   People train on raw data then normalize perplexity to match wikitext's tokenization
+    -   Wikitext103
+    -   Wikitext2
 -   Penn Treebank
 -   text8 (Cleaned version of enwiki8)
 -   enwiki8 (Looks like this has all the XML? or not)

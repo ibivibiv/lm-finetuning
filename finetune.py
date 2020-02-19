@@ -115,6 +115,9 @@ class TextDataset(Dataset):
 
         start = time.time()
 
+        self.n_original_tokens = 0
+        self.n_tokens = 0
+
         if os.path.isdir(path):
             self.batches = []
             for f in glob.glob(os.path.join(path, '*.txt')):
@@ -127,15 +130,19 @@ class TextDataset(Dataset):
 
         print(f'Dataset created in {int(end - start)} seconds')
         print(f'Dataset length: {len(self.batches)}')
+        print(
+            f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
 
     def _tokenize(self, path, tokenizer, args):
         batches = []
         with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+
+            self.n_original_tokens += len(text.strip().split(" "))
+
             if args.line_by_line:
-                text = [line for line in handle.read().splitlines() if (
+                text = [line for line in text.splitlines() if (
                     len(line) > 0 and not line.isspace())]
-            else:
-                text = handle.read()
 
         if args.line_by_line:
             batches = tokenizer.batch_encode_plus(
@@ -147,6 +154,8 @@ class TextDataset(Dataset):
             for i in range(len(tokenized_text) // args.seq_len):
                 batches.append(tokenizer.build_inputs_with_special_tokens(
                     tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
+
+        self.n_tokens += sum([len(batch) for batch in batches])
 
         return batches
 
@@ -321,8 +330,10 @@ def finetune(args):
 
         train_loss *= args.grad_steps
 
-        train_perplexity = torch.exp(torch.tensor(train_loss))
-        val_perplexity = torch.exp(torch.tensor(val_loss))
+        train_perplexity = torch.exp(torch.tensor(
+            train_loss) * ((train_dataset.n_tokens - 1) / (train_dataset.n_original_tokens - 1)))
+        val_perplexity = torch.exp(torch.tensor(
+            val_loss) * ((val_dataset.n_tokens - 1) / (val_dataset.n_original_tokens - 1)))
 
         print('Sampling from model:\n')
         out = sample(" ", model, tokenizer, length=args.sample_len, temperature=args.temperature,
