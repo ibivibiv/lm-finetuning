@@ -297,8 +297,6 @@ def main():
 
     parser.add_argument('--debug', default=False, action="store_true")
 
-    parser.add_argument('--n_cores', default=1, type=int)
-
     args = parser.parse_args()
 
     if args.debug:
