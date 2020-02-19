@@ -4,8 +4,6 @@
 -   download datasets
     -   Drive?
 -   customize/improve code
-    -   TPU support: https://github.com/pytorch/xla/pull/1650
-    -   update wandb code
     -   check ctrl control codes
 -   colab remote tool
 
@@ -36,3 +34,6 @@
 -   turing nlg - not available yet
 -   think about data that's to large to fit in RAM later
 -   tokenize on the fly?
+-   TPU support: https://github.com/pytorch/xla/pull/1650
+    -   mp still doesn't work
+-   update wandb code

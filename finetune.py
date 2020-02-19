@@ -109,17 +109,6 @@ def finetune(args):
     val_dataloader = torch.utils.data.DataLoader(
         val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, collate_fn=collate)
 
-    # if args.accelerator == 'TPU':
-    # from: https://github.com/pytorch/xla/issues/1191
-    # import torch_xla.distributed.parallel_loader as pl
-
-    # def len_parallelloader(self):
-    #     return len(self._loader._loader)
-    # pl.PerDeviceLoader.__len__ = len_parallelloader
-
-    # train_dataloader = pl.ParallelLoader(
-    #     train_dataloader, [args.device]).per_device_loader(args.device)
-
     train_steps = int(len(train_dataloader) /
                       args.grad_steps * args.epochs)
 
@@ -272,24 +261,6 @@ def finetune(args):
     torch.save(scheduler.state_dict(), os.path.join(save_dir, 'scheduler.pt'))
 
 
-# def tpu(index, train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator, logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug):
-#     print(index)
-#     finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator,
-#              logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug)
-
-
-# def main(train_dataset_path=None, val_dataset_path=None, save_dir=None, model_type='gpt2', checkpoint='distilgpt2', optimizer='AdamW', lr=5e-5, batch_size=4, gradient_accumulation_steps=1, epochs=1, accelerator='GPU', logging_steps=10, histogram_steps=100, save_steps=100, n_samples=1, sample_len=256, temperature=1, top_k=0, top_p=0, repetition_penalty=1, debug=False, n_cores=1):
-#     if accelerator == 'CPU' or accelerator == 'GPU':
-#         finetune(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator,
-#                  logging_steps, histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug)
-#     else:
-#         import torch_xla.core.xla_model as xm
-#         import torch_xla.distributed.xla_multiprocessing as xmp
-
-#         xmp.spawn(tpu, args=(train_dataset_path, val_dataset_path, save_dir, model_type, checkpoint, optimizer, lr, batch_size, gradient_accumulation_steps, epochs, accelerator, logging_steps,
-#                              histogram_steps, save_steps, n_samples, sample_len, temperature, top_k, top_p, repetition_penalty, debug), nprocs=n_cores)
-
-
 def main():
     parser = argparse.ArgumentParser()
 
@@ -341,11 +312,9 @@ def main():
         import torch_xla.core.xla_model as xm
 
         args.device = xm.xla_device()
-    elif args.accelerator == 'GPU':
+    else:
         args.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
-    else:
-        args.device = torch.device("cpu")
 
     finetune(args)
 
