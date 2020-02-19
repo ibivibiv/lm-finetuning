@@ -1,6 +1,9 @@
 # ToDo
 
 -   find lm trained with unlikelihood objective
+-   check ppl calc
+    -   ppl is correct
+    -   check if adjusted ppl is correct
 
 # Done
 

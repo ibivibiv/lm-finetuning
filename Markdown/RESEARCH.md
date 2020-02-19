@@ -38,6 +38,8 @@
     -   well known
     -   specialized
     -   general
+-   is pretraining a lm again ever needed?
+    -   does finetuning give better results than grover, ctrl, etc
 -   what is the best pretrained lm for text gen?
     -   best for widest range of text gen
     -   best for specific type of text gen (e.g. news, dialog)
