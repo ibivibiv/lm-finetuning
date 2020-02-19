@@ -227,7 +227,7 @@ def finetune(args):
                         os.makedirs(checkpoint_dir)
 
                     model.save_pretrained(checkpoint_dir)
-                    tokenizer.save_pretrained(checkpoint_dir)
+                    # tokenizer.save_pretrained(checkpoint_dir)
                     torch.save(optimizer.state_dict(), os.path.join(
                         checkpoint_dir, 'optimizer.pt'))
                     torch.save(scheduler.state_dict(), os.path.join(
