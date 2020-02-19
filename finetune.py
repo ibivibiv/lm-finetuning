@@ -370,7 +370,7 @@ def main():
     parser.add_argument('--checkpoint', default='distilgpt2', type=str)
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
-    parser.add_argument('--batch_size', default=4, type=float)
+    parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--grad_steps', default=1, type=int)
     parser.add_argument('--epochs', default=1, type=int)
 
