@@ -21,13 +21,93 @@ from torch.utils.data import Dataset
 
 import wandb
 
-from sample import sample
 from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
 MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
     'ctrl': (CTRLLMHeadModel, CTRLTokenizer)
 }
+
+
+def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
+    """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
+        Args:
+            logits: logits distribution shape (batch size x vocabulary size)
+            top_k > 0: keep only top k tokens with highest probability (top-k filtering).
+            top_p > 0.0: keep the top tokens with cumulative probability >= top_p (nucleus filtering).
+                Nucleus filtering is described in Holtzman et al. (http://arxiv.org/abs/1904.09751)
+        From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
+    """
+    top_k = min(top_k, logits.size(-1))  # Safety check
+    if top_k > 0:
+        # Remove all tokens with a probability less than the last token of the top-k
+        indices_to_remove = logits < torch.topk(logits, top_k)[
+            0][..., -1, None]
+        logits[indices_to_remove] = filter_value
+
+    if top_p > 0.0:
+        sorted_logits, sorted_indices = torch.sort(logits, descending=True)
+        cumulative_probs = torch.cumsum(
+            torch.softmax(sorted_logits, dim=-1), dim=-1)
+
+        # Remove tokens with cumulative probability above the threshold
+        sorted_indices_to_remove = cumulative_probs > top_p
+        # Shift the indices to the right to keep also the first token above the threshold
+        sorted_indices_to_remove[...,
+                                 1:] = sorted_indices_to_remove[..., :-1].clone()
+        sorted_indices_to_remove[..., 0] = 0
+
+        # scatter sorted tensors to original indexing
+        indices_to_remove = sorted_indices_to_remove.scatter(
+            dim=1, index=sorted_indices, src=sorted_indices_to_remove)
+        logits[indices_to_remove] = filter_value
+    return logits
+
+
+def sample(prompt, model, tokenizer, args):
+    model = model.to(args.device)
+
+    next_token = torch.tensor(tokenizer.encode(prompt)).unsqueeze(
+        0).repeat(args.n_samples, 1).to(args.device)
+    generated = next_token
+
+    past = None
+    with torch.no_grad():
+        for _ in tqdm(range(args.seq_len)):
+            logits, past = model(next_token, past=past)
+
+            # Get hidden state of next token only
+            logits = logits[:, -1, :]
+
+            logits /= args.temperature if args.temperature > 0 else 1
+
+            # Repetition penalty
+            for i in range(args.n_samples):
+                for j in set(generated[i].tolist()):
+                    logits[i, j] /= args.repetition_penalty
+
+            # Top-k or top-p
+            logits = top_k_top_p_filtering(
+                logits, top_k=args.top_k, top_p=args.top_p)
+
+            # Greedy sampling
+            if args.temperature == 0:
+                next_token = torch.argmax(logits, dim=-1).unsqueeze(-1)
+            # Top-k or top-p
+            else:
+                next_token = torch.multinomial(torch.softmax(
+                    logits.float(), dim=-1), num_samples=1)
+
+            generated = torch.cat([generated, next_token], dim=1)
+
+        print("Generated:\n")
+        samples = ""
+        for i, sample in enumerate(generated.tolist()):
+            samples += tokenizer.decode(sample) + "\n"
+
+        print(samples)
+
+    return samples
 
 
 class TextDataset(Dataset):

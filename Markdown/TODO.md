@@ -3,12 +3,6 @@
 -   How to compute perplexity on specific datasets
 -   download datasets
     -   Drive?
--   customize/improve code
-    -   check ctrl control codes
-    -   fix tokenizer saving
-        -   use old tokenizer until new tokenizer fixed
-    -   fix resuming
--   colab remote tool
 
 # Done
 
@@ -22,12 +16,15 @@
 -   https://github.com/deepmind/pg19
 -   use tokenizers repo
 -   deal with multiple files
+-   customize/improve code
 
 # Wont do
 
 -   find colab notebooks on finetuning
 -   annotate MASS
 -   https://colab.research.google.com/drive/1-ROO7L09EupLFLQM-TWgDHa5-FIOdLLh
+-   colab remote tool
+    -   not worth it
 
 # Later
 
@@ -40,3 +37,8 @@
 -   TPU support: https://github.com/pytorch/xla/pull/1650
     -   mp still doesn't work
 -   update wandb code
+-   fix resuming
+    -   has to wait until fasttokenizer is fixed
+-   remote debugging
+    -   wait until using vms
+-   ctrl control codes

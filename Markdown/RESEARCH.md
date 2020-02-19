@@ -47,6 +47,7 @@
 -   double descent
 -   effect of tokenizing approach (line by line, seq_len length chunks)
     -   might have an effect on efficiency
+-   Compare a small finetuned lm to a larger non-finetuned lm
 
 ## Finetuning Datasets
 
