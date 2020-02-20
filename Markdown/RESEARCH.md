@@ -94,17 +94,18 @@ Some language models might have been pretrained on some of these datasets.
 
 ### Start with:
 
--   IMDB
+-   IMDB (Google Drive)
     -   https://www.kaggle.com/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
     -   https://ai.stanford.edu/~amaas/data/sentiment/
-
-*   AG News
-*   Yahoo answers
-*   Wikitext
+-   Wikitext
     -   People train on raw data then normalize perplexity to match wikitext's tokenization
     -   Wikitext103
     -   Wikitext2
-*   Penn Treebank
+-   Penn Treebank
+    -   get from https://github.com/salesforce/awd-lstm-lm/blob/master/getdata.sh#L33
+
+*   AG News
+*   Yahoo answers
 *   text8 (Cleaned version of enwiki8)
 *   enwiki8 (Looks like this has all the XML? or not)
 *   Project Gutenberg
