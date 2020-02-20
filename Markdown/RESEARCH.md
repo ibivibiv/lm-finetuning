@@ -92,25 +92,30 @@
 
 Some language models might have been pretrained on some of these datasets.
 
+### Start with:
+
 -   IMDB
--   AG News
--   Yahoo answers
--   Wikitext
+    -   https://www.kaggle.com/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
+    -   https://ai.stanford.edu/~amaas/data/sentiment/
+
+*   AG News
+*   Yahoo answers
+*   Wikitext
     -   People train on raw data then normalize perplexity to match wikitext's tokenization
     -   Wikitext103
     -   Wikitext2
--   Penn Treebank
--   text8 (Cleaned version of enwiki8)
--   enwiki8 (Looks like this has all the XML? or not)
--   Project Gutenberg
--   Amazon reviews (McAuley et al, 2015)
--   CNN/Daily Mail (Hermann et al, 2015)
--   Bookscorpus (Aligning books and movies... Zhu et al, 2015)
--   One billion words
--   Yelp reviews (Character level convolutional networks... Zhang et al, 2015)
--   WritingsPrompts (Heiarchichal neural story generation. Fan et al 2018)
--   CC-Stories (Trinh and Lee 2018)
--   OpenWebText (Megatron LM version)
+*   Penn Treebank
+*   text8 (Cleaned version of enwiki8)
+*   enwiki8 (Looks like this has all the XML? or not)
+*   Project Gutenberg
+*   Amazon reviews (McAuley et al, 2015)
+*   CNN/Daily Mail (Hermann et al, 2015)
+*   Bookscorpus (Aligning books and movies... Zhu et al, 2015)
+*   One billion words
+*   Yelp reviews (Character level convolutional networks... Zhang et al, 2015)
+*   WritingsPrompts (Heiarchichal neural story generation. Fan et al 2018)
+*   CC-Stories (Trinh and Lee 2018)
+*   OpenWebText (Megatron LM version)
     -   openwebtext repo
     -   newspaper to download text
     -   langdetect to filter content
@@ -119,8 +124,8 @@ Some language models might have been pretrained on some of these datasets.
     -   lsh to deduplicate content with jaccard similarity more than 0.7
     -   end of text token to end of document
     -   174 GB of text
--   Wikipedia (Devlin et al 2018)
--   PG-19 Language Modelling Benchmark
+*   Wikipedia (Devlin et al 2018)
+*   PG-19 Language Modelling Benchmark
 
 ### Resources
 
