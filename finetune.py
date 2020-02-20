@@ -386,7 +386,7 @@ def finetune(args):
         wandb.log({"train_epoch_loss": train_loss, "train_perplexity": train_perplexity, "adjusted_train_perplexity": adjusted_train_perplexity, 'val_epoch_loss': val_loss,
                    'val_perplexity': val_perplexity, 'adjusted_val_perplexity': adjusted_val_perplexity, "samples": wandb.Table(columns=['Epoch', 'Text'], data=table_data)}, step=global_step)
 
-        message = f'Finished epoch {epoch} | Train loss: {train_loss} | Train perplexity: {train_perplexity} | Val Loss: {val_loss} | Val Perplexity: {val_perplexity}'
+        message = f'Finished epoch {epoch} | Train loss: {train_loss} | Train perplexity: {train_perplexity} | Adjusted Train perplexity: {adjusted_train_perplexity} | Val Loss: {val_loss} | Val Perplexity: {val_perplexity} | Adjusted Val Perplexity: {adjusted_val_perplexity}'
         print(message)
 
     model.save_pretrained(save_dir)
