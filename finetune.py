@@ -371,9 +371,11 @@ def finetune(args):
 
         train_loss *= args.grad_steps
 
-        train_perplexity = torch.exp(torch.tensor(
+        train_perplexity = torch.exp(torch.tensor(train_loss))
+        val_perplexity = torch.exp(torch.tensor(val_loss))
+        adjusted_train_perplexity = torch.exp(torch.tensor(
             train_loss) * ((train_dataset.n_tokens - 1) / (train_dataset.n_original_tokens - 1)))
-        val_perplexity = torch.exp(torch.tensor(
+        adjusted_val_perplexity = torch.exp(torch.tensor(
             val_loss) * ((val_dataset.n_tokens - 1) / (val_dataset.n_original_tokens - 1)))
 
         print('Sampling from model:\n')
@@ -381,8 +383,8 @@ def finetune(args):
         print('\n')
 
         table_data.append([f'{epoch}', out])
-        wandb.log({"train_epoch_loss": train_loss, "train_epoch_perplexity": train_perplexity, 'val_epoch_loss': val_loss,
-                   'val_epoch_perplexity': val_perplexity, "samples": wandb.Table(columns=['Epoch', 'Text'], data=table_data)}, step=global_step)
+        wandb.log({"train_epoch_loss": train_loss, "train_perplexity": train_perplexity, "adjusted_train_perplexity": adjusted_train_perplexity, 'val_epoch_loss': val_loss,
+                   'val_perplexity': val_perplexity, 'adjusted_val_perplexity': adjusted_val_perplexity, "samples": wandb.Table(columns=['Epoch', 'Text'], data=table_data)}, step=global_step)
 
         message = f'Finished epoch {epoch} | Train loss: {train_loss} | Train perplexity: {train_perplexity} | Val Loss: {val_loss} | Val Perplexity: {val_perplexity}'
         print(message)
