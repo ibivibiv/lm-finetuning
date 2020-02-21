@@ -43,6 +43,7 @@
 -   what is the best pretrained lm for text gen?
     -   best for widest range of text gen
     -   best for specific type of text gen (e.g. news, dialog)
+    -   can tf-xl be replaced with gpt2 and sliding windows
 -   effect of tokenizing approach (line by line, seq_len length chunks, lazy loading with random start point)
     -   might have an effect on efficiency
     -   lazy loading
@@ -81,6 +82,7 @@
 -   double descent
     -   finetune for a long time, does double descent happen when train loss is 0?
     -   anything special about generating text that makes double descent not a good choice?
+-   better to train on repeated parts of dataset, or go through a large dataset once
 
 ### Hyperparameter tuning
 
@@ -92,31 +94,61 @@
 
 Some language models might have been pretrained on some of these datasets.
 
-### Start with:
+### Criteria
 
--   IMDB (Google Drive)
-    -   https://www.kaggle.com/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
-    -   https://ai.stanford.edu/~amaas/data/sentiment/
--   Wikitext
-    -   People train on raw data then normalize perplexity to match wikitext's tokenization
-    -   Wikitext103
-    -   Wikitext2
--   Penn Treebank
-    -   get from https://github.com/salesforce/awd-lstm-lm/blob/master/getdata.sh#L33
+-   classic lm datasets
+    -   Wikitext
+        -   People train on raw data then normalize perplexity to match wikitext's tokenization
+        -   Wikitext103
+            -   **download**
+        -   Wikitext2
+    -   Penn Treebank
+        -   get from https://github.com/salesforce/awd-lstm-lm/blob/master/getdata.sh#L33
+-   reviews
+    -   IMDB (Google Drive)
+        -   https://www.kaggle.com/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
+        -   https://ai.stanford.edu/~amaas/data/sentiment/
+-   books/stories
+    -   WritingsPrompts (Heiarchichal neural story generation. Fan et al 2018)
+        -   from: https://github.com/pytorch/fairseq/tree/master/examples/stories
+        -   paper with metrics: https://arxiv.org/pdf/1805.04833.pdf
+        -   paper models only on the first 1k words, but try more
+        -   1 line/story
+        -   **download**
+    -   PG-19 Language Modelling Benchmark
+        -   https://github.com/deepmind/pg19
+        -   **Download**
+-   news articles
+    -   CNN/Daily Mail (Hermann et al, 2015)
+        -   raw dataset from: https://cs.nyu.edu/~kcho/DMQA/
+        -   Very large: 1.3GB
+    -   **collect own dataset**
+-   online comments
+    -   **find**
 
-*   AG News
-*   Yahoo answers
-*   text8 (Cleaned version of enwiki8)
-*   enwiki8 (Looks like this has all the XML? or not)
-*   Project Gutenberg
-*   Amazon reviews (McAuley et al, 2015)
-*   CNN/Daily Mail (Hermann et al, 2015)
-*   Bookscorpus (Aligning books and movies... Zhu et al, 2015)
-*   One billion words
-*   Yelp reviews (Character level convolutional networks... Zhang et al, 2015)
-*   WritingsPrompts (Heiarchichal neural story generation. Fan et al 2018)
-*   CC-Stories (Trinh and Lee 2018)
-*   OpenWebText (Megatron LM version)
+### Won't use:
+
+-   enwiki8 (Looks like this has all the XML? or not)
+    -   text8 (Cleaned version of enwiki8)
+    -   progress measured in bpc, so probably won't use it
+-   Yahoo answers
+-   Project Gutenberg
+    -   replaced by PG-19
+    -   data from: https://web.eecs.umich.edu/~lahiri/gutenberg_dataset.html
+-   Amazon reviews (McAuley et al, 2015)
+    -   won't use
+-   Bookscorpus (Aligning books and movies... Zhu et al, 2015)
+    -   won't use
+-   One billion words
+    -   won't use
+-   Yelp reviews (Character level convolutional networks... Zhang et al, 2015)
+    -   won't use
+-   CC-Stories (Trinh and Lee 2018)
+    -   not relavent and can't find data
+-   AG News
+    -   only has title and descriptions
+    -   https://course.fast.ai/datasets#nlp
+-   OpenWebText (Megatron LM version)
     -   openwebtext repo
     -   newspaper to download text
     -   langdetect to filter content
@@ -125,8 +157,8 @@ Some language models might have been pretrained on some of these datasets.
     -   lsh to deduplicate content with jaccard similarity more than 0.7
     -   end of text token to end of document
     -   174 GB of text
-*   Wikipedia (Devlin et al 2018)
-*   PG-19 Language Modelling Benchmark
+-   Wikipedia (Devlin et al 2018)
+    -   wikitext is a good enough alternative
 
 ### Resources
 

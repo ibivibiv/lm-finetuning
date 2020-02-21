@@ -1,6 +1,7 @@
 # ToDo
 
 -   find lm trained with unlikelihood objective
+-   look at compressive transformer
 
 # Done
 
