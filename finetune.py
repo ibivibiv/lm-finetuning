@@ -54,25 +54,30 @@ class TextDataset(Dataset):
 
     def _tokenize(self, path, tokenizer, args):
         batches = []
+
+        text = []
         with open(path, encoding="utf-8") as handle:
-            text = handle.read()
+            if args.efficient or args.fast:
+                for line in handle:
+                    if len(line) > 0 and not line.isspace():
+                        self.n_original_tokens += len(line.strip().split(" "))
+                        text.append(line)
+            else:
+                temp = handle.read()
+                text.append(temp)
+                self.n_original_tokens += len(temp.strip().split(" "))
 
-            self.n_original_tokens += len(text.strip().split(" "))
-
-            if args.line_by_line:
-                text = [line for line in text.splitlines() if (
-                    len(line) > 0 and not line.isspace())]
-
-        if args.line_by_line:
+        if args.fast:
             batches = tokenizer.batch_encode_plus(
                 text, add_special_tokens=True, max_length=args.seq_len)["input_ids"]
         else:
-            tokenized_text = tokenizer.convert_tokens_to_ids(
-                tokenizer.tokenize(text))
+            for l in tqdm(text):
+                tokenized_text = tokenizer.convert_tokens_to_ids(
+                    tokenizer.tokenize(l))
 
-            for i in range(len(tokenized_text) // args.seq_len):
-                batches.append(tokenizer.build_inputs_with_special_tokens(
-                    tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
+                for i in range(len(tokenized_text) // 256):
+                    batches.append(tokenizer.build_inputs_with_special_tokens(
+                        tokenized_text[i * 256: (i + 1) * 256]))
 
         self.n_tokens += sum([len(batch) for batch in batches])
 
@@ -406,7 +411,9 @@ def main():
                         type=str, required=False)
     parser.add_argument('--seq_len', default=256,
                         type=int, required=False)
-    parser.add_argument('--line_by_line', default=False,
+    parser.add_argument('--fast', default=False,
+                        action="store_true", required=False)
+    parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
 
     parser.add_argument('--model_type', default='gpt2', type=str)

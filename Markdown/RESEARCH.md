@@ -98,12 +98,15 @@ Some language models might have been pretrained on some of these datasets.
 
 -   classic lm datasets
     -   Wikitext
+        -   from: https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/
         -   People train on raw data then normalize perplexity to match wikitext's tokenization
         -   Wikitext103
-            -   **download**
+            -   ~550MB
         -   Wikitext2
+            -   ~10MB
     -   Penn Treebank
         -   get from https://github.com/salesforce/awd-lstm-lm/blob/master/getdata.sh#L33
+        -   ~5MB
 -   reviews
     -   IMDB (Google Drive)
         -   https://www.kaggle.com/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
@@ -117,14 +120,16 @@ Some language models might have been pretrained on some of these datasets.
         -   **download**
     -   PG-19 Language Modelling Benchmark
         -   https://github.com/deepmind/pg19
+        -   Stored as a GCP bucket
         -   **Download**
 -   news articles
     -   CNN/Daily Mail (Hermann et al, 2015)
         -   raw dataset from: https://cs.nyu.edu/~kcho/DMQA/
         -   Very large: 1.3GB
+        -   _Doesn't fit into memory_
     -   **collect own dataset**
 -   online comments
-    -   **find**
+    -   **find later**
 
 ### Won't use:
 

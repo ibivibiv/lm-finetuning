@@ -1,7 +1,7 @@
 # ToDo
 
 -   find lm trained with unlikelihood objective
--   look at compressive transformer
+-   look at compressive transformer and reformer
 
 # Done
 
@@ -48,3 +48,4 @@
 -   remote debugging
     -   wait until using vms
 -   ctrl control codes
+    -   prob redo dataset processing to save metadata
