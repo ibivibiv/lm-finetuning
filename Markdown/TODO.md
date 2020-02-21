@@ -2,7 +2,7 @@
 
 -   find lm trained with unlikelihood objective
 -   look at compressive transformer and reformer
--   n_tokens and n_original_tokens not the same when using --fast
+-   n_tokens and n_original_tokens not the same when using --fast or --efficient
 
 # Done
 
