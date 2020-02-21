@@ -75,9 +75,13 @@ class TextDataset(Dataset):
                 tokenized_text = tokenizer.convert_tokens_to_ids(
                     tokenizer.tokenize(l))
 
-                for i in range(len(tokenized_text) // 256):
-                    batches.append(tokenizer.build_inputs_with_special_tokens(
-                        tokenized_text[i * 256: (i + 1) * 256]))
+                if len(tokenized_text) < 256:
+                    batches.append(
+                        tokenizer.build_inputs_with_special_tokens(tokenized_text))
+                else:
+                    for i in range(len(tokenized_text) // 256):
+                        batches.append(tokenizer.build_inputs_with_special_tokens(
+                            tokenized_text[i * 256: (i + 1) * 256]))
 
         self.n_tokens += sum([len(batch) for batch in batches])
 
