@@ -2,7 +2,8 @@
 
 -   find lm trained with unlikelihood objective
 -   look at compressive transformer and reformer
--   n_tokens and n_original_tokens not the same when using --fast or --efficient
+-   n_tokens and n_original_tokens not the same when using `--fast` or `--efficient`
+-   adj ppl not accurate when using `--n_batches` or `--n_tokens`
 -   add flag to only consider first n tokens in file/lin
 -   upload saved models quickly
 

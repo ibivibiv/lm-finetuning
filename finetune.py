@@ -74,6 +74,9 @@ class TextDataset(Dataset):
                 tokenized_text = tokenizer.convert_tokens_to_ids(
                     tokenizer.tokenize(l))
 
+                if args.n_tokens > -1:
+                    tokenized_text = tokenized_text[:args.n_tokens]
+
                 if len(tokenized_text) < 256:
                     batches.append(
                         tokenizer.build_inputs_with_special_tokens(tokenized_text))
@@ -417,12 +420,14 @@ def main():
                         type=str, required=False)
     parser.add_argument('--seq_len', default=256,
                         type=int, required=False)
+
+    parser.add_argument('--n_tokens', default=-1, type=int, required=False)
+    parser.add_argument('--n_batches',
+                        default=-1, type=int, required=False)
     parser.add_argument('--fast', default=False,
                         action="store_true", required=False)
     parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
-    parser.add_argument('--n_batches',
-                        default=-1, type=int, required=False)
 
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--checkpoint', default='distilgpt2', type=str)
