@@ -17,18 +17,9 @@
 -   get initial experiments done on distilgpt2
 -   get more datasets
     -   I want a variety of styles, size, doc len, etc
--   do sampling research first
+-   do sampling research relatively early on
 
-### Things to vary
-
--   model size
--   batch size
--   context size
--   sampling strategy
-    -   how to evaluate?
--   model type
-
-## What to try
+## Questions
 
 -   datasets
     -   how do you train an lm when dataset is:
@@ -60,6 +51,15 @@
 -   multiple datasets/control codes
     -   use control codes to train on a range of small (?) datasets
     -   is finetuning lm to work with control codes enough? or should it be pretrained with control codes too?
+
+### Things to vary
+
+-   model size
+-   batch size
+-   context size
+-   sampling strategy
+    -   how to evaluate?
+-   model type
 
 ### For making finetuning more efficient
 
@@ -93,8 +93,6 @@
 ## Finetuning Datasets
 
 Some language models might have been pretrained on some of these datasets.
-
-### Criteria
 
 -   classic lm datasets
     -   Wikitext
@@ -146,6 +144,8 @@ Some language models might have been pretrained on some of these datasets.
     -   CNN/Daily Mail (Hermann et al, 2015)
         -   raw dataset from: https://cs.nyu.edu/~kcho/DMQA/
         -   Very large: 1.3GB
+        -   300M words
+        -   10M sequences of length 256
     -   **collect own news dataset**
 -   online comments
     -   **find later**

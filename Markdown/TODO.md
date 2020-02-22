@@ -4,6 +4,7 @@
 -   look at compressive transformer and reformer
 -   n_tokens and n_original_tokens not the same when using --fast or --efficient
 -   add flag to only use first n_batches to train
+-   add flag to only consider first n tokens in file/line
 
 # Done
 
