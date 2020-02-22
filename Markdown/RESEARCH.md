@@ -21,12 +21,12 @@
 
 ### Things to vary
 
--   context size
 -   model size
--   model type
 -   batch size
+-   context size
 -   sampling strategy
     -   how to evaluate?
+-   model type
 
 ## What to try
 
@@ -102,15 +102,24 @@ Some language models might have been pretrained on some of these datasets.
         -   People train on raw data then normalize perplexity to match wikitext's tokenization
         -   Wikitext103
             -   ~550MB
+            -   100M words
+            -   1M sequences of length 256
         -   Wikitext2
             -   ~10MB
+            -   2M words
+            -   10k sequences of length 256
     -   Penn Treebank
         -   get from https://github.com/salesforce/awd-lstm-lm/blob/master/getdata.sh#L33
         -   ~5MB
+        -   1M words
+        -   5k sequences of length 256
 -   reviews
     -   IMDB (Google Drive)
         -   https://www.kaggle.com/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
         -   https://ai.stanford.edu/~amaas/data/sentiment/
+        -   50MB
+        -   10M words
+        -   50k sequences of length 256
 -   books/stories
     -   WritingsPrompts (Heiarchichal neural story generation. Fan et al 2018)
         -   from: https://github.com/pytorch/fairseq/tree/master/examples/stories
@@ -118,16 +127,26 @@ Some language models might have been pretrained on some of these datasets.
         -   paper models only on the first 1k words, but try more
         -   1 line/story
         -   comes with pairs of wp and story
+        -   ~900MB
+        -   200M words
+        -   700k sequences of length 256
     -   PG-19 Language Modelling Benchmark
         -   https://github.com/deepmind/pg19
         -   Stored as a GCP bucket
-        -   **Download**
+        -   Train set is 10GB
+        -   Val set
+            -   50 books
+            -   5M words
+            -   20k sequences of length 256
+        -   Test set
+            -   100 books
+            -   10M words
+            -   40k sequences of length 256
 -   news articles
     -   CNN/Daily Mail (Hermann et al, 2015)
         -   raw dataset from: https://cs.nyu.edu/~kcho/DMQA/
         -   Very large: 1.3GB
-        -   _Doesn't fit into memory_
-    -   **collect own dataset**
+    -   **collect own news dataset**
 -   online comments
     -   **find later**
 
