@@ -117,7 +117,7 @@ Some language models might have been pretrained on some of these datasets.
         -   paper with metrics: https://arxiv.org/pdf/1805.04833.pdf
         -   paper models only on the first 1k words, but try more
         -   1 line/story
-        -   **download**
+        -   comes with pairs of wp and story
     -   PG-19 Language Modelling Benchmark
         -   https://github.com/deepmind/pg19
         -   Stored as a GCP bucket
