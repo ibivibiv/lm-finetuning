@@ -3,8 +3,8 @@
 -   find lm trained with unlikelihood objective
 -   look at compressive transformer and reformer
 -   n_tokens and n_original_tokens not the same when using --fast or --efficient
--   add flag to only use first n_batches to train
--   add flag to only consider first n tokens in file/line
+-   add flag to only consider first n tokens in file/lin
+-   upload saved models quickly
 
 # Done
 
@@ -26,6 +26,7 @@
 -   check ppl calc
     -   ppl is correct
     -   check if adjusted ppl is correct
+-   add flag to only use first n_batches to train
 
 # Wont do
 

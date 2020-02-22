@@ -41,7 +41,6 @@ class TextDataset(Dataset):
             self.batches = []
             for f in glob.glob(os.path.join(path, '*.txt')):
                 self.batches += self._tokenize(f, tokenizer, args)
-
         else:
             self.batches = self._tokenize(path, tokenizer, args)
 
@@ -82,6 +81,9 @@ class TextDataset(Dataset):
                     for i in range(len(tokenized_text) // 256):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
                             tokenized_text[i * 256: (i + 1) * 256]))
+
+                if args.n_batches > -1 and len(batches) >= args.n_batches:
+                    break
 
         self.n_tokens += sum([len(batch) for batch in batches])
 
@@ -419,6 +421,8 @@ def main():
                         action="store_true", required=False)
     parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
+    parser.add_argument('--n_batches',
+                        default=-1, type=int, required=False)
 
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--checkpoint', default='distilgpt2', type=str)
