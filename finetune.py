@@ -370,7 +370,10 @@ def finetune(args):
                     torch.save(scheduler.state_dict(), os.path.join(
                         checkpoint_dir, 'scheduler.pt'))
 
-                    wandb.save(os.path.join(checkpoint_dir, "*"))
+                    wandb.save(os.path.join(checkpoint_dir, "*.json"))
+                    wandb.save(os.path.join(checkpoint_dir, "*.txt"))
+                    wandb.save(os.path.join(checkpoint_dir, "*.pt"))
+                    wandb.save(os.path.join(checkpoint_dir, "*.bin"))
 
         model.eval()
         with torch.no_grad():
