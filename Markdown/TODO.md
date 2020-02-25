@@ -3,6 +3,7 @@
 -   find lm trained with unlikelihood objective
 -   look at compressive transformer and reformer
 -   upload saved models quickly
+    -   wait for fix
 
 # Done
 

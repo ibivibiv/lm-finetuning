@@ -370,11 +370,6 @@ def finetune(args):
                     torch.save(scheduler.state_dict(), os.path.join(
                         checkpoint_dir, 'scheduler.pt'))
 
-                    wandb.save(os.path.join(checkpoint_dir, "*.json"))
-                    wandb.save(os.path.join(checkpoint_dir, "*.txt"))
-                    wandb.save(os.path.join(checkpoint_dir, "*.pt"))
-                    wandb.save(os.path.join(checkpoint_dir, "*.bin"))
-
         model.eval()
         with torch.no_grad():
             for j, batch in tqdm(enumerate(val_dataloader), total=int(len(val_dataset) / args.batch_size)):
@@ -414,11 +409,6 @@ def finetune(args):
         args.save_dir, 'optimizer.pt'))
     torch.save(scheduler.state_dict(), os.path.join(
         args.save_dir, 'scheduler.pt'))
-
-    wandb.save(os.path.join(args.save_dir, "*.bin"))
-    wandb.save(os.path.join(args.save_dir, "config.json"))
-    wandb.save(os.path.join(args.save_dir, "vocab.*"))
-    wandb.save(os.path.join(args.save_dir, "*.pt"), )
 
 
 def main():
