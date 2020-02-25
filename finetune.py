@@ -224,7 +224,7 @@ def finetune(args):
     wandb.init(project="lm-finetuning", config=args)
 
     if args.save_dir == None:
-        save_dir = wandb.run.dir
+        args.save_dir = wandb.run.dir
 
     model, tokenizer = MODEL_CLASSES[args.model_type]
 
@@ -358,7 +358,7 @@ def finetune(args):
                 if global_step % args.save_steps == 0:
                     print(f'Saving model at global step: {global_step}')
                     checkpoint_dir = os.path.join(
-                        save_dir, f'checkpoint-{global_step}')
+                        args.save_dir, f'checkpoint-{global_step}')
 
                     if not os.path.exists(checkpoint_dir):
                         os.makedirs(checkpoint_dir)
@@ -369,6 +369,8 @@ def finetune(args):
                         checkpoint_dir, 'optimizer.pt'))
                     torch.save(scheduler.state_dict(), os.path.join(
                         checkpoint_dir, 'scheduler.pt'))
+
+                    wandb.save(os.path.join(checkpoint_dir, "*"))
 
         model.eval()
         with torch.no_grad():
@@ -403,10 +405,17 @@ def finetune(args):
         message = f'Finished epoch {epoch} | Train loss: {train_loss} | Train perplexity: {train_perplexity} | Adjusted Train perplexity: {adjusted_train_perplexity} | Val Loss: {val_loss} | Val Perplexity: {val_perplexity} | Adjusted Val Perplexity: {adjusted_val_perplexity}'
         print(message)
 
-    model.save_pretrained(save_dir)
-    tokenizer.save_pretrained(save_dir)
-    torch.save(optimizer.state_dict(), os.path.join(save_dir, 'optimizer.pt'))
-    torch.save(scheduler.state_dict(), os.path.join(save_dir, 'scheduler.pt'))
+    model.save_pretrained(args.save_dir)
+    tokenizer.save_pretrained(args.save_dir)
+    torch.save(optimizer.state_dict(), os.path.join(
+        args.save_dir, 'optimizer.pt'))
+    torch.save(scheduler.state_dict(), os.path.join(
+        args.save_dir, 'scheduler.pt'))
+
+    wandb.save(os.path.join(args.save_dir, "*.bin"))
+    wandb.save(os.path.join(args.save_dir, "config.json"))
+    wandb.save(os.path.join(args.save_dir, "vocab.*"))
+    wandb.save(os.path.join(args.save_dir, "*.pt"), )
 
 
 def main():

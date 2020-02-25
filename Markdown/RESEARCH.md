@@ -1,5 +1,10 @@
 # Research
 
+## Notes
+
+-   n_tokens and n_original_tokens not the same when using `--fast` or `--efficient`
+-   adj ppl not accurate when using `--n_batches` or `--n_tokens`
+
 ## Objectives
 
 -   If I wanted to finetune a LM to generate text of a specific style/content, what good defaults would I choose?
