@@ -77,13 +77,13 @@ class TextDataset(Dataset):
                 if args.n_tokens > -1:
                     tokenized_text = tokenized_text[:args.n_tokens]
 
-                if len(tokenized_text) < 256:
+                if len(tokenized_text) < args.seq_len:
                     batches.append(
                         tokenizer.build_inputs_with_special_tokens(tokenized_text))
                 else:
-                    for i in range(len(tokenized_text) // 256):
+                    for i in range(len(tokenized_text) // args.seq_len):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
-                            tokenized_text[i * 256: (i + 1) * 256]))
+                            tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
 
                 if args.n_batches > -1 and len(batches) >= args.n_batches:
                     break
