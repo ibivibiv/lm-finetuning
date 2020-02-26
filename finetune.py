@@ -143,7 +143,7 @@ def sample(prompt, model, tokenizer, args):
 
     past = None
     with torch.no_grad():
-        for _ in tqdm(range(args.seq_len)):
+        for _ in tqdm(range(args.sample_len)):
             logits, past = model(next_token, past=past)
 
             # Get hidden state of next token only
