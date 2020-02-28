@@ -274,7 +274,7 @@ def finetune(args):
     if args.accelerator == 'GPU' and args.fp16 == True:
         from apex import amp
         model, optimizer = amp.initialize(
-            model, optimizer, opt_level="O1", loss_scale="dynamic")
+            model, optimizer, opt_level=args.apex_mode, loss_scale="dynamic")
     elif args.accelerator == 'TPU':
         import torch_xla.core.xla_model as xm
 
@@ -446,6 +446,8 @@ def main():
 
     parser.add_argument('--accelerator', default='GPU', type=str)
     parser.add_argument('--fp16', default=False, action="store_true")
+    parser.add_argument('--apex_mode', default='O1', type=str)
+
     parser.add_argument('--logging_steps', default=10, type=int)
     parser.add_argument('--hist_steps', default=100, type=int)
     parser.add_argument('--save_steps', default=100, type=int)
