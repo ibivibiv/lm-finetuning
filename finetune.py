@@ -271,7 +271,7 @@ def finetune(args):
         scheduler.load_state_dict(torch.load(
             os.path.join(args.checkpoint, 'scheduler.pt')))
 
-    if args.accelerator == 'GPU':
+    if args.accelerator == 'GPU' and args.fp16 == True:
         from apex import amp
         model, optimizer = amp.initialize(
             model, optimizer, opt_level="O1", loss_scale="dynamic")
@@ -316,13 +316,16 @@ def finetune(args):
             train_loss += loss.item()
 
             if args.accelerator == 'GPU':
-                with amp.scale_loss(loss, optimizer) as scaled_loss:
-                    scaled_loss.backward()
+                if args.fp16 == True:
+                    with amp.scale_loss(loss, optimizer) as scaled_loss:
+                        scaled_loss.backward()
+                else:
+                    loss.backward()
             else:
                 loss.backward()
 
             if (i + 1) % args.grad_steps == 0:
-                if args.accelerator == 'GPU':
+                if args.accelerator == 'GPU' and args.fp16 == True:
                     torch.nn.utils.clip_grad_norm_(
                         amp.master_params(optimizer), 1)
                 else:
@@ -442,6 +445,7 @@ def main():
     parser.add_argument('--eval_only', default=False, action="store_true")
 
     parser.add_argument('--accelerator', default='GPU', type=str)
+    parser.add_argument('--fp16', default=True, type=bool)
     parser.add_argument('--logging_steps', default=10, type=int)
     parser.add_argument('--hist_steps', default=100, type=int)
     parser.add_argument('--save_steps', default=100, type=int)
