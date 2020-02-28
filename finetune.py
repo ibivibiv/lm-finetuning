@@ -23,6 +23,8 @@ import wandb
 
 from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
+from optimizers import Adafactor
+
 MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
     'ctrl': (CTRLLMHeadModel, CTRLTokenizer)
@@ -259,6 +261,8 @@ def finetune(args):
         optimizer = AdamW(optimizer_grouped_parameters, lr=args.lr, eps=1e-8)
     elif args.optimizer == 'SGD':
         optimizer = SGD(optimizer_grouped_parameters, lr=args.lr)
+    elif args.optimizer == 'Adafactor':
+        optimizer = Adafactor(optimizer_grouped_parameters, lr=args.lr)
 
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(
         0.1 * train_steps), num_training_steps=train_steps)
