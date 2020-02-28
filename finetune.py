@@ -445,7 +445,7 @@ def main():
     parser.add_argument('--eval_only', default=False, action="store_true")
 
     parser.add_argument('--accelerator', default='GPU', type=str)
-    parser.add_argument('--fp16', default=True, type=bool)
+    parser.add_argument('--fp16', default=True, action="store_true")
     parser.add_argument('--logging_steps', default=10, type=int)
     parser.add_argument('--hist_steps', default=100, type=int)
     parser.add_argument('--save_steps', default=100, type=int)
