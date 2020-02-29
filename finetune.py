@@ -23,7 +23,7 @@ import wandb
 
 from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
-from optimizers import Adafactor
+from optimizers import AdaFactor
 
 MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
@@ -262,18 +262,22 @@ def finetune(args):
     elif args.optimizer == 'SGD':
         optimizer = SGD(optimizer_grouped_parameters, lr=args.lr)
     elif args.optimizer == 'Adafactor':
-        optimizer = Adafactor(optimizer_grouped_parameters, lr=args.lr)
+        optimizer = AdaFactor(
+            optimizer_grouped_parameters, lr=args.lr, beta1=0)
 
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(
-        0.1 * train_steps), num_training_steps=train_steps)
+    if args.lr_schedule:
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(
+            0.1 * train_steps), num_training_steps=train_steps)
 
     if os.path.exists(args.checkpoint):
         print('Loading optimizer and scheduler')
 
         optimizer.load_state_dict(torch.load(
             os.path.join(args.checkpoint, 'optimizer.pt')))
-        scheduler.load_state_dict(torch.load(
-            os.path.join(args.checkpoint, 'scheduler.pt')))
+
+        if args.lr_schedule:
+            scheduler.load_state_dict(torch.load(
+                os.path.join(args.checkpoint, 'scheduler.pt')))
 
     if args.accelerator == 'GPU' and args.fp16 == True:
         from apex import amp
@@ -340,11 +344,18 @@ def finetune(args):
                 else:
                     optimizer.step()
 
-                scheduler.step()
+                if args.lr_schedule:
+                    scheduler.step()
 
                 if global_step % args.logging_steps == 0:
+
+                    if args.lr_schedule:
+                        lr = optimizer.param_groups[0]['lr']
+                    else:
+                        lr = scheduler.get_lr()[0]
+
                     wandb.log({"train_loss": loss.item() * args.grad_steps,
-                               "learning_rate": scheduler.get_lr()[0]}, step=global_step)
+                               "learning_rate": lr}, step=global_step)
 
                     if global_step % args.hist_steps == 0:
                         for name, param in model.named_parameters():
@@ -374,8 +385,10 @@ def finetune(args):
                     tokenizer.save_pretrained(checkpoint_dir)
                     torch.save(optimizer.state_dict(), os.path.join(
                         checkpoint_dir, 'optimizer.pt'))
-                    torch.save(scheduler.state_dict(), os.path.join(
-                        checkpoint_dir, 'scheduler.pt'))
+
+                    if args.lr_schedule:
+                        torch.save(scheduler.state_dict(), os.path.join(
+                            checkpoint_dir, 'scheduler.pt'))
 
         model.eval()
         with torch.no_grad():
@@ -414,8 +427,10 @@ def finetune(args):
     tokenizer.save_pretrained(args.save_dir)
     torch.save(optimizer.state_dict(), os.path.join(
         args.save_dir, 'optimizer.pt'))
-    torch.save(scheduler.state_dict(), os.path.join(
-        args.save_dir, 'scheduler.pt'))
+
+    if args.lr_schedule:
+        torch.save(scheduler.state_dict(), os.path.join(
+            args.save_dir, 'scheduler.pt'))
 
 
 def main():
@@ -445,6 +460,7 @@ def main():
     parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--grad_steps', default=1, type=int)
     parser.add_argument('--epochs', default=1, type=int)
+    parser.add_argument('--lr_schedule', default=True, type=bool)
 
     parser.add_argument('--eval_only', default=False, action="store_true")
 
