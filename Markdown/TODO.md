@@ -4,6 +4,7 @@
 -   look at compressive transformer and reformer
 -   upload saved models quickly
     -   wait for fix
+-   check if gpt2-xl can be trained with fp16
 -   pytorch lightning?
 -   tf
     -   data
