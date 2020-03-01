@@ -44,6 +44,8 @@ def finetune():
     dataset = tf.data.Dataset.from_tensor_slices((inputs, labels))
     dataset = dataset.shuffle(100).batch(16, drop_remainder=True)
 
+    dataset = dataset.map(lambda x: tf.cast(x, dtype=tf.float16))
+
     optimizer = tf.keras.optimizers.Adam(
         learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0)
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
