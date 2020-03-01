@@ -27,6 +27,8 @@ from optimizers import AdaFactor
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 
+import torch_xla.core.xla_model as xm
+
 
 class TextDataset(Dataset):
     def __init__(self, path, tokenizer, args):
@@ -111,8 +113,15 @@ class LM(pl.LightningModule):
                 return pad_sequence(examples, batch_first=True)
             return pad_sequence(examples, batch_first=True, padding_value=tokenizer.pad_token_id)
 
+        sampler = torch.utils.data.distributed.DistributedSampler(
+            train_dataset,
+            num_replicas=xm.xrt_world_size(),
+            rank=xm.get_ordinal(),
+            shuffle=True
+        )
+
         train_dataloader = torch.utils.data.DataLoader(
-            train_dataset, batch_size=16, shuffle=True, num_workers=4, collate_fn=collate)
+            train_dataset, batch_size=16, num_workers=4, collate_fn=collate, sampler=sampler)
 
         return train_dataloader
 
@@ -120,5 +129,5 @@ class LM(pl.LightningModule):
 if __name__ == "__main__":
     model = LM()
 
-    trainer = Trainer(gpus=1, progress_bar_refresh_rate=1)
+    trainer = Trainer(num_tpu_cores=8, progress_bar_refresh_rate=1)
     trainer.fit(model)
