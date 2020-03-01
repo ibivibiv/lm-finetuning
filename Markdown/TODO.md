@@ -4,6 +4,16 @@
 -   look at compressive transformer and reformer
 -   upload saved models quickly
     -   wait for fix
+-   pytorch lightning?
+-   tf
+    -   data
+        -   tfrecords
+    -   model
+        -   huggingface/transformers
+        -   how to disable training for certain layers
+    -   training
+        -   keras
+    -   tpu
 
 # Done
 
