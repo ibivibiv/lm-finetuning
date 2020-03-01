@@ -49,7 +49,7 @@ def finetune():
     # dataset = dataset.map(lambda x: tf.cast(x, dtype=tf.float16))
 
     optimizer = tf.keras.optimizers.Adam(
-        learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0)
+        learning_rate=3e-5, epsilon=1e-08)
     optimizer = tf.keras.mixed_precision.experimental.LossScaleOptimizer(
         optimizer, "dynamic")
 
