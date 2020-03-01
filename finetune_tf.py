@@ -13,16 +13,18 @@ from tensorflow.keras.mixed_precision import experimental as mixed_precision
 
 
 def finetune():
-    policy = mixed_precision.Policy('mixed_float16')
-    mixed_precision.set_policy(policy)
+    # policy = mixed_precision.Policy('mixed_float16')
+    # mixed_precision.set_policy(policy)
 
-    loss_scale = policy.loss_scale
-    print('Loss scale: %s' % loss_scale)
+    # loss_scale = policy.loss_scale
+    # print('Loss scale: %s' % loss_scale)
+    tf.config.optimizer.set_experimental_options(
+        {"auto_mixed_precision": True})
 
     model = TFGPT2LMHeadModel.from_pretrained('distilgpt2')
     tokenizer = GPT2TokenizerFast.from_pretrained('distilgpt2')
 
-    with open('./data/wikitext-2-raw/wiki.train.raw', encoding="utf-8") as handle:
+    with open('./data/wikitext-2-raw/wiki.test.raw', encoding="utf-8") as handle:
         text = handle.read()
 
     tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
@@ -44,10 +46,13 @@ def finetune():
     dataset = tf.data.Dataset.from_tensor_slices((inputs, labels))
     dataset = dataset.shuffle(100).batch(16, drop_remainder=True)
 
-    dataset = dataset.map(lambda x: tf.cast(x, dtype=tf.float16))
+    # dataset = dataset.map(lambda x: tf.cast(x, dtype=tf.float16))
 
     optimizer = tf.keras.optimizers.Adam(
         learning_rate=3e-5, epsilon=1e-08, clipnorm=1.0)
+    optimizer = tf.keras.mixed_precision.experimental.LossScaleOptimizer(
+        optimizer, "dynamic")
+
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
     model.compile(optimizer=optimizer, loss=[
@@ -56,4 +61,9 @@ def finetune():
 
 
 if __name__ == "__main__":
+    # import ptvsd
+    # ptvsd.enable_attach(address=('localhost', 5678), redirect_output=True)
+    # ptvsd.wait_for_attach()
+    # breakpoint()
+
     finetune()
