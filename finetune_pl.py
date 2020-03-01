@@ -120,5 +120,5 @@ class LM(pl.LightningModule):
 if __name__ == "__main__":
     model = LM()
 
-    trainer = Trainer()
+    trainer = Trainer(gpus=1)
     trainer.fit(model)
