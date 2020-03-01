@@ -9,8 +9,16 @@ import tensorflow as tf
 import tensorflow_datasets
 from transformers import *
 
+from tensorflow.keras.mixed_precision import experimental as mixed_precision
+
 
 def finetune():
+    policy = mixed_precision.Policy('mixed_float16')
+    mixed_precision.set_policy(policy)
+
+    loss_scale = policy.loss_scale
+    print('Loss scale: %s' % loss_scale)
+
     model = TFGPT2LMHeadModel.from_pretrained('distilgpt2')
     tokenizer = GPT2TokenizerFast.from_pretrained('distilgpt2')
 
