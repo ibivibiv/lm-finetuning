@@ -22,8 +22,6 @@ import wandb
 
 from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
-from optimizers import AdaFactor
-
 import pytorch_lightning as pl
 from pytorch_lightning import Trainer
 
@@ -88,7 +86,7 @@ class LM(pl.LightningModule):
     def __init__(self):
         super(LM, self).__init__()
 
-        self.model = GPT2LMHeadModel.from_pretrained('gpt2-large')
+        self.model = GPT2LMHeadModel.from_pretrained('distilgpt2')
 
     def forward(self, x):
         return self.model(x, labels=x)
