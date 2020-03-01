@@ -24,7 +24,7 @@ def finetune():
     model = TFGPT2LMHeadModel.from_pretrained('distilgpt2')
     tokenizer = GPT2TokenizerFast.from_pretrained('distilgpt2')
 
-    with open('./data/wikitext-2-raw/wiki.test.raw', encoding="utf-8") as handle:
+    with open('./data/wikitext-2-raw/wiki.train.raw', encoding="utf-8") as handle:
         text = handle.read()
 
     tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
