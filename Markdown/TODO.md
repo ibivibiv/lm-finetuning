@@ -14,6 +14,8 @@
     -   training
         -   keras
     -   tpu
+        -   looks like it doesn't work in colab
+        -   error: https://github.com/tensorflow/tensorflow/issues/34391
 
 # Done
 
