@@ -18,10 +18,9 @@ def finetune():
 
     # loss_scale = policy.loss_scale
     # print('Loss scale: %s' % loss_scale)
-    tf.config.optimizer.set_experimental_options(
-        {"auto_mixed_precision": True})
+    # tf.config.optimizer.set_experimental_options(
+        # {"auto_mixed_precision": True})
 
-    model = TFGPT2LMHeadModel.from_pretrained('distilgpt2')
     tokenizer = GPT2TokenizerFast.from_pretrained('distilgpt2')
 
     with open('./data/wikitext-2-raw/wiki.train.raw', encoding="utf-8") as handle:
@@ -48,15 +47,25 @@ def finetune():
 
     # dataset = dataset.map(lambda x: tf.cast(x, dtype=tf.float16))
 
-    optimizer = tf.keras.optimizers.Adam(
-        learning_rate=3e-5, epsilon=1e-08)
-    optimizer = tf.keras.mixed_precision.experimental.LossScaleOptimizer(
-        optimizer, "dynamic")
+    resolver = tf.distribute.cluster_resolver.TPUClusterResolver(
+        tpu='grpc://' + os.environ['COLAB_TPU_ADDR'])
+    tf.config.experimental_connect_to_cluster(resolver)
+    tf.tpu.experimental.initialize_tpu_system(resolver)
+    strategy = tf.distribute.experimental.TPUStrategy(resolver)
 
-    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
-    model.compile(optimizer=optimizer, loss=[
-                  loss, *[None] * model.config.n_layer], metrics=[metric])
+    with strategy.scope():
+        model = TFGPT2LMHeadModel.from_pretrained('distilgpt2')
+
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=3e-5, epsilon=1e-08)
+        # optimizer = tf.keras.mixed_precision.experimental.LossScaleOptimizer(
+        # optimizer, "dynamic")
+
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        metric = tf.keras.metrics.SparseCategoricalAccuracy('accuracy')
+        model.compile(optimizer=optimizer, loss=[
+            loss, *[None] * model.config.n_layer], metrics=[metric])
+
     model.fit(dataset, epochs=3)
 
 
