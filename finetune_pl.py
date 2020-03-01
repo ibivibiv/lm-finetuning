@@ -86,7 +86,7 @@ class LM(pl.LightningModule):
     def __init__(self):
         super(LM, self).__init__()
 
-        self.model = GPT2LMHeadModel.from_pretrained('gpt2-large')
+        self.model = GPT2LMHeadModel.from_pretrained('distilgpt2')
 
     def forward(self, x):
         return self.model(x, labels=x)
