@@ -88,7 +88,7 @@ class LM(pl.LightningModule):
     def __init__(self):
         super(LM, self).__init__()
 
-        self.model = GPT2LMHeadModel.from_pretrained('distilgpt2')
+        self.model = GPT2LMHeadModel.from_pretrained('gpt2-xl')
 
     def forward(self, x):
         return self.model(x, labels=x)
@@ -99,7 +99,7 @@ class LM(pl.LightningModule):
 
     def configure_optimizers(self):
 
-        return torch.optim.Adam(self.parameters(), lr=1e-4)
+        return torch.optim.SGD(self.parameters(), lr=1e-3)
 
     @pl.data_loader
     def train_dataloader(self):
@@ -121,7 +121,7 @@ class LM(pl.LightningModule):
         )
 
         train_dataloader = torch.utils.data.DataLoader(
-            train_dataset, batch_size=16, num_workers=4, collate_fn=collate, sampler=sampler)
+            train_dataset, batch_size=1, num_workers=4, collate_fn=collate, sampler=sampler)
 
         return train_dataloader
 
@@ -129,5 +129,6 @@ class LM(pl.LightningModule):
 if __name__ == "__main__":
     model = LM()
 
-    trainer = Trainer(num_tpu_cores=8, progress_bar_refresh_rate=1)
+    trainer = Trainer(
+        num_tpu_cores=8, progress_bar_refresh_rate=1, precision=16)
     trainer.fit(model)
