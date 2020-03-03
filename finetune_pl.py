@@ -260,5 +260,5 @@ if __name__ == "__main__":
             "cuda:0" if torch.cuda.is_available() else "cpu")
 
     model = LM(args)
-    trainer = pl.Trainer()
+    trainer = pl.Trainer(progress_bar_refresh_rate=1)
     trainer.fit(model)
