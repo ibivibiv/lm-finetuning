@@ -239,7 +239,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', default=4, type=int)
 
     parser.add_argument('--accelerator', default='GPU', type=str)
-    parser.add_argument('--n_gpus', default=None, type=any)
+    parser.add_argument('--n_gpus', default='1', type=str)
 
     parser.add_argument('--debug', default=False, action="store_true")
 
