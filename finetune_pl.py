@@ -142,7 +142,7 @@ class LM(pl.LightningModule):
         test_loss_mean = torch.stack([x['test_loss'] for x in outputs]).mean()
         test_ppl = torch.exp(test_loss_mean)
         adjusted_test_ppl = torch.exp(
-            test_loss_mean * ((self.test_dataset.n_tokens - 1) / self.test_dataset.n_original_tokens - 1))
+            test_loss_mean * ((self.test_dataset.n_tokens - 1) / (self.test_dataset.n_original_tokens - 1)))
 
         metrics = {'test_epoch_loss': test_loss_mean,
                    'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "log": {'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl}}
