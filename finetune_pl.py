@@ -247,6 +247,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--accelerator', default='GPU', type=str)
     parser.add_argument('--n_gpus', default=None, type=int)
+    parser.add_argument('--n_tpu_cores', default=None, type=int)
 
     parser.add_argument('--debug', default=False, action="store_true")
 
@@ -269,5 +270,5 @@ if __name__ == "__main__":
 
     model = LM(args)
     trainer = pl.Trainer(
-        gpus=args.n_gpus, resume_from_checkpoint=args.checkpoint, progress_bar_refresh_rate=1)
+        gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores, resume_from_checkpoint=args.checkpoint, progress_bar_refresh_rate=1)
     trainer.fit(model)
