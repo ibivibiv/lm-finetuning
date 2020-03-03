@@ -128,7 +128,7 @@ class LM(pl.LightningModule):
              self.val_dataset.n_original_tokens - 1)
 
         metrics = {'val_epoch_loss': val_loss_mean,
-                   'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, log: {'val_epoch_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}}
+                   'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {'val_epoch_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}}
 
         return metrics
 
