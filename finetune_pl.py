@@ -111,6 +111,7 @@ class LM(pl.LightningModule):
         return self.model(inputs, labels=labels)
 
     def training_step(self, batch, batch_idx):
+        self.optimizer.param_groups[0]['lr'] = 1.23
         loss = self.forward(batch, batch)[0]
 
         return {'loss': loss}
