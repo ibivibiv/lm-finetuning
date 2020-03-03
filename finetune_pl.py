@@ -123,8 +123,10 @@ class LM(pl.LightningModule):
     def validation_end(self, outputs):
         val_loss_mean = torch.stack([x['val_loss'] for x in outputs]).mean()
         val_ppl = torch.exp(val_loss_mean)
-        adjusted_val_ppl = torch.exp(
-            val_loss_mean * ((self.val_dataset.n_tokens - 1) / self.val_dataset.n_original_tokens - 1))
+        adjusted_val_loss = val_loss_mean * \
+            ((self.val_dataset.n_tokens - 1) /
+             (self.val_dataset.n_original_tokens - 1))
+        adjusted_val_ppl = torch.exp(adjusted_val_loss)
 
         metrics = {'val_epoch_loss': val_loss_mean,
                    'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {'val_epoch_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}}
