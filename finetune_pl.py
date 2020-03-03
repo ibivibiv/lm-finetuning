@@ -123,9 +123,8 @@ class LM(pl.LightningModule):
     def validation_end(self, outputs):
         val_loss_mean = torch.stack([x['val_loss'] for x in outputs]).mean()
         val_ppl = torch.exp(val_loss_mean)
-        adjusted_val_ppl = val_loss_mean * \
-            ((self.val_dataset.n_tokens - 1) /
-             self.val_dataset.n_original_tokens - 1)
+        adjusted_val_ppl = torch.exp(
+            val_loss_mean * ((self.val_dataset.n_tokens - 1) / self.val_dataset.n_original_tokens - 1))
 
         metrics = {'val_epoch_loss': val_loss_mean,
                    'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {'val_epoch_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}}
@@ -140,9 +139,8 @@ class LM(pl.LightningModule):
     def test_end(self, outputs):
         test_loss_mean = torch.stack([x['test_loss'] for x in outputs]).mean()
         test_ppl = torch.exp(test_loss_mean)
-        adjusted_test_ppl = test_loss_mean * \
-            ((self.test_dataset.n_tokens - 1) /
-             self.test_dataset.n_original_tokens - 1)
+        adjusted_test_ppl = torch.exp(
+            test_loss_mean * ((self.test_dataset.n_tokens - 1) / self.test_dataset.n_original_tokens - 1))
 
         metrics = {'test_epoch_loss': test_loss_mean,
                    'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "log": {'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl}}
