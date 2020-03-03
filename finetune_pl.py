@@ -239,6 +239,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', default=4, type=int)
 
     parser.add_argument('--accelerator', default='GPU', type=str)
+    parser.add_argument('--n_gpus', default=None, type=any)
 
     parser.add_argument('--debug', default=False, action="store_true")
 
@@ -260,5 +261,5 @@ if __name__ == "__main__":
             "cuda:0" if torch.cuda.is_available() else "cpu")
 
     model = LM(args)
-    trainer = pl.Trainer(progress_bar_refresh_rate=1)
+    trainer = pl.Trainer(gpus=args.n_gpus, progress_bar_refresh_rate=1)
     trainer.fit(model)
