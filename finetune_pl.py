@@ -105,13 +105,17 @@ class LM(pl.LightningModule):
         self.tokenizer = tokenizer.from_pretrained(self.args.model_name)
 
     def on_save_checkpoint(self, checkpoint):
-        print(self.optimizer)
+        self.optimizer.param_groups[0]['lr'] = 1.23
+        checkpoint['optimizer'] = self.optimizer.state_dict()
+
+    def on_load_checkpoint(self, checkpoint):
+        self.optimizer.load_state_dict(checkpoint['optimizer'])
+        print(optimizer)
 
     def forward(self, inputs, labels):
         return self.model(inputs, labels=labels)
 
     def training_step(self, batch, batch_idx):
-        self.optimizer.param_groups[0]['lr'] = 1.23
         loss = self.forward(batch, batch)[0]
 
         return {'loss': loss}
