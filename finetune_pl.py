@@ -111,7 +111,10 @@ class LM(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
 
-        lr = self.optimizer.param_groups[0]['lr']
+        if self.args.lr_schedule:
+            lr = self.trainer.schedulers[0].get_lr()[0]
+        else:
+            lr = self.trainer.optimizers[0].param_groups[0]['lr']
 
         return {'loss': loss, "log": {"train_loss": loss.item(), "learning_rate": lr}}
 
@@ -168,9 +171,14 @@ class LM(pl.LightningModule):
             optimizer = AdaFactor(
                 optimizer_grouped_parameters, lr=args.lr, beta1=0)
 
-        self.optimizer = optimizer
+        if self.args.lr_schedule:
+            train_steps = int(len(
+                self.train_dataset) / (self.args.batch_size * self.args.grad_steps) * self.args.epochs)
 
-        return self.optimizer
+            scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(
+                0.1 * train_steps), num_training_steps=train_steps)
+
+            return [optimizer], [scheduler]
 
     def collate(self, examples):
         if self.tokenizer._pad_token is None:
@@ -257,13 +265,17 @@ if __name__ == "__main__":
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
+    parser.add_argument('--lr_schedule', default=True, type=bool)
 
     parser.add_argument('--batch_size', default=4, type=int)
+    parser.add_argument('--grad_steps', default=1, type=int)
+    parser.add_argument('--epochs', default=1, type=int)
 
     parser.add_argument('--accelerator', default='GPU', type=str)
     parser.add_argument('--n_gpus', default=None, type=int)
     parser.add_argument('--n_tpu_cores', default=None, type=int)
-    parser.add_argument('--tpu_precision', default=32, type=int)
+    parser.add_argument('--precision', default=32, type=int)
+    parser.add_argument('--apex_mode', default='O1', type=str)
 
     parser.add_argument('--logging_batches', default=10, type=int)
 
@@ -285,6 +297,6 @@ if __name__ == "__main__":
     wandb_logger.log_hyperparams(args)
 
     model = LM(args)
-    trainer = pl.Trainer(max_epochs=3, gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores, precision=args.tpu_precision,
-                         resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1)
+    trainer = pl.Trainer(max_epochs=args.epochs, accumulate_grad_batches=args.grad_steps, gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores,
+                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1)
     trainer.fit(model)

@@ -14,10 +14,11 @@
         -   eval and eval_only
         -   wandb support
             -   logging
-                -   wait for fix for train loss and ppl
+                -   wait for fix for train loss and train ppl
             -   watch
                 -   where to put watch() call?
         -   checkpointing
+            -   save dir
             -   tokenizer checkpointing
                 -   not necessary anymore
         -   cli args
