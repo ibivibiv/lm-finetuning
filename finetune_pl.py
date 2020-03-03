@@ -110,7 +110,7 @@ class LM(pl.LightningModule):
 
     def on_load_checkpoint(self, checkpoint):
         self.optimizer.load_state_dict(checkpoint['optimizer'])
-        print(optimizer)
+        print(self.optimizer)
 
     def forward(self, inputs, labels):
         return self.model(inputs, labels=labels)

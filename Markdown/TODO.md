@@ -17,6 +17,7 @@
             -   watch
         -   checkpointing
             -   tokenizer checkpointing
+                -   not necessary anymore
         -   cli args
         -   lr schedule
         -   resuming
