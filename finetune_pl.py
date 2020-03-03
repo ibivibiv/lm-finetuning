@@ -101,8 +101,10 @@ class LM(pl.LightningModule):
         self.args = args
 
         model, tokenizer = MODEL_CLASSES[self.args.model_type]
-        self.model = model.from_pretrained(self.args.checkpoint)
-        self.tokenizer = tokenizer.from_pretrained(self.args.checkpoint)
+        self.model = model.from_pretrained(self.args.model_name)
+        self.tokenizer = tokenizer.from_pretrained(self.args.model_name)
+
+    # def on_save_checkpoint(self, checkpoint):
 
     def forward(self, inputs, labels):
         return self.model(inputs, labels=labels)
@@ -231,7 +233,7 @@ if __name__ == "__main__":
                         action="store_true", required=False)
 
     parser.add_argument('--model_type', default='gpt2', type=str)
-    parser.add_argument('--checkpoint', default='distilgpt2', type=str)
+    parser.add_argument('--model_name', default='distilgpt2', type=str)
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
