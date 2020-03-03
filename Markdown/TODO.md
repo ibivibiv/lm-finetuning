@@ -21,6 +21,8 @@
         -   cli args
         -   lr schedule
         -   resuming
+            -   pytorch lightning should handle optimizer and scheduler restoring
+            -   CHECK with wandb
         -   amp on gpu
         -   grad accumulation
         -   grad checkpointing
