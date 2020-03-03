@@ -5,7 +5,30 @@
 -   upload saved models quickly
     -   wait for fix
 -   check if gpt2-xl can be trained with fp16
--   pytorch lightning?
+-   pytorch lightning
+    -   works with 1 and 8 cores with gpt2
+    -   waiting for fix for gpt2-large and precision=16
+        -   fixed precision=16 myself
+    -   todo
+        -   sampling
+        -   eval and eval_only
+        -   wandb support
+            -   logging
+            -   watch
+        -   checkpointing
+            -   tokenizer checkpointing
+        -   cli args
+        -   lr schedule
+        -   resuming
+        -   amp on gpu
+        -   grad accumulation
+        -   grad checkpointing
+        -   logging histograms and grads
+        -   ppl
+    -   done
+        -   dataset
+        -   untrainable params
+        -   val and test
 -   tf
     -   data
         -   tfrecords

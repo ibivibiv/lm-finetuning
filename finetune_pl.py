@@ -1,34 +1,27 @@
 import os
-import fire
-import pickle
 import argparse
 import time
 import glob
 
-import numpy as np
+import numpy as numpy
 from tqdm import tqdm
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
-
-from torch.optim import SGD
-
-from torch.utils.tensorboard import SummaryWriter
-from torch.utils.data import Dataset
-
-import wandb
 
 from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
 import pytorch_lightning as pl
-from pytorch_lightning import Trainer
 
-import torch_xla.core.xla_model as xm
+from optimizers import AdaFactor
+
+MODEL_CLASSES = {
+    'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
+    'ctrl': (CTRLLMHeadModel, CTRLTokenizer)
+}
 
 
-class TextDataset(Dataset):
+class TextDataset(torch.utils.data.Dataset):
     def __init__(self, path, tokenizer, args):
 
         start = time.time()
@@ -55,21 +48,40 @@ class TextDataset(Dataset):
 
         text = []
         with open(path, encoding="utf-8") as handle:
-            temp = handle.read()
-            text.append(temp)
-            self.n_original_tokens += len(temp.strip().split(" "))
-
-        for l in tqdm(text):
-            tokenized_text = tokenizer.convert_tokens_to_ids(
-                tokenizer.tokenize(l))
-
-            if len(tokenized_text) < 256:
-                batches.append(
-                    tokenizer.build_inputs_with_special_tokens(tokenized_text))
+            # efficient uses less memory by going line-by-line. Drawbacks: if len(line) isn't a multiple of seq_len, the remainder will be left
+            if args.efficient or args.fast:
+                for line in handle:
+                    self.n_original_tokens += len(line.split(" "))
+                    if len(line) > 0 and not line.isspace():
+                        text.append(line)
+            # Default way reads in entire file into memory
             else:
-                for i in range(len(tokenized_text) // 256):
-                    batches.append(tokenizer.build_inputs_with_special_tokens(
-                        tokenized_text[i * 256: (i + 1) * 256]))
+                temp = handle.read()
+                text.append(temp)
+                self.n_original_tokens += len(temp.strip().split(" "))
+
+        # Fast way uses `batch_encode_plus`. Drawbacks: only the first seq_len chars get kept
+        if args.fast:
+            batches = tokenizer.batch_encode_plus(
+                text, add_special_tokens=True, max_length=args.seq_len)["input_ids"]
+        else:
+            for l in tqdm(text):
+                tokenized_text = tokenizer.convert_tokens_to_ids(
+                    tokenizer.tokenize(l))
+
+                if args.n_tokens > -1:
+                    tokenized_text = tokenized_text[:args.n_tokens]
+
+                if len(tokenized_text) < args.seq_len:
+                    batches.append(
+                        tokenizer.build_inputs_with_special_tokens(tokenized_text))
+                else:
+                    for i in range(len(tokenized_text) // args.seq_len):
+                        batches.append(tokenizer.build_inputs_with_special_tokens(
+                            tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
+
+                if args.n_batches > -1 and len(batches) >= args.n_batches:
+                    break
 
         self.n_tokens += sum([len(batch) for batch in batches])
 
@@ -83,50 +95,170 @@ class TextDataset(Dataset):
 
 
 class LM(pl.LightningModule):
-    def __init__(self):
+    def __init__(self, args):
         super(LM, self).__init__()
 
-        self.model = GPT2LMHeadModel.from_pretrained('gpt2-large')
+        self.args = args
 
-    def forward(self, x):
-        return self.model(x, labels=x)
+        model, tokenizer = MODEL_CLASSES[self.args.model_type]
+        self.model = model.from_pretrained(self.args.checkpoint)
+        self.tokenizer = tokenizer.from_pretrained(self.args.checkpoint)
+
+    def forward(self, inputs, labels):
+        return self.model(inputs, labels=labels)
 
     def training_step(self, batch, batch_idx):
-        loss = self.forward(batch)[0]
+        loss = self.forward(batch, batch)[0]
+
         return {'loss': loss}
 
+    def validation_step(self, batch, batch_idx):
+        loss = self.forward(batch, batch)[0]
+
+        return {'val_loss': loss}
+
+    def validation_end(self, outputs):
+        val_loss_mean = torch.stack([x['val_loss'] for x in outputs]).mean()
+        return {'val_loss': val_loss_mean}
+
+    def test_step(self, batch, batch_idx):
+        loss = self.forward(batch, batch)[0]
+
+        return {'test_loss': loss}
+
+    def test_end(self, outputs):
+        test_loss_mean = torch.stack([x['test_loss'] for x in outputs]).mean()
+        return {'test_loss': test_loss_mean}
+
     def configure_optimizers(self):
+        no_decay = ["bias", "LayerNorm.weight"]
+        optimizer_grouped_parameters = [
+            {"params": [p for n, p in self.model.named_parameters() if not any(
+                nd in n for nd in no_decay)], "weight_decay": 0.0},
+            {"params": [p for n, p in self.model.named_parameters() if any(
+                nd in n for nd in no_decay)], "weight_decay": 0.0},
+        ]
 
-        return torch.optim.SGD(self.parameters(), lr=1e-3)
+        if args.optimizer == 'AdamW':
+            optimizer = AdamW(optimizer_grouped_parameters,
+                              lr=args.lr, eps=1e-8)
+        elif args.optimizer == 'SGD':
+            optimizer = torch.optim.SGD(
+                optimizer_grouped_parameters, lr=args.lr)
+        elif args.optimizer == 'Adafactor':
+            optimizer = AdaFactor(
+                optimizer_grouped_parameters, lr=args.lr, beta1=0)
 
-    @pl.data_loader
+        return optimizer
+
+    def collate(self, examples):
+        if self.tokenizer._pad_token is None:
+            return pad_sequence(examples, batch_first=True)
+        return pad_sequence(examples, batch_first=True, padding_value=self.tokenizer.pad_token_id)
+
     def train_dataloader(self):
-        tokenizer = GPT2TokenizerFast.from_pretrained('distilgpt2')
-
         train_dataset = TextDataset(
-            './data/wikitext-2-raw/wiki.train.raw', tokenizer, None)
+            self.args.train_path, self.tokenizer, self.args)
 
-        def collate(examples):
-            if tokenizer._pad_token is None:
-                return pad_sequence(examples, batch_first=True)
-            return pad_sequence(examples, batch_first=True, padding_value=tokenizer.pad_token_id)
-
-        sampler = torch.utils.data.distributed.DistributedSampler(
-            train_dataset,
-            num_replicas=xm.xrt_world_size(),
-            rank=xm.get_ordinal(),
-            shuffle=True
-        )
+        if self.args.device.type not in ["cpu", "gpu:0"]:
+            sampler = torch.utils.data.distributed.DistributedSampler(
+                train_dataset,
+                num_replicas=xm.xrt_world_size(),
+                rank=xm.get_ordinal(),
+                shuffle=True
+            )
+        else:
+            sampler = torch.utils.data.RandomSampler(train_dataset)
 
         train_dataloader = torch.utils.data.DataLoader(
-            train_dataset, batch_size=1, num_workers=4, collate_fn=collate, sampler=sampler)
+            train_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler)
 
         return train_dataloader
 
+    def val_dataloader(self):
+        val_dataset = TextDataset(
+            self.args.val_path, self.tokenizer, self.args)
+
+        sampler = None
+        if self.args.device.type not in ["cpu", "gpu:0"]:
+            sampler = torch.utils.data.distributed.DistributedSampler(
+                val_dataset,
+                num_replicas=xm.xrt_world_size(),
+                rank=xm.get_ordinal(),
+                shuffle=True
+            )
+
+        val_dataloader = torch.utils.data.DataLoader(
+            val_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler, shuffle=False)
+
+        return val_dataloader
+
+    def test_dataloader(self):
+        test_dataset = TextDataset(
+            self.args.test_path, self.tokenizer, self.args)
+
+        sampler = None
+        if self.args.device.type not in ["cpu", "gpu:0"]:
+            sampler = torch.utils.data.distributed.DistributedSampler(
+                test_dataset,
+                num_replicas=xm.xrt_world_size(),
+                rank=xm.get_ordinal(),
+                shuffle=True
+            )
+
+        test_dataloader = torch.utils.data.DataLoader(
+            test_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler, shuffle=False)
+
+        return test_dataloader
+
 
 if __name__ == "__main__":
-    model = LM()
+    parser = argparse.ArgumentParser()
 
-    trainer = Trainer(
-        num_tpu_cores=8, progress_bar_refresh_rate=1)
+    parser.add_argument('--train_path', default='./data/wikitext-2-raw/wiki.train.raw',
+                        type=str, required=False)
+    parser.add_argument('--val_path', default='./data/wikitext-2-raw/wiki.valid.raw',
+                        type=str, required=False)
+    parser.add_argument('--test_path', default='./data/wikitext-2-raw/wiki.test.raw',
+                        type=str, required=False)
+
+    parser.add_argument('--seq_len', default=256, type=int, required=False)
+    parser.add_argument('--n_tokens', default=-1, type=int, required=False)
+    parser.add_argument('--n_batches', default=-1, type=int, required=False)
+    parser.add_argument('--fast', default=False,
+                        action="store_true", required=False)
+    parser.add_argument('--efficient', default=False,
+                        action="store_true", required=False)
+
+    parser.add_argument('--model_type', default='gpt2', type=str)
+    parser.add_argument('--checkpoint', default='distilgpt2', type=str)
+
+    parser.add_argument('--optimizer', default='AdamW', type=str)
+    parser.add_argument('--lr', default=5e-5, type=float)
+
+    parser.add_argument('--batch_size', default=4, type=int)
+
+    parser.add_argument('--accelerator', default='GPU', type=str)
+
+    parser.add_argument('--debug', default=False, action="store_true")
+
+    args = parser.parse_args()
+
+    if args.debug:
+        import ptvsd
+        ptvsd.enable_attach(address=('localhost', 5678),
+                            redirect_output=True)
+        ptvsd.wait_for_attach()
+        breakpoint()
+
+    if args.accelerator == 'TPU':
+        import torch_xla.core.xla_model as xm
+
+        args.device = xm.xla_device()
+    else:
+        args.device = torch.device(
+            "cuda:0" if torch.cuda.is_available() else "cpu")
+
+    model = LM(args)
+    trainer = pl.Trainer()
     trainer.fit(model)
