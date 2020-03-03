@@ -283,6 +283,6 @@ if __name__ == "__main__":
     wandb_logger.log_hyperparams(args)
 
     model = LM(args)
-    trainer = pl.Trainer(
-        gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores, precision=args.tpu_precision, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1)
+    trainer = pl.Trainer(max_epochs=3, gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores, precision=args.tpu_precision,
+                         resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1)
     trainer.fit(model)
