@@ -14,7 +14,9 @@
         -   eval and eval_only
         -   wandb support
             -   logging
+                -   wait for fix for train loss and ppl
             -   watch
+                -   where to put watch() call?
         -   checkpointing
             -   tokenizer checkpointing
                 -   not necessary anymore

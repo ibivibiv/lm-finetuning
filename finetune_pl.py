@@ -12,6 +12,7 @@ from torch.nn.utils.rnn import pad_sequence
 from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
 import pytorch_lightning as pl
+from pytorch_lightning.loggers import WandbLogger
 
 from optimizers import AdaFactor
 
@@ -110,6 +111,11 @@ class LM(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
 
+        if batch_idx % self.args.logging_batches == 0:
+            lr = self.optimizer.param_groups[0]['lr']
+            self.logger.experiment.log(
+                {"train_loss": loss.item(), "learning_rate": lr}, step=batch_idx)
+
         return {'loss': loss}
 
     def validation_step(self, batch, batch_idx):
@@ -119,7 +125,12 @@ class LM(pl.LightningModule):
 
     def validation_end(self, outputs):
         val_loss_mean = torch.stack([x['val_loss'] for x in outputs]).mean()
-        return {'val_loss': val_loss_mean}
+        val_ppl = torch.exp(val_loss_mean)
+        adjusted_val_ppl = val_loss_mean * \
+            ((self.val_dataset.n_tokens - 1) /
+             self.val_dataset.n_original_tokens - 1)
+
+        return {'val_epoch_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}
 
     def test_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
@@ -128,7 +139,12 @@ class LM(pl.LightningModule):
 
     def test_end(self, outputs):
         test_loss_mean = torch.stack([x['test_loss'] for x in outputs]).mean()
-        return {'test_loss': test_loss_mean}
+        test_ppl = torch.exp(test_loss_mean)
+        adjusted_test_ppl = test_loss_mean * \
+            ((self.test_dataset.n_tokens - 1) /
+             self.test_dataset.n_original_tokens - 1)
+
+        return {'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl}
 
     def configure_optimizers(self):
         no_decay = ["bias", "LayerNorm.weight"]
@@ -159,12 +175,12 @@ class LM(pl.LightningModule):
         return pad_sequence(examples, batch_first=True, padding_value=self.tokenizer.pad_token_id)
 
     def train_dataloader(self):
-        train_dataset = TextDataset(
+        self.train_dataset = TextDataset(
             self.args.train_path, self.tokenizer, self.args)
 
         if self.args.accelerator == "TPU":
             sampler = torch.utils.data.distributed.DistributedSampler(
-                train_dataset,
+                self.train_dataset,
                 num_replicas=xm.xrt_world_size(),
                 rank=xm.get_ordinal(),
                 shuffle=True
@@ -173,43 +189,43 @@ class LM(pl.LightningModule):
             sampler = torch.utils.data.RandomSampler(train_dataset)
 
         train_dataloader = torch.utils.data.DataLoader(
-            train_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler)
+            self.train_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler)
 
         return train_dataloader
 
     def val_dataloader(self):
-        val_dataset = TextDataset(
+        self.val_dataset = TextDataset(
             self.args.val_path, self.tokenizer, self.args)
 
         sampler = None
         if self.args.accelerator == "TPU":
             sampler = torch.utils.data.distributed.DistributedSampler(
-                val_dataset,
+                self.val_dataset,
                 num_replicas=xm.xrt_world_size(),
                 rank=xm.get_ordinal(),
                 shuffle=True
             )
 
         val_dataloader = torch.utils.data.DataLoader(
-            val_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler, shuffle=False)
+            self.val_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler, shuffle=False)
 
         return val_dataloader
 
     def test_dataloader(self):
-        test_dataset = TextDataset(
+        self.test_dataset = TextDataset(
             self.args.test_path, self.tokenizer, self.args)
 
         sampler = None
         if self.args.accelerator == "TPU":
             sampler = torch.utils.data.distributed.DistributedSampler(
-                test_dataset,
+                self.test_dataset,
                 num_replicas=xm.xrt_world_size(),
                 rank=xm.get_ordinal(),
                 shuffle=True
             )
 
         test_dataloader = torch.utils.data.DataLoader(
-            test_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler, shuffle=False)
+            self.test_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler, shuffle=False)
 
         return test_dataloader
 
@@ -246,6 +262,8 @@ if __name__ == "__main__":
     parser.add_argument('--n_tpu_cores', default=None, type=int)
     parser.add_argument('--tpu_precision', default=32, type=int)
 
+    parser.add_argument('--logging_batches', default=10, type=int)
+
     parser.add_argument('--debug', default=False, action="store_true")
 
     args = parser.parse_args()
@@ -260,7 +278,10 @@ if __name__ == "__main__":
     if args.accelerator == 'TPU':
         import torch_xla.core.xla_model as xm
 
+    wandb_logger = WandbLogger(project='lm-finetuning')
+    wandb_logger.log_hyperparams(args)
+
     model = LM(args)
     trainer = pl.Trainer(
-        gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores, precision=args.tpu_precision, resume_from_checkpoint=args.checkpoint, progress_bar_refresh_rate=1)
+        gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores, precision=args.tpu_precision, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1)
     trainer.fit(model)
