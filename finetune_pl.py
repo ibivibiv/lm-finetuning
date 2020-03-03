@@ -162,7 +162,7 @@ class LM(pl.LightningModule):
         train_dataset = TextDataset(
             self.args.train_path, self.tokenizer, self.args)
 
-        if self.args.device.type not in ["cpu", "cuda"]:
+        if self.args.accelerator == "TPU":
             sampler = torch.utils.data.distributed.DistributedSampler(
                 train_dataset,
                 num_replicas=xm.xrt_world_size(),
@@ -182,7 +182,7 @@ class LM(pl.LightningModule):
             self.args.val_path, self.tokenizer, self.args)
 
         sampler = None
-        if self.args.device.type not in ["cpu", "cuda"]:
+        if self.args.accelerator == "TPU":
             sampler = torch.utils.data.distributed.DistributedSampler(
                 val_dataset,
                 num_replicas=xm.xrt_world_size(),
@@ -200,7 +200,7 @@ class LM(pl.LightningModule):
             self.args.test_path, self.tokenizer, self.args)
 
         sampler = None
-        if self.args.device.type not in ["cpu", "cuda"]:
+        if self.args.accelerator == "TPU":
             sampler = torch.utils.data.distributed.DistributedSampler(
                 test_dataset,
                 num_replicas=xm.xrt_world_size(),
@@ -259,11 +259,6 @@ if __name__ == "__main__":
 
     if args.accelerator == 'TPU':
         import torch_xla.core.xla_model as xm
-
-        args.device = "TPU"
-    else:
-        args.device = torch.device(
-            "cuda:0" if torch.cuda.is_available() else "cpu")
 
     model = LM(args)
     trainer = pl.Trainer(
