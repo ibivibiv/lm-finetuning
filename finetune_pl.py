@@ -109,6 +109,7 @@ class LM(pl.LightningModule):
         checkpoint['optimizer'] = self.optimizer.state_dict()
 
     def on_load_checkpoint(self, checkpoint):
+        print('checkpoint')
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         print(self.optimizer)
 
