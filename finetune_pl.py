@@ -104,7 +104,8 @@ class LM(pl.LightningModule):
         self.model = model.from_pretrained(self.args.model_name)
         self.tokenizer = tokenizer.from_pretrained(self.args.model_name)
 
-    # def on_save_checkpoint(self, checkpoint):
+    def on_save_checkpoint(self, checkpoint):
+        print(self.optimizer)
 
     def forward(self, inputs, labels):
         return self.model(inputs, labels=labels)
@@ -151,7 +152,9 @@ class LM(pl.LightningModule):
             optimizer = AdaFactor(
                 optimizer_grouped_parameters, lr=args.lr, beta1=0)
 
-        return optimizer
+        self.optimizer = optimizer
+
+        return self.optimizer
 
     def collate(self, examples):
         if self.tokenizer._pad_token is None:
