@@ -145,7 +145,7 @@ class LM(pl.LightningModule):
              self.test_dataset.n_original_tokens - 1)
 
         metrics = {'test_epoch_loss': test_loss_mean,
-                   'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, log: {'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl}}
+                   'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "log": {'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl}}
 
         return metrics
 
