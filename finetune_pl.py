@@ -111,12 +111,9 @@ class LM(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
 
-        if batch_idx % self.args.logging_batches == 0:
-            lr = self.optimizer.param_groups[0]['lr']
-            self.logger.experiment.log(
-                {"train_loss": loss.item(), "learning_rate": lr}, step=batch_idx)
+        lr = self.optimizer.param_groups[0]['lr']
 
-        return {'loss': loss}
+        return {'loss': loss, "log": {"train_loss": loss.item(), "learning_rate": lr}}
 
     def validation_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
@@ -130,7 +127,11 @@ class LM(pl.LightningModule):
             ((self.val_dataset.n_tokens - 1) /
              self.val_dataset.n_original_tokens - 1)
 
-        return {'val_epoch_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}
+        metrics = {'val_epoch_loss': val_loss_mean,
+                   'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}
+        metrics['log'] = metrics
+
+        return metrics
 
     def test_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
@@ -144,7 +145,11 @@ class LM(pl.LightningModule):
             ((self.test_dataset.n_tokens - 1) /
              self.test_dataset.n_original_tokens - 1)
 
-        return {'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl}
+        metrics = {'test_epoch_loss': test_loss_mean,
+                   'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl}
+        metrics['log'] = metrics
+
+        return metrics
 
     def configure_optimizers(self):
         no_decay = ["bias", "LayerNorm.weight"]
