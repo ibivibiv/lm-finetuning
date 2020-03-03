@@ -160,7 +160,7 @@ class LM(pl.LightningModule):
         train_dataset = TextDataset(
             self.args.train_path, self.tokenizer, self.args)
 
-        if self.args.device.type not in ["cpu", "gpu:0"]:
+        if self.args.device.type not in ["cpu", "cuda"]:
             sampler = torch.utils.data.distributed.DistributedSampler(
                 train_dataset,
                 num_replicas=xm.xrt_world_size(),
@@ -180,7 +180,7 @@ class LM(pl.LightningModule):
             self.args.val_path, self.tokenizer, self.args)
 
         sampler = None
-        if self.args.device.type not in ["cpu", "gpu:0"]:
+        if self.args.device.type not in ["cpu", "cuda"]:
             sampler = torch.utils.data.distributed.DistributedSampler(
                 val_dataset,
                 num_replicas=xm.xrt_world_size(),
@@ -198,7 +198,7 @@ class LM(pl.LightningModule):
             self.args.test_path, self.tokenizer, self.args)
 
         sampler = None
-        if self.args.device.type not in ["cpu", "gpu:0"]:
+        if self.args.device.type not in ["cpu", "cuda"]:
             sampler = torch.utils.data.distributed.DistributedSampler(
                 test_dataset,
                 num_replicas=xm.xrt_world_size(),
