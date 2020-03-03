@@ -108,10 +108,6 @@ class LM(pl.LightningModule):
         return self.model(inputs, labels=labels)
 
     def training_step(self, batch, batch_idx):
-
-        if batch_idx == 0:
-            print(self.optimizer)
-
         loss = self.forward(batch, batch)[0]
 
         return {'loss': loss}
@@ -264,7 +260,7 @@ if __name__ == "__main__":
     if args.accelerator == 'TPU':
         import torch_xla.core.xla_model as xm
 
-        args.device = xm.xla_device()
+        args.device = "TPU"
     else:
         args.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
