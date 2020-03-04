@@ -6,7 +6,6 @@
     -   wait for fix
 -   check if gpt2-xl can be trained with fp16
 -   pytorch lightning
-    -   works with 1 and 8 cores with gpt2
     -   todo
         -   go through docs
         -   check test
@@ -18,27 +17,6 @@
             -   watch
                 -   where to put watch() call?
         -   grad checkpointing
-    -   done
-        -   dataset
-        -   untrainable params
-        -   ppl
-        -   val and test
-        -   cli args
-        -   check lr scaling
-        -   check apex
-        -   grad accumulation
-        -   checkpointing
-            -   save dir
-            -   tokenizer checkpointing
-                -   not necessary anymore
-        -   early stopping
-        -   lr schedule
-            -   implement fix
-        -   resuming
-            -   pytorch lightning should handle optimizer and scheduler restoring
-                -   wandb.run.dir
-        -   waiting for fix for gpt2-large and precision=16
-            -   fixed precision=16 myself
 -   tf
     -   data
         -   tfrecords
@@ -73,6 +51,28 @@
     -   check if adjusted ppl is correct
 -   add flag to only use first n_batches to train
 -   add flag to only consider first n tokens in file/lin
+-   pytorch lightning
+    -   done
+        -   dataset
+        -   untrainable params
+        -   ppl
+        -   val and test
+        -   cli args
+        -   check lr scaling
+        -   check apex
+        -   grad accumulation
+        -   checkpointing
+            -   save dir
+            -   tokenizer checkpointing
+                -   not necessary anymore
+        -   early stopping
+        -   lr schedule
+            -   implement fix
+        -   resuming
+            -   pytorch lightning should handle optimizer and scheduler restoring
+                -   wandb.run.dir
+        -   waiting for fix for gpt2-large and precision=16
+            -   fixed precision=16 myself
 
 # Wont do
 
