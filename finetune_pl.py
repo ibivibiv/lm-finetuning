@@ -355,7 +355,7 @@ if __name__ == "__main__":
     wandb_logger.log_hyperparams(args)
 
     early_stopping_callback = EarlyStopping(monitor='val_epoch_loss')
-    checkpoint_callback = ModelCheckpoint(wandb.run.dir)
+    checkpoint_callback = ModelCheckpoint(wandb.run.dir, save_top_k=-1)
 
     model = LM(args)
     trainer = pl.Trainer(max_epochs=args.epochs, accumulate_grad_batches=args.grad_steps, gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores,
