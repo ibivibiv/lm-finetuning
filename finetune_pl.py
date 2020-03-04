@@ -179,6 +179,8 @@ class LM(pl.LightningModule):
                 0.1 * train_steps), num_training_steps=train_steps)
 
             return [optimizer], [scheduler]
+        else:
+            return optimizer
 
     def collate(self, examples):
         if self.tokenizer._pad_token is None:
