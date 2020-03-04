@@ -267,7 +267,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
-    parser.add_argument('--lr_schedule', default=True, type=bool)
+    parser.add_argument('--no_lr_schedule', default=True, action='store_false')
 
     parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--grad_steps', default=1, type=int)
