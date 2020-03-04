@@ -236,7 +236,7 @@ class LM(pl.LightningModule):
                 shuffle=True
             )
         else:
-            sampler = torch.utils.data.RandomSampler(train_dataset)
+            sampler = torch.utils.data.RandomSampler(self.train_dataset)
 
         train_dataloader = torch.utils.data.DataLoader(
             self.train_dataset, batch_size=self.args.batch_size, num_workers=4, collate_fn=self.collate, sampler=sampler)

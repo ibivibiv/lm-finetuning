@@ -40,6 +40,7 @@
         -   ppl
         -   val and test
         -   cli args
+        -   check lr scaling
 -   tf
     -   data
         -   tfrecords
