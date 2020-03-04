@@ -95,6 +95,41 @@ class TextDataset(torch.utils.data.Dataset):
         return torch.tensor(self.batches[index])
 
 
+def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
+    """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
+        Args:
+            logits: logits distribution shape (batch size x vocabulary size)
+            top_k > 0: keep only top k tokens with highest probability (top-k filtering).
+            top_p > 0.0: keep the top tokens with cumulative probability >= top_p (nucleus filtering).
+                Nucleus filtering is described in Holtzman et al. (http://arxiv.org/abs/1904.09751)
+        From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
+    """
+    top_k = min(top_k, logits.size(-1))  # Safety check
+    if top_k > 0:
+        # Remove all tokens with a probability less than the last token of the top-k
+        indices_to_remove = logits < torch.topk(logits, top_k)[
+            0][..., -1, None]
+        logits[indices_to_remove] = filter_value
+
+    if top_p > 0.0:
+        sorted_logits, sorted_indices = torch.sort(logits, descending=True)
+        cumulative_probs = torch.cumsum(
+            torch.softmax(sorted_logits, dim=-1), dim=-1)
+
+        # Remove tokens with cumulative probability above the threshold
+        sorted_indices_to_remove = cumulative_probs > top_p
+        # Shift the indices to the right to keep also the first token above the threshold
+        sorted_indices_to_remove[...,
+                                 1:] = sorted_indices_to_remove[..., :-1].clone()
+        sorted_indices_to_remove[..., 0] = 0
+
+        # scatter sorted tensors to original indexing
+        indices_to_remove = sorted_indices_to_remove.scatter(
+            dim=1, index=sorted_indices, src=sorted_indices_to_remove)
+        logits[indices_to_remove] = filter_value
+    return logits
+
+
 class LM(pl.LightningModule):
     def __init__(self, args):
         super(LM, self).__init__()
@@ -104,6 +139,8 @@ class LM(pl.LightningModule):
         model, tokenizer = MODEL_CLASSES[self.args.model_type]
         self.model = model.from_pretrained(self.args.model_name)
         self.tokenizer = tokenizer.from_pretrained(self.args.model_name)
+
+        self.table_data = []
 
     def forward(self, inputs, labels):
         return self.model(inputs, labels=labels)
@@ -130,6 +167,54 @@ class LM(pl.LightningModule):
             ((self.val_dataset.n_tokens - 1) /
              (self.val_dataset.n_original_tokens - 1))
         adjusted_val_ppl = torch.exp(adjusted_val_loss)
+
+        if self.args.accelerator == "TPU":
+            device = xm.xla_device()
+        else:
+            torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        next_token = torch.tensor(self.tokenizer.encode(" ")).unsqueeze(
+            0).repeat(self.args.n_samples, 1).to(device)
+        generated = next_token
+
+        past = None
+        with torch.no_grad():
+            for _ in tqdm(range(self.args.sample_len)):
+                logits, past = self.model(next_token, past=past)
+
+                # Get hidden state of next token only
+                logits = logits[:, -1, :]
+
+                logits /= self.args.temperature if self.args.temperature > 0 else 1
+
+                # Repetition penalty
+                for i in range(self.args.n_samples):
+                    for j in set(generated[i].tolist()):
+                        logits[i, j] /= self.args.repetition_penalty
+
+                # Top-k or top-p
+                logits = top_k_top_p_filtering(
+                    logits, top_k=args.top_k, top_p=args.top_p)
+
+                # Greedy sampling
+                if self.args.temperature == 0:
+                    next_token = torch.argmax(logits, dim=-1).unsqueeze(-1)
+                # Top-k or top-p
+                else:
+                    next_token = torch.multinomial(torch.softmax(
+                        logits.float(), dim=-1), num_samples=1)
+
+                generated = torch.cat([generated, next_token], dim=1)
+
+            print("Generated:\n")
+            samples = ""
+            for i, sample in enumerate(generated.tolist()):
+                samples += tokenizer.decode(sample) + "\n"
+            print(samples)
+
+        table_data.append([f'{self.trainer.current_epoch}', samples])
+        self.logger.experiment.log({"samples": wandb.Table(
+            columns=['Epoch', 'Text'], data=table_data)}, step=self.trainer.current_epoch)
 
         metrics = {'val_epoch_loss': val_loss_mean,
                    'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {'val_epoch_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}}
@@ -280,9 +365,17 @@ if __name__ == "__main__":
     parser.add_argument('--precision', default=32, type=int)
     parser.add_argument('--apex_mode', default='O1', type=str)
 
+    parser.add_argument('--n_samples', default=1, type=int)
+    parser.add_argument('--sample_len', default=256, type=int)
+    parser.add_argument('--temperature', default=1, type=int)
+    parser.add_argument('--top_k', default=1, type=int)
+    parser.add_argument('--top_p', default=1, type=int)
+    parser.add_argument('--repetition_penalty', default=1, type=int)
+
     parser.add_argument('--logging_batches', default=10, type=int)
 
     parser.add_argument('--debug', default=False, action="store_true")
+    parser.add_argument('--debug_run', default=False, action="store_true")
 
     args = parser.parse_args()
 
@@ -301,5 +394,5 @@ if __name__ == "__main__":
 
     model = LM(args)
     trainer = pl.Trainer(max_epochs=args.epochs, accumulate_grad_batches=args.grad_steps, gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores,
-                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1)
+                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1, fast_dev_run=args.debug_run)
     trainer.fit(model)

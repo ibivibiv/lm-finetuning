@@ -23,6 +23,7 @@
                 -   not necessary anymore
         -   cli args
         -   lr schedule
+            -   wait for fix
         -   resuming
             -   pytorch lightning should handle optimizer and scheduler restoring
             -   CHECK with wandb
