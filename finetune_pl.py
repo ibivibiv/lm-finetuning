@@ -171,7 +171,7 @@ class LM(pl.LightningModule):
             optimizer = AdaFactor(
                 optimizer_grouped_parameters, lr=args.lr, beta1=0)
 
-        if self.args.no_lr_schedule:
+        if self.args.disable_lr_schedule:
             return optimizer
         else:
             train_steps = int(len(
@@ -267,7 +267,8 @@ if __name__ == "__main__":
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
-    parser.add_argument('--no_lr_schedule', default=True, action='store_false')
+    parser.add_argument('--disable_lr_schedule',
+                        default=False, action='store_true')
 
     parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--grad_steps', default=1, type=int)
