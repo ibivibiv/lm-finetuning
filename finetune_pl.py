@@ -111,10 +111,10 @@ class LM(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
 
-        if self.args.lr_schedule:
-            lr = self.trainer.schedulers[0].get_lr()[0]
-        else:
+        if self.args.disable_lr_schedule:
             lr = self.trainer.optimizers[0].param_groups[0]['lr']
+        else:
+            lr = self.trainer.schedulers[0].get_lr()[0]
 
         return {'loss': loss, "log": {"train_loss": loss.item(), "learning_rate": lr}}
 
