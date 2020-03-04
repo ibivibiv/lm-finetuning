@@ -168,13 +168,9 @@ class LM(pl.LightningModule):
              (self.val_dataset.n_original_tokens - 1))
         adjusted_val_ppl = torch.exp(adjusted_val_loss)
 
-        if self.args.accelerator == "TPU":
-            device = xm.xla_device()
-        else:
-            device = torch.device(
-                "cuda:0" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cpu")
 
-        print(f'device: {device}')
+        self.model = self.model.to(device)
 
         next_token = torch.tensor(self.tokenizer.encode(" ")).unsqueeze(
             0).repeat(self.args.n_samples, 1).to(device)
@@ -215,7 +211,9 @@ class LM(pl.LightningModule):
                 samples += self.tokenizer.decode(sample) + "\n"
             print(samples)
 
-        table_data.append([f'{self.trainer.current_epoch}', samples])
+        self.model = self.model.to(xm.xla_device())
+
+        self.table_data.append([f'{self.trainer.current_epoch}', samples])
         self.logger.experiment.log({"samples": wandb.Table(
             columns=['Epoch', 'Text'], data=table_data)}, step=self.trainer.current_epoch)
 
