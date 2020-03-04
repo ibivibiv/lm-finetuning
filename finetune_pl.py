@@ -6,6 +6,8 @@ import glob
 import numpy as numpy
 from tqdm import tqdm
 
+import wandb
+
 import torch
 from torch.nn.utils.rnn import pad_sequence
 
@@ -13,6 +15,7 @@ from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CT
 
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 
 from optimizers import AdaFactor
 
@@ -347,10 +350,14 @@ if __name__ == "__main__":
     if args.accelerator == 'TPU':
         import torch_xla.core.xla_model as xm
 
-    wandb_logger = WandbLogger(project='lm-finetuning')
+    experiment = wandb.init(project="lm-finetuning")
+    wandb_logger = WandbLogger(experiment=experiment)
     wandb_logger.log_hyperparams(args)
+
+    early_stopping_callback = EarlyStopping(monitor='val_epoch_loss')
+    checkpoint_callback = ModelCheckpoint(wandb.run.dir)
 
     model = LM(args)
     trainer = pl.Trainer(max_epochs=args.epochs, accumulate_grad_batches=args.grad_steps, gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores,
-                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1, fast_dev_run=args.debug_run)
+                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1, fast_dev_run=args.debug_run, early_stop_callback=early_stopping_callback, checkpoint_callback=checkpoint_callback)
     trainer.fit(model)

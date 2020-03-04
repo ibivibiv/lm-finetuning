@@ -10,13 +10,11 @@
     -   waiting for fix for gpt2-large and precision=16
         -   fixed precision=16 myself
     -   todo
-        -   check apex
-        -   grad accumulation
+        -   early stopping
         -   resuming
             -   pytorch lightning should handle optimizer and scheduler restoring
             -   CHECK with wandb
             -   wandb.run.dir
-        -   early stopping
         -   go through docs
         -   check test
             -   sampling
@@ -41,6 +39,8 @@
         -   val and test
         -   cli args
         -   check lr scaling
+        -   check apex
+        -   grad accumulation
 -   tf
     -   data
         -   tfrecords
