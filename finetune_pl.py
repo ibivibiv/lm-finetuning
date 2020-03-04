@@ -214,7 +214,7 @@ class LM(pl.LightningModule):
         self.model = self.model.to(xm.xla_device())
 
         self.table_data.append([f'{self.trainer.current_epoch}', samples])
-        self.logger.experiment.log({"samples": wandb.Table(
+        self.logger.experiment.log({"samples": self.logger.experiment.Table(
             columns=['Epoch', 'Text'], data=table_data)}, step=self.trainer.current_epoch)
 
         metrics = {'val_epoch_loss': val_loss_mean,
