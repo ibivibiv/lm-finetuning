@@ -178,7 +178,7 @@ class LM(pl.LightningModule):
 
         past = None
         with torch.no_grad():
-            for _ in tqdm(range(self.args.sample_len)):
+            for _ in range(self.args.sample_len):
                 logits, past = self.model(next_token, past=past)
 
                 # Get hidden state of next token only
