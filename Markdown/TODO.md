@@ -10,7 +10,6 @@
     -   waiting for fix for gpt2-large and precision=16
         -   fixed precision=16 myself
     -   todo
-        -   sampling
         -   eval and eval_only
         -   wandb support
             -   logging
@@ -36,6 +35,7 @@
         -   dataset
         -   untrainable params
         -   val and test
+        -   sampling
 -   tf
     -   data
         -   tfrecords

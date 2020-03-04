@@ -168,51 +168,6 @@ class LM(pl.LightningModule):
              (self.val_dataset.n_original_tokens - 1))
         adjusted_val_ppl = torch.exp(adjusted_val_loss)
 
-        device = torch.device("cpu")
-
-        self.model = self.model.to(device)
-
-        next_token = torch.tensor(self.tokenizer.encode(" ")).unsqueeze(
-            0).repeat(self.args.n_samples, 1).to(device)
-        generated = next_token
-
-        past = None
-        with torch.no_grad():
-            for _ in range(self.args.sample_len):
-                logits, past = self.model(next_token, past=past)
-
-                # Get hidden state of next token only
-                logits = logits[:, -1, :]
-
-                logits /= self.args.temperature if self.args.temperature > 0 else 1
-
-                # Repetition penalty
-                for i in range(self.args.n_samples):
-                    for j in set(generated[i].tolist()):
-                        logits[i, j] /= self.args.repetition_penalty
-
-                # Top-k or top-p
-                logits = top_k_top_p_filtering(
-                    logits, top_k=args.top_k, top_p=args.top_p)
-
-                # Greedy sampling
-                if self.args.temperature == 0:
-                    next_token = torch.argmax(logits, dim=-1).unsqueeze(-1)
-                # Top-k or top-p
-                else:
-                    next_token = torch.multinomial(torch.softmax(
-                        logits.float(), dim=-1), num_samples=1)
-
-                generated = torch.cat([generated, next_token], dim=1)
-
-            print("Generated:\n")
-            samples = ""
-            for i, sample in enumerate(generated.tolist()):
-                samples += self.tokenizer.decode(sample) + "\n"
-            print(samples)
-
-        self.model = self.model.to(xm.xla_device())
-
         metrics = {'val_epoch_loss': val_loss_mean,
                    'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {'val_epoch_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}}
 
