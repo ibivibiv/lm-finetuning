@@ -171,7 +171,9 @@ class LM(pl.LightningModule):
             optimizer = AdaFactor(
                 optimizer_grouped_parameters, lr=args.lr, beta1=0)
 
-        if self.args.lr_schedule:
+        if self.args.no_lr_schedule:
+            return optimizer
+        else:
             train_steps = int(len(
                 self.train_dataset) / (self.args.batch_size * self.args.grad_steps) * self.args.epochs)
 
@@ -179,8 +181,6 @@ class LM(pl.LightningModule):
                 0.1 * train_steps), num_training_steps=train_steps)
 
             return [optimizer], [scheduler]
-        else:
-            return optimizer
 
     def collate(self, examples):
         if self.tokenizer._pad_token is None:
