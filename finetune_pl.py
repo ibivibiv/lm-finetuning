@@ -171,7 +171,10 @@ class LM(pl.LightningModule):
         if self.args.accelerator == "TPU":
             device = xm.xla_device()
         else:
-            torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device(
+                "cuda:0" if torch.cuda.is_available() else "cpu")
+
+        print(f'device: {device}')
 
         next_token = torch.tensor(self.tokenizer.encode(" ")).unsqueeze(
             0).repeat(self.args.n_samples, 1).to(device)
