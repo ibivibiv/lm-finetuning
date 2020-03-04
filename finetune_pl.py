@@ -171,8 +171,8 @@ class LM(pl.LightningModule):
              (self.val_dataset.n_original_tokens - 1))
         adjusted_val_ppl = torch.exp(adjusted_val_loss)
 
-        metrics = {'val_epoch_loss': val_loss_mean,
-                   'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {'val_epoch_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}}
+        metrics = {'val_loss': val_loss_mean,
+                   'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {'val_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}}
 
         return metrics
 
@@ -354,7 +354,7 @@ if __name__ == "__main__":
     wandb_logger = WandbLogger(experiment=experiment)
     wandb_logger.log_hyperparams(args)
 
-    early_stopping_callback = EarlyStopping(monitor='val_epoch_loss')
+    early_stopping_callback = EarlyStopping(monitor='val_loss')
     checkpoint_callback = ModelCheckpoint(wandb.run.dir, save_top_k=-1)
 
     model = LM(args)

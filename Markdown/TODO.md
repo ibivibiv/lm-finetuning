@@ -15,6 +15,8 @@
             -   pytorch lightning should handle optimizer and scheduler restoring
             -   CHECK with wandb
             -   wandb.run.dir
+        -   lr schedule
+            -   implement fix
         -   go through docs
         -   check test
             -   sampling
@@ -25,12 +27,6 @@
             -   watch
                 -   where to put watch() call?
             -   histograms
-        -   checkpointing
-            -   save dir
-            -   tokenizer checkpointing
-                -   not necessary anymore
-        -   lr schedule
-            -   wait for fix
         -   grad checkpointing
     -   done
         -   dataset
@@ -41,6 +37,10 @@
         -   check lr scaling
         -   check apex
         -   grad accumulation
+        -   checkpointing
+            -   save dir
+            -   tokenizer checkpointing
+                -   not necessary anymore
 -   tf
     -   data
         -   tfrecords
