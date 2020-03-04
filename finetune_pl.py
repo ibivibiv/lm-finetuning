@@ -346,5 +346,5 @@ if __name__ == "__main__":
 
     model = LM(args)
     trainer = pl.Trainer(max_epochs=args.epochs, accumulate_grad_batches=args.grad_steps, gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores,
-                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1, fast_dev_run=args.debug_run)
+                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, progress_bar_refresh_rate=1, fast_dev_run=args.debug_run, track_grad_norm=2)
     trainer.fit(model)
