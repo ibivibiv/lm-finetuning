@@ -10,33 +10,36 @@
     -   waiting for fix for gpt2-large and precision=16
         -   fixed precision=16 myself
     -   todo
-        -   sampling
-            -   do only in test
-        -   eval and eval_only
+        -   check apex
+        -   grad accumulation
+        -   resuming
+            -   pytorch lightning should handle optimizer and scheduler restoring
+            -   CHECK with wandb
+            -   wandb.run.dir
+        -   early stopping
+        -   go through docs
+        -   check test
+            -   sampling
+            -   eval_only flag
         -   wandb support
             -   logging
                 -   wait for fix for train loss and train ppl
             -   watch
                 -   where to put watch() call?
+            -   histograms
         -   checkpointing
             -   save dir
             -   tokenizer checkpointing
                 -   not necessary anymore
-        -   cli args
         -   lr schedule
             -   wait for fix
-        -   resuming
-            -   pytorch lightning should handle optimizer and scheduler restoring
-            -   CHECK with wandb
-        -   amp on gpu
-        -   grad accumulation
         -   grad checkpointing
-        -   logging histograms and grads
-        -   ppl
     -   done
         -   dataset
         -   untrainable params
+        -   ppl
         -   val and test
+        -   cli args
 -   tf
     -   data
         -   tfrecords

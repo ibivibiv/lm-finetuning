@@ -325,9 +325,12 @@ if __name__ == "__main__":
     parser.add_argument('--repetition_penalty', default=1, type=int)
 
     parser.add_argument('--logging_batches', default=10, type=int)
+    parser.add_argument('--hist_batches', default=100, type=int)
+    parser.add_argument('--save_batches', default=100, type=int)
 
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--debug_run', default=False, action="store_true")
+    parser.add_argument('--eval_only', default=False, action="store_true")
 
     args = parser.parse_args()
 
