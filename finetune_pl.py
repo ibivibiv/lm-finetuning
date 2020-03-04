@@ -212,7 +212,7 @@ class LM(pl.LightningModule):
             print("Generated:\n")
             samples = ""
             for i, sample in enumerate(generated.tolist()):
-                samples += tokenizer.decode(sample) + "\n"
+                samples += self.tokenizer.decode(sample) + "\n"
             print(samples)
 
         table_data.append([f'{self.trainer.current_epoch}', samples])
