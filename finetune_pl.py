@@ -143,7 +143,8 @@ class LM(pl.LightningModule):
         self.model = model.from_pretrained(self.args.model_name)
         self.tokenizer = tokenizer.from_pretrained(self.args.model_name)
 
-        self.table_data = []
+        self.train_dataset = TextDataset(
+            self.args.train_path, self.tokenizer, self.args)
 
     def forward(self, inputs, labels):
         return self.model(inputs, labels=labels)
@@ -222,15 +223,15 @@ class LM(pl.LightningModule):
 
             return [optimizer], [scheduler]
 
+        # def optimizer_step(self, current_epoch, batch_idx, optimizer, optimizer_idx, second_order_closure=None):
+        #     optimizer.step()
+
     def collate(self, examples):
         if self.tokenizer._pad_token is None:
             return pad_sequence(examples, batch_first=True)
         return pad_sequence(examples, batch_first=True, padding_value=self.tokenizer.pad_token_id)
 
     def train_dataloader(self):
-        self.train_dataset = TextDataset(
-            self.args.train_path, self.tokenizer, self.args)
-
         if self.args.accelerator == "TPU":
             sampler = torch.utils.data.distributed.DistributedSampler(
                 self.train_dataset,

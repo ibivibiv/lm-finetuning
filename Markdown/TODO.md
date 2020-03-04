@@ -10,13 +10,11 @@
     -   waiting for fix for gpt2-large and precision=16
         -   fixed precision=16 myself
     -   todo
-        -   early stopping
-        -   resuming
-            -   pytorch lightning should handle optimizer and scheduler restoring
-            -   CHECK with wandb
-            -   wandb.run.dir
         -   lr schedule
             -   implement fix
+        -   resuming
+            -   pytorch lightning should handle optimizer and scheduler restoring
+                -   wandb.run.dir
         -   go through docs
         -   check test
             -   sampling
@@ -41,6 +39,7 @@
             -   save dir
             -   tokenizer checkpointing
                 -   not necessary anymore
+        -   early stopping
 -   tf
     -   data
         -   tfrecords
