@@ -218,13 +218,14 @@ class LM(pl.LightningModule):
             train_steps = int(len(
                 self.train_dataset) / (self.args.batch_size * self.args.grad_steps) * self.args.epochs)
 
-            scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(
+            self.scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(
                 0.1 * train_steps), num_training_steps=train_steps)
 
-            return [optimizer], [scheduler]
+            return [optimizer], [self.scheduler]
 
-        # def optimizer_step(self, current_epoch, batch_idx, optimizer, optimizer_idx, second_order_closure=None):
-        #     optimizer.step()
+        def optimizer_step(self, current_epoch, batch_idx, optimizer, optimizer_idx, second_order_closure=None):
+            optimizer.step()
+            self.scheduler.step()
 
     def collate(self, examples):
         if self.tokenizer._pad_token is None:
