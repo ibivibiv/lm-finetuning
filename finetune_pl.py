@@ -331,6 +331,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if args.accelerator == "TPU":
+        args.global_batch_size = args.batch_size * args.n_tpu_cores
+
     if args.debug:
         import ptvsd
         ptvsd.enable_attach(address=('localhost', 5678),
