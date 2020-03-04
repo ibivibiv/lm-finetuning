@@ -294,6 +294,8 @@ if __name__ == "__main__":
                         type=str, required=False)
     parser.add_argument('--test_path', default='./data/wikitext-2-raw/wiki.test.raw',
                         type=str, required=False)
+    parser.add_argument('--run_eval', default=False,
+                        action="store_true", required=False)
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
@@ -361,5 +363,10 @@ if __name__ == "__main__":
 
     model = LM(args)
     trainer = pl.Trainer(max_epochs=args.epochs, accumulate_grad_batches=args.grad_steps, gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores,
-                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, fast_dev_run=args.debug_run, early_stop_callback=early_stopping_callback, checkpoint_callback=checkpoint_callback, progress_bar_refresh_rate=1, gradient_clip_val=1)
-    trainer.fit(model)
+                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, fast_dev_run=args.debug_run, early_stop_callback=early_stopping_callback, checkpoint_callback=checkpoint_callback,
+                         test_percent_check=0, progress_bar_refresh_rate=1, gradient_clip_val=1)
+
+    if args.run_eval:
+        trainer.test(model)
+    else:
+        trainer.fit(model)
