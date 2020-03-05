@@ -225,7 +225,9 @@ class LM(pl.LightningModule):
 
     def optimizer_step(self, current_epoch, batch_idx, optimizer, optimizer_idx, second_order_closure=None):
         optimizer.step()
-        self.scheduler.step()
+
+        if not self.args.disable_lr_schedule:
+            self.scheduler.step()
 
     def collate(self, examples):
         if self.tokenizer._pad_token is None:
