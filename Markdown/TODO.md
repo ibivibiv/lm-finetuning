@@ -5,18 +5,21 @@
 -   upload saved models quickly
     -   wait for fix
 -   check if gpt2-xl can be trained with fp16
+
+# info
+
 -   pytorch lightning
     -   todo
-        -   go through docs
-        -   check test
-            -   sampling
-            -   eval_only flag
-        -   wandb support
-            -   logging
-                -   wait for fix for train loss and train ppl
-            -   watch
-                -   where to put watch() call?
-        -   grad checkpointing
+    -   fix grad clipping
+    -   check test
+        -   sampling
+        -   eval_only flag
+    -   wandb support
+        -   logging
+            -   wait for fix for train loss and train ppl
+        -   watch
+            -   where to put watch() call?
+    -   grad checkpointing
 -   tf
     -   data
         -   tfrecords
@@ -73,6 +76,7 @@
                 -   wandb.run.dir
         -   waiting for fix for gpt2-large and precision=16
             -   fixed precision=16 myself
+        -   go through docs
 
 # Wont do
 

@@ -1,0 +1,3 @@
+git+https://github.com/bkkaggle/transformers.git
+git+https://github.com/PyTorchLightning/pytorch-lightning.git@master
+wandb
