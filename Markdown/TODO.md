@@ -5,21 +5,23 @@
 -   upload saved models quickly
     -   wait for fix
 -   check if gpt2-xl can be trained with fp16
+-   https://github.com/deepmind/lamb
 
 # info
 
 -   pytorch lightning
     -   todo
-    -   fix grad clipping
-    -   check test
-        -   sampling
-        -   eval_only flag
-    -   wandb support
-        -   logging
-            -   wait for fix for train loss and train ppl
-        -   watch
-            -   where to put watch() call?
-    -   grad checkpointing
+        -   fix grad clipping
+        -   check test
+            -   sampling
+            -   eval_only flag
+        -   wandb support
+            -   logging
+                -   wait for fix for train loss and train ppl
+                -   https://github.com/PyTorchLightning/pytorch-lightning/issues/1076
+            -   watch
+                -   where to put watch() call?
+        -   grad checkpointing
 -   tf
     -   data
         -   tfrecords

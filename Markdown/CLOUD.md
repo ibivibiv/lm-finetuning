@@ -7,8 +7,10 @@ git config --global credential.helper cache
 git config --global credential.helper 'cache --timeout=84000'
 git config --global user.email "bk@tinymanager.com"
 git config --global user.name "Bilal Khan"
+pip install wandb git+https://github.com/bkkaggle/transformers.git git+https://github.com/PyTorchLightning/pytorch-lightning.git@master
 git clone https://github.com/NVIDIA/apex && cd apex && pip install -v --no-cache-dir ./ && cd .. && rm -rf apex
 git clone https://bkkaggle:5e3fc022d0e763c083f23918224f2bc17e95ec2e@github.com/bkkaggle/lm-finetuning.git
+wandb login 08283aec9b92f676724219169ea3c28cf41c85cc
 ```
 
 ## Usage
