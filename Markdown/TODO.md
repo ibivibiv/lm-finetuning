@@ -1,20 +1,9 @@
 # ToDo
 
--   find lm trained with unlikelihood objective
--   look at compressive transformer and reformer
--   upload saved models quickly
-    -   wait for fix
--   check if gpt2-xl can be trained with fp16
--   https://github.com/deepmind/lamb
-
 # info
 
 -   pytorch lightning
     -   todo
-        -   fix grad clipping
-        -   check test
-            -   sampling
-            -   eval_only flag
         -   wandb support
             -   logging
                 -   wait for fix for train loss and train ppl
@@ -79,6 +68,13 @@
         -   waiting for fix for gpt2-large and precision=16
             -   fixed precision=16 myself
         -   go through docs
+        -   fix grad clipping
+        -   check test
+            -   sampling
+            -   eval_only flag
+-   Get test/sampling code done to get on with research
+-   try to get training code done ASAP
+-   check if gpt2-xl can be trained with fp16
 
 # Wont do
 
@@ -105,3 +101,7 @@
     -   wait until using vms
 -   ctrl control codes
     -   prob redo dataset processing to save metadata
+-   https://cloud.google.com/tpu/docs/cloud-tpu-tools#op_profile
+    -   new version
+    -   setup up tensorboard on wandb
+    -   wait until it gets native support in pt lightning and wandb

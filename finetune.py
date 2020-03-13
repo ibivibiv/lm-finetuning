@@ -3,7 +3,7 @@ import argparse
 import time
 import glob
 
-import numpy as numpy
+import numpy as np
 from tqdm import tqdm
 
 import wandb
@@ -98,41 +98,6 @@ class TextDataset(torch.utils.data.Dataset):
         return torch.tensor(self.batches[index])
 
 
-def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
-    """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
-        Args:
-            logits: logits distribution shape (batch size x vocabulary size)
-            top_k > 0: keep only top k tokens with highest probability (top-k filtering).
-            top_p > 0.0: keep the top tokens with cumulative probability >= top_p (nucleus filtering).
-                Nucleus filtering is described in Holtzman et al. (http://arxiv.org/abs/1904.09751)
-        From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
-    """
-    top_k = min(top_k, logits.size(-1))  # Safety check
-    if top_k > 0:
-        # Remove all tokens with a probability less than the last token of the top-k
-        indices_to_remove = logits < torch.topk(logits, top_k)[
-            0][..., -1, None]
-        logits[indices_to_remove] = filter_value
-
-    if top_p > 0.0:
-        sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-        cumulative_probs = torch.cumsum(
-            torch.softmax(sorted_logits, dim=-1), dim=-1)
-
-        # Remove tokens with cumulative probability above the threshold
-        sorted_indices_to_remove = cumulative_probs > top_p
-        # Shift the indices to the right to keep also the first token above the threshold
-        sorted_indices_to_remove[...,
-                                 1:] = sorted_indices_to_remove[..., :-1].clone()
-        sorted_indices_to_remove[..., 0] = 0
-
-        # scatter sorted tensors to original indexing
-        indices_to_remove = sorted_indices_to_remove.scatter(
-            dim=1, index=sorted_indices, src=sorted_indices_to_remove)
-        logits[indices_to_remove] = filter_value
-    return logits
-
-
 class LM(pl.LightningModule):
     def __init__(self, args):
         super(LM, self).__init__()
@@ -146,6 +111,8 @@ class LM(pl.LightningModule):
         self.train_dataset = TextDataset(
             self.args.train_path, self.tokenizer, self.args)
 
+        self.table_data = []
+
     def forward(self, inputs, labels):
         return self.model(inputs, labels=labels)
 
@@ -155,7 +122,7 @@ class LM(pl.LightningModule):
         if self.args.disable_lr_schedule:
             lr = self.trainer.optimizers[0].param_groups[0]['lr']
         else:
-            lr = self.scheduler.get_lr()[0]
+            lr = self.scheduler.get_last_lr()[0]
 
         return {'loss': loss, "log": {"train_loss": loss.item(), "learning_rate": lr}}
 
@@ -172,8 +139,24 @@ class LM(pl.LightningModule):
              (self.val_dataset.n_original_tokens - 1))
         adjusted_val_ppl = torch.exp(adjusted_val_loss)
 
-        metrics = {'val_loss': val_loss_mean,
-                   'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {'val_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl}}
+        if self.args.accelerator != "TPU":
+            device = torch.device(
+                "cuda" if torch.cuda.is_available() else "cpu")
+
+            prompt = torch.tensor(self.tokenizer.encode(
+                "<|endoftext|> ")).unsqueeze(0).to(device)
+            outputs = self.model.generate(input_ids=prompt, max_length=self.args.sample_len, temperature=self.args.temperature,
+                                          top_k=self.args.top_k, top_p=self.args.top_p, repetition_penalty=self.args.repetition_penalty, num_return_sequences=1)
+            outputs = self.tokenizer.decode(
+                outputs[0].cpu().numpy(), skip_special_tokens=True)
+            print("\nSampling:")
+            print(outputs)
+            print("\n")
+
+            self.table_data.append([f'{self.trainer.current_epoch}', outputs])
+
+        metrics = {'val_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {
+            'val_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "samples": wandb.Table(columns=['Epoch', 'Text'], data=self.table_data)}}
 
         return metrics
 
@@ -188,8 +171,23 @@ class LM(pl.LightningModule):
         adjusted_test_ppl = torch.exp(
             test_loss_mean * ((self.test_dataset.n_tokens - 1) / (self.test_dataset.n_original_tokens - 1)))
 
+        if args.accelerator != "TPU":
+            device = torch.device(
+                "cuda" if torch.cuda.is_available() else "cpu")
+            prompt = torch.tensor(self.tokenizer.encode(
+                "<|endoftext|> ")).unsqueeze(0).to(device)
+            outputs = self.model.generate(input_ids=prompt, max_length=self.args.sample_len, temperature=self.args.temperature,
+                                          top_k=self.args.top_k, top_p=self.args.top_p, repetition_penalty=self.args.repetition_penalty, num_return_sequences=1)
+            outputs = self.tokenizer.decode(
+                outputs[0].cpu().numpy(), skip_special_tokens=True)
+            print("Sampling:")
+            print(outputs)
+            print("\n")
+
+            self.table_data.append([f'{self.trainer.current_epoch}', outputs])
+
         metrics = {'test_epoch_loss': test_loss_mean,
-                   'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "log": {'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl}}
+                   'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "log": {'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "samples": wandb.Table(columns=['Epoch', 'Text'], data=self.table_data)}}
 
         return metrics
 
@@ -326,20 +324,19 @@ if __name__ == "__main__":
     parser.add_argument('--precision', default=32, type=int)
     parser.add_argument('--apex_mode', default='O1', type=str)
 
-    parser.add_argument('--n_samples', default=1, type=int)
     parser.add_argument('--sample_len', default=256, type=int)
-    parser.add_argument('--temperature', default=1, type=int)
-    parser.add_argument('--top_k', default=1, type=int)
-    parser.add_argument('--top_p', default=1, type=int)
-    parser.add_argument('--repetition_penalty', default=1, type=int)
+    parser.add_argument('--temperature', default=1.0, type=float)
+    parser.add_argument('--top_k', default=None, type=int)
+    parser.add_argument('--top_p', default=None, type=float)
+    parser.add_argument('--repetition_penalty', default=None, type=float)
 
     parser.add_argument('--logging_batches', default=10, type=int)
     parser.add_argument('--hist_batches', default=100, type=int)
     parser.add_argument('--save_batches', default=100, type=int)
+    parser.add_argument('--track_grad_norm', default=-1, type=int)
 
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--debug_run', default=False, action="store_true")
-    parser.add_argument('--eval_only', default=False, action="store_true")
 
     args = parser.parse_args()
 
@@ -365,10 +362,6 @@ if __name__ == "__main__":
 
     model = LM(args)
     trainer = pl.Trainer(max_epochs=args.epochs, accumulate_grad_batches=args.grad_steps, gpus=args.n_gpus, num_tpu_cores=args.n_tpu_cores,
-                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, fast_dev_run=args.debug_run, early_stop_callback=early_stopping_callback, checkpoint_callback=checkpoint_callback,
-                         test_percent_check=0, progress_bar_refresh_rate=1)
+                         precision=args.precision, amp_level=args.apex_mode, resume_from_checkpoint=args.checkpoint, logger=wandb_logger, track_grad_norm=args.track_grad_norm, fast_dev_run=args.debug_run, early_stop_callback=early_stopping_callback, checkpoint_callback=checkpoint_callback, progress_bar_refresh_rate=1, num_sanity_val_steps=0, log_gpu_memory='all')
 
-    if args.run_eval:
-        trainer.test(model)
-    else:
-        trainer.fit(model)
+    trainer.fit(model)
