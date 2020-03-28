@@ -3,6 +3,9 @@ import argparse
 import time
 import glob
 
+from typing import Callable
+from functools import wraps
+
 import numpy as np
 from tqdm import tqdm
 
@@ -23,6 +26,29 @@ MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
     'ctrl': (CTRLLMHeadModel, CTRLTokenizer)
 }
+
+
+# From: https://github.com/PyTorchLightning/pytorch-lightning/blob/3ad6169f187ea41aa1534a1d9a3b978d053dca2b/pytorch_lightning/loggers/base.py#L10
+def rank_zero_only(fn: Callable):
+    """Decorate a logger method to run it only on the process with rank 0.
+    Args:
+        fn: Function to decorate
+    """
+
+    @wraps(fn)
+    def wrapped_fn(self, *args, **kwargs):
+        if self.rank == 0:
+            fn(self, *args, **kwargs)
+
+    return wrapped_fn
+
+# From: https://github.com/PyTorchLightning/pytorch-lightning/issues/1116#issuecomment-599244414
+
+
+class WandbLogger(WandbLogger):
+    @rank_zero_only
+    def finalize(self, status: str = 'success') -> None:
+        return 0
 
 
 class TextDataset(torch.utils.data.Dataset):
@@ -99,10 +125,11 @@ class TextDataset(torch.utils.data.Dataset):
 
 
 class LM(pl.LightningModule):
-    def __init__(self, args):
+    def __init__(self, hparams):
         super(LM, self).__init__()
 
-        self.args = args
+        self.hparams = hparams
+        self.args = hparams
 
         model, tokenizer = MODEL_CLASSES[self.args.model_type]
         self.model = model.from_pretrained(self.args.model_name)
@@ -119,12 +146,16 @@ class LM(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
 
-        if self.args.disable_lr_schedule:
-            lr = self.trainer.optimizers[0].param_groups[0]['lr']
-        else:
-            lr = self.scheduler.get_last_lr()[0]
+        if self.trainer.global_step % 10 == 0:
+            if self.args.disable_lr_schedule:
+                lr = self.trainer.optimizers[0].param_groups[0]['lr']
+            else:
+                lr = self.scheduler.get_last_lr()[0]
 
-        return {'loss': loss, "log": {"train_loss": loss.item(), "learning_rate": lr}}
+            self.last_loss = loss.item()
+            self.last_lr = lr
+
+        return {'loss': loss, "log": {"train_loss": self.last_loss, "learning_rate": self.last_lr}}
 
     def validation_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
@@ -155,8 +186,8 @@ class LM(pl.LightningModule):
 
             self.table_data.append([f'{self.trainer.current_epoch}', outputs])
 
-        metrics = {'val_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "log": {
-            'val_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "samples": wandb.Table(columns=['Epoch', 'Text'], data=self.table_data)}}
+        metrics = {'epoch': self.trainer.current_epoch, 'val_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl,
+                   "log": {'epoch': self.trainer.current_epoch, 'val_loss': val_loss_mean, 'val_ppl': val_ppl, 'adjusted_val_ppl': adjusted_val_ppl, "samples": wandb.Table(columns=['Epoch', 'Text'], data=self.table_data)}}
 
         return metrics
 
@@ -186,29 +217,29 @@ class LM(pl.LightningModule):
 
             self.table_data.append([f'{self.trainer.current_epoch}', outputs])
 
-        metrics = {'test_epoch_loss': test_loss_mean,
-                   'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "log": {'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "samples": wandb.Table(columns=['Epoch', 'Text'], data=self.table_data)}}
+        metrics = {'epoch': self.trainer.current_epoch, 'test_epoch_loss': test_loss_mean,
+                   'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "log": {'epoch': self.trainer.current_epoch, 'test_epoch_loss': test_loss_mean, 'test_ppl': test_ppl, 'adjusted_test_ppl': adjusted_test_ppl, "samples": wandb.Table(columns=['Epoch', 'Text'], data=self.table_data)}}
 
         return metrics
 
     def configure_optimizers(self):
-        no_decay = ["bias", "LayerNorm.weight"]
-        optimizer_grouped_parameters = [
-            {"params": [p for n, p in self.model.named_parameters() if not any(
-                nd in n for nd in no_decay)], "weight_decay": 0.0},
-            {"params": [p for n, p in self.model.named_parameters() if any(
-                nd in n for nd in no_decay)], "weight_decay": 0.0},
-        ]
-
         if args.optimizer == 'AdamW':
+            no_decay = ["bias", "LayerNorm.weight"]
+            optimizer_grouped_parameters = [
+                {"params": [p for n, p in self.model.named_parameters() if not any(
+                    nd in n for nd in no_decay)], "weight_decay": 0.0},
+                {"params": [p for n, p in self.model.named_parameters() if any(
+                    nd in n for nd in no_decay)], "weight_decay": 0.0},
+            ]
+
             optimizer = AdamW(optimizer_grouped_parameters,
                               lr=args.lr, eps=1e-8)
         elif args.optimizer == 'SGD':
             optimizer = torch.optim.SGD(
-                optimizer_grouped_parameters, lr=args.lr)
+                self.model.parameters(), lr=args.lr)
         elif args.optimizer == 'Adafactor':
             optimizer = Adafactor(
-                optimizer_grouped_parameters, lr=args.lr, beta1=0)
+                self.model.parameters(), lr=args.lr, beta1=args.momentum)
 
         if self.args.disable_lr_schedule:
             return optimizer
@@ -219,8 +250,8 @@ class LM(pl.LightningModule):
             elif self.args.n_gpus != None:
                 n_accelerators *= self.args.n_gpus
 
-            train_steps = int(len(
-                self.train_dataset) / (self.args.batch_size * self.args.grad_steps * n_accelerators) * self.args.epochs)
+            train_steps = int(
+                (len(self.train_dataset) / (self.args.batch_size * n_accelerators)) * self.args.epochs)
 
             self.scheduler = get_linear_schedule_with_warmup(
                 optimizer, num_warmup_steps=int(0.1 * train_steps), num_training_steps=train_steps)
@@ -294,8 +325,6 @@ if __name__ == "__main__":
                         type=str, required=False)
     parser.add_argument('--test_path', default='./data/wikitext-2-raw/wiki.test.raw',
                         type=str, required=False)
-    parser.add_argument('--run_eval', default=False,
-                        action="store_true", required=False)
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
@@ -311,6 +340,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
+    parser.add_argument('--momentum', default=0.0, type=float)
     parser.add_argument('--disable_lr_schedule',
                         default=False, action='store_true')
 
@@ -330,9 +360,6 @@ if __name__ == "__main__":
     parser.add_argument('--top_p', default=None, type=float)
     parser.add_argument('--repetition_penalty', default=None, type=float)
 
-    parser.add_argument('--logging_batches', default=10, type=int)
-    parser.add_argument('--hist_batches', default=100, type=int)
-    parser.add_argument('--save_batches', default=100, type=int)
     parser.add_argument('--track_grad_norm', default=-1, type=int)
 
     parser.add_argument('--debug', default=False, action="store_true")
@@ -353,6 +380,7 @@ if __name__ == "__main__":
     if args.accelerator == 'TPU':
         import torch_xla.core.xla_model as xm
 
+    wandb.login()
     experiment = wandb.init(project="lm-finetuning", reinit=True)
     wandb_logger = WandbLogger(experiment=experiment)
     wandb_logger.log_hyperparams(args)

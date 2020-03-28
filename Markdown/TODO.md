@@ -75,6 +75,10 @@
 -   Get test/sampling code done to get on with research
 -   try to get training code done ASAP
 -   check if gpt2-xl can be trained with fp16
+-   keras epoch checkpoint callback
+-   disable grads for certain layers
+    -   disabling grads for bias and layernorm is only used in the adamw paper
+        -   https://github.com/huggingface/transformers/issues/492
 
 # Wont do
 

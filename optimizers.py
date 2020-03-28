@@ -1,19 +1,26 @@
-# fromhttps://github.com/pytorch/fairseq/blob/master/fairseq/optim/adafactor.py
-
-import math
-from math import sqrt
+# from https://github.com/lonePatient/BERT-SDA/blob/master/callback/optimizater/adafactor.py
+import operator
 import torch
-import torch.optim
+from copy import copy
+import functools
+from math import sqrt
+from torch.optim.optimizer import Optimizer
 
 
-class Adafactor(torch.optim.Optimizer):
+class Adafactor(Optimizer):
+    '''
+    # Code below is an implementation of https://arxiv.org/pdf/1804.04235.pdf
+    # inspired but modified from https://github.com/DeadAt0m/adafactor-pytorch
+    Example:
+        >>> model = LSTM()
+        >>> optimizer = AdaFactor(model.parameters(),lr= lr)
+    '''
 
     def __init__(self, params, lr=None, beta1=0.9, beta2=0.999, eps1=1e-30,
                  eps2=1e-3, cliping_threshold=1, non_constant_decay=True,
                  enable_factorization=True, ams_grad=True, weight_decay=0):
 
         enable_momentum = beta1 != 0
-
         if non_constant_decay:
             ams_grad = False
 
@@ -27,19 +34,20 @@ class Adafactor(torch.optim.Optimizer):
         super(Adafactor, self).__init__(params, defaults)
 
     def __setstate__(self, state):
-        super(AdaFactor, self).__setstate__(state)
+        super(Adafactor, self).__setstate__(state)
 
     def _experimental_reshape(self, shape):
         temp_shape = shape[2:]
         if len(temp_shape) == 1:
-            new_shape = (shape[0], shape[1]*shape[2])
+            new_shape = (shape[0], shape[1] * shape[2])
         else:
             tmp_div = len(temp_shape) // 2 + len(temp_shape) % 2
-            new_shape = (shape[0]*functools.reduce(operator.mul,
-                                                   temp_shape[tmp_div:], 1),
-                         shape[1]*functools.reduce(operator.mul,
-                                                   temp_shape[:tmp_div], 1))
-        return new_shape, copy(shape)
+
+            new_shape = (shape[0] * functools.reduce(operator.mul, temp_shape[tmp_div:], 1),
+                         shape[1] * functools.reduce(operator.mul, temp_shape[:tmp_div], 1))
+
+        # return new_shape, copy(shape)
+        return new_shape, shape.clone()
 
     def _check_shape(self, shape):
         '''
@@ -56,7 +64,7 @@ class Adafactor(torch.optim.Optimizer):
             return False, False
 
     def _rms(self, x):
-        return sqrt(torch.mean(x.pow(2)))
+        return torch.sqrt(torch.mean(x.pow(2)))
 
     def step(self, closure=None):
         loss = None
@@ -151,13 +159,11 @@ class Adafactor(torch.optim.Optimizer):
                 else:
                     exp_avg_sq.mul_(beta2_t). \
                         addcmul_(1 - beta2_t, grad, grad). \
-                        add_((1 - beta2_t)*group['eps1'])
+                        add_((1 - beta2_t) * group['eps1'])
                     v = exp_avg_sq
-
                 g = grad
                 if group['enable_momentum']:
                     g = torch.div(exp_avg, 1 - beta1_t ** state['step'])
-
                 if group['ams_grad']:
                     torch.max(exp_avg_sq_hat, v, out=exp_avg_sq_hat)
                     v = exp_avg_sq_hat
@@ -166,11 +172,10 @@ class Adafactor(torch.optim.Optimizer):
                 else:
                     u = torch.div(g, v.sqrt())
 
-                u.div_(max(1, self._rms(u) / group['cliping_threshold']))
+                u.div_(torch.max(
+                    self._rms(u) / group['cliping_threshold'], torch.tensor(1.0, device=u.device)))
                 p.data.add_(-lr_t * (u.view(old_shape) if is_need_reshape and
                                      group['enable_factorization'] else u))
-
                 if group['weight_decay'] != 0:
                     p.data.add_(-group['weight_decay'] * lr_t, p.data)
-
         return loss

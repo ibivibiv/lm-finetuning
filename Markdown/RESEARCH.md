@@ -17,6 +17,9 @@
 -   Present the smallest and most resource efficient LM that can generate coherent text
 -   The extent of language models needing to be large to generate coherent text
 
+-   Finetune lms for a variety of tasks
+    -   publish with transformers-cli
+
 ## Roadmap
 
 -   get initial experiments done on distilgpt2
@@ -65,6 +68,10 @@
     -   dialogpt2
     -   compressive transformer
     -   reformer
+    -   transformer xl
+    -   sparse transformer
+    -   Adaptive Span Transformers
+    -   Routing Transformer
 -   objective
     -   mle
     -   electra
@@ -73,8 +80,14 @@
 ### Things to vary
 
 -   model size
+    -   bigger is better, but only until gpt2-medium
 -   batch size
+    -   bigger batch (64) is better
+    -   _check against dataset size too_
 -   context size
+    -   bigger context len is better
+    -   smaller models can rival larger models if their context len is larger
+    -   _try increasing context size over time_
 -   sampling strategy
     -   how to evaluate?
 -   model type
@@ -83,9 +96,18 @@
 
 -   optimizers
     -   sgd/momentum
-    -   adam/adamw
+        -   sgd gets similar results over a lot more epochs
+        -   momentum isn't worth it b/c adafactor uses less memory than sgd + momentum
+    -   adamw
+        -   works the best but uses too much memory
     -   adafactor
-    -   https://github.com/deepmind/lamb
+        -   default
+            -   works slightly worse than adamw but is needed for larger lms
+        -   beta1
+            -   no difference
+        -   warmup and adafactor
+            -   warmup is hard to replace, not worth it
+    -   https://github.com/deepmind/lamb ?
     -   lars?
 -   pure fp16 training
 -   Compare a small finetuned lm to a larger non-finetuned lm
@@ -110,6 +132,7 @@
 
 -   learning rate decay strategies
 -   warmup
+-   inv sqrt decay
 -   effect of gpt-2's gelu and layernorm to inputs
 
 ## Finetuning Datasets
