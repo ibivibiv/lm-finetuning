@@ -103,7 +103,7 @@ class TextDataset(Dataset):
 def sample(model, tokenizer, args):
     prompt = torch.tensor(tokenizer.encode(
         "<|endoftext|> ")).unsqueeze(0).to(args.device)
-    outputs = model.generate(input_ids=prompt, max_length=args.sample_len, temperature=args.temperature,
+    outputs = model.generate(input_ids=prompt, max_length=args.max_length, do_sample=args.do_sample, temperature=args.temperature,
                              top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=1)
     outputs = tokenizer.decode(
         outputs[0].cpu().numpy(), skip_special_tokens=True)
@@ -403,11 +403,12 @@ def main():
     parser.add_argument('--save_steps', default=100, type=int)
 
     parser.add_argument('--n_samples', default=1, type=int)
-    parser.add_argument('--sample_len', default=256, type=int)
-    parser.add_argument('--temperature', default=1, type=float)
-    parser.add_argument('--top_k', default=1, type=float)
-    parser.add_argument('--top_p', default=1, type=float)
-    parser.add_argument('--repetition_penalty', default=1, type=float)
+    parser.add_argument('--max_length', default=256, type=int)
+    parser.add_argument('--do_sample', default=False, type=bool)
+    parser.add_argument('--temperature', default=None, type=any)
+    parser.add_argument('--top_k', default=None, type=any)
+    parser.add_argument('--top_p', default=None, type=any)
+    parser.add_argument('--repetition_penalty', default=None, type=any)
 
     parser.add_argument('--eval_only', default=False, action="store_true")
     parser.add_argument('--debug', default=False, action="store_true")

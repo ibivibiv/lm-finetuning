@@ -2,6 +2,12 @@
 
 See how models trained on different context lengths aren't comparable. Train lms on some set context len, and evaluate on different context lens.
 
+## Hyperparameters
+
+-   gpt2-medium
+-   trained on wikitext2
+-   temperature 1
+
 ## Train on 1024, eval at lower
 
 ### Results
@@ -10,8 +16,6 @@ val_loss gets increasingly worse as eval context len decreases
 
 ### Hyperparameters
 
--   gpt2-medium
--   trained on wikitext2
 -   trained using a context len of 1024
 
 ### Experiment
@@ -29,8 +33,6 @@ val_loss gets increasingly worse as eval context len decreases
 
 ### Hyperparameters
 
--   gpt2-medium
--   trained on wikitext2
 -   trained using a context len of 256
 
 ### Experiment
