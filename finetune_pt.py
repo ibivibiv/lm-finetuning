@@ -404,10 +404,10 @@ def main():
 
     parser.add_argument('--n_samples', default=1, type=int)
     parser.add_argument('--sample_len', default=256, type=int)
-    parser.add_argument('--temperature', default=1, type=int)
-    parser.add_argument('--top_k', default=1, type=int)
-    parser.add_argument('--top_p', default=1, type=int)
-    parser.add_argument('--repetition_penalty', default=1, type=int)
+    parser.add_argument('--temperature', default=1, type=float)
+    parser.add_argument('--top_k', default=1, type=float)
+    parser.add_argument('--top_p', default=1, type=float)
+    parser.add_argument('--repetition_penalty', default=1, type=float)
 
     parser.add_argument('--eval_only', default=False, action="store_true")
     parser.add_argument('--debug', default=False, action="store_true")

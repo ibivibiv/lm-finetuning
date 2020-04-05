@@ -96,6 +96,8 @@
 
 ## Evaluation
 
+-   lms trained on smaller context lens have more repeated n-grams
+    -   count n-grams to determine actual number
 -   see how models trained on different context lengths aren't comparable
     -   train lms on some set context len, and evaluate on different context lens.
     -   train lms on different context lens, and evaluate on set context len.
