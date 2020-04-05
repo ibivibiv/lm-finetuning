@@ -148,7 +148,7 @@ def run_eval(args):
 
     sample(model, tokenizer, args)
 
-    message = f'Loss: {val_loss} | Perplexity: {val_perplexity} | Adjusted Perplexity: {adjusted_val_perplexity}'
+    message = f'Loss: {round(val_loss, 4)} | Perplexity: {round(val_perplexity, 4)} | Adjusted Perplexity: {round(adjusted_val_perplexity, 4)}'
     print(message)
 
 
