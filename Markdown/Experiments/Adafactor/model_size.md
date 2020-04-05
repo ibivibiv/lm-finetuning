@@ -1,10 +1,12 @@
 # Model size
 
+https://app.wandb.ai/bkkaggle/lm-finetuning/reports/model-size-with-adafactor--Vmlldzo3MTA4MQ
+
 ## Comments
 
 Adafactor performs slightly worse that AdamW
 
-On pytorch, Adafactor takes more epochs (7-10 compared to 1-2; on wikitext-2) than AdamW
+On pytorch, Adafactor takes more epochs (7-10 compared to 1-2; on wikitext-2) than AdamW (possibly due to beta1 bug)
 
 Diminishing returns after gpt2-medium
 

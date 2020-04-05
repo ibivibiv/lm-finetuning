@@ -1,9 +1,11 @@
 # Context length
 
+https://app.wandb.ai/bkkaggle/lm-finetuning/reports/context-length--Vmlldzo3MTA4OA
+
 ## Comments
 
 -   can't train gpt2-xl with a batch size of 16 on 8 cores, need to use a tpuv3-32 with a batch size of 32
-    -   using batch-size 8 for gpt2-xl for now
+-   gpt2 medium can still be pretty competitive with gpt2-xl
 
 ## Dataset
 
@@ -19,22 +21,22 @@
 
 | model       | batch size | epochs | optimizer | learning rate |
 | ----------- | ---------- | ------ | --------- | ------------- |
-| gpt2        | 16         | 10     | Adafactor | 5e-5          |
-| gpt2-medium | 16         | 10     | Adafactor | 5e-5          |
+| gpt2        | 8          | 10     | Adafactor | 5e-5          |
+| gpt2-medium | 8          | 10     | Adafactor | 5e-5          |
 | gpt2-xl     | 8          | 10     | Adafactor | 5e-5          |
 
 ## Results
 
 _Selected on best val score_
 
-| context length | model       | train loss | val loss | val ppl | adj val ppl | best epoch | framework | run                  |
-| -------------- | ----------- | ---------- | -------- | ------- | ----------- | ---------- | --------- | -------------------- |
-| 256            | gpt2        | -          | 3.28     | 27.639  | 44.799      | 1          | TF        | wobbly-dawn-695      |
-| 512            | gpt2        | -          | 3.13     | 23.525  | 37.446      | 2          | TF        | valiant-glitter-714  |
-| 1024           | gpt2        | -          | 3.018    | 20.846  | 32.667      | 6          | TF        | fallen-river-715     |
-| 256            | gpt2-medium | -          | 2.994    | 20.637  | 32.041      | 0          | TF        | morning-feather-696  |
-| 512            | gpt2-medium | -          | 2.845    | 17.627  | 26.880      | 1          | TF        | crimson-elevator-716 |
-| 1024           | gpt2-medium | -          | 2.758    | 15.927  | 24.035      | 2          | TF        | usual-violet-717     |
-| 256            | gpt2-xl     | -          | 2.959    | 20.819  | 32.588      | 0          | TF        | crisp-dawn-723       |
-| 512            | gpt2-xl     | -          | 2.683    | 15.318  | 22.978      | 0          | TF        | misty-plasma-722     |
-| 1024           | gpt2-xl     | -          | 2.553    | 13.289  | 19.54       | 0          | TF        | woven-plant-721      |
+| context length | model       | train loss | val loss | val ppl | adj val ppl | best epoch | framework | run                   |
+| -------------- | ----------- | ---------- | -------- | ------- | ----------- | ---------- | --------- | --------------------- |
+| 256            | gpt2        | -          | 3.305    | 29.248  | 48.024      | 0          | TF        | fearless-water-737    |
+| 512            | gpt2        | -          | 3.159    | 24.781  | 39.898      | 1          | TF        | balmy-blaze-738       |
+| 1024           | gpt2        | -          | 3.041    | 21.723  | 34.352      | 1          | TF        | dry-plasma-739        |
+| 256            | gpt2-medium | -          | 3.018    | 21.892  | 34.472      | 0          | TF        | likely-shadow-740     |
+| 512            | gpt2-medium | -          | 2.864    | 18.342  | 28.239      | 0          | TF        | laced-flower-741      |
+| 1024           | gpt2-medium | -          | 2.764    | 16.431  | 24.931      | 1          | TF        | dandy-firefly-742     |
+| 256            | gpt2-xl     | -          | 2.961    | 20.868  | 32.68       | 0          | TF        | northern-feather-743  |
+| 512            | gpt2-xl     | -          | 2.683    | 15.315  | 22.967      | 0          | Tf        | laced-snow-745        |
+| 1024           | gpt2-xl     | -          | 2.558    | 13.348  | 19.639      | 0          | Tf        | curious-firebrand-746 |

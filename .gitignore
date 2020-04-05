@@ -4,3 +4,4 @@ lightning_logs
 .vscode/settings.json
 *.ckpt
 *.part
+data/wikitext-103-raw

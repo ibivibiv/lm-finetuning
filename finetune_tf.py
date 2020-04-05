@@ -4,6 +4,7 @@ import math
 import glob
 import time
 import argparse
+import pickle
 
 import numpy as np
 from tqdm import tqdm
@@ -101,8 +102,23 @@ class TextDataset(object):
 
 
 def get_dataset(args, tokenizer):
-    train_dataset = TextDataset(args.train_path, tokenizer, args)
-    val_dataset = TextDataset(args.val_path, tokenizer, args)
+
+    if args.use_serialized:
+        print('loading dataset from disk')
+        start = time.time()
+
+        train_dataset = pickle.load(open(args.train_path, 'rb'))
+        val_dataset = pickle.load(open(args.val_path, 'rb'))
+
+        end = time.time()
+        print(f'Dataset loaded in {int(end - start)} seconds')
+
+    else:
+        train_dataset = TextDataset(args.train_path, tokenizer, args)
+        val_dataset = TextDataset(args.val_path, tokenizer, args)
+
+        pickle.dump(train_dataset, open(f'{args.train_path}.pkl', 'wb'))
+        pickle.dump(val_dataset, open(f'{args.val_path}.pkl', 'wb'))
 
     train_n_original_tokens = train_dataset.n_original_tokens
     train_n_tokens = train_dataset.n_tokens
@@ -201,6 +217,7 @@ def main():
                         type=str, required=False)
     parser.add_argument('--val_path', default='./data/wikitext-2-raw/wiki.valid.raw',
                         type=str, required=False)
+    parser.add_argument('--use_serialized', default=False, action='store_true')
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)

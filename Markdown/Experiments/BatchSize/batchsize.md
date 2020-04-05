@@ -1,5 +1,7 @@
 # Batch Size
 
+https://app.wandb.ai/bkkaggle/lm-finetuning/reports/batch-size-with-adafactor-seqlen-256--Vmlldzo3MTA4Ng
+
 ## Comments
 
 -   check relation between batch size and dataset size

@@ -9,131 +9,111 @@
 
 -   If I wanted to finetune a LM to generate text of a specific style/content, what good defaults would I choose?
 
--   Find best practices for finetuning tranformer language models for text generation.
--   Understand the "theory" of how language models can be finetuned
--   Present a finetuned LM that can generate coherent text across a range of domains
+-   Find best practices or good defaults for finetuning tranformer language models for text generation.
+
 -   Understand the effect of model and dataset size on generating coherent text
 -   Understand the effect of loss and sampling stategies on generating coherent text
--   Present the smallest and most resource efficient LM that can generate coherent text
+
+-   Understand the "theory" of how language models can be finetuned
 -   The extent of language models needing to be large to generate coherent text
 
+-   Present the smallest and most resource efficient LM that can generate coherent text
+-   Present a finetuned LM that can generate coherent text across a range of domains
 -   Finetune lms for a variety of tasks
-    -   publish with transformers-cli
 
-## Roadmap
+-   publish LMs with transformers-cli
+-   have a pytorch and TF codebase for easy finetuning
+-   writeup the whole process
 
--   get initial experiments done on distilgpt2
--   get more datasets
-    -   I want a variety of styles, size, doc len, etc
--   do sampling research relatively early on
+## ToDo
 
-## Questions
+-   read through papers
+    -   update md files
+    -   gather notes
+    -   see if gpt2-xl finetuning experiments are similar to papers
+    -   take a look at memory saving techniques in the reformer
+-   evaluation experiments
+-   training experiments
+-   new lm experiments
 
--   datasets
-    -   how do you train an lm when dataset is:
-    -   large
-    -   small
-    -   custom
-    -   well known
-    -   specialized
-    -   general
--   is pretraining a lm again ever needed?
-    -   does finetuning give better results than grover, ctrl, etc
--   what is the best pretrained lm for text gen?
-    -   best for widest range of text gen
-    -   best for specific type of text gen (e.g. news, dialog)
+-   evaluate lms on the actual test set
+-   use invertible detokenizers like in gpt2 to get ppl calculations
+
+## New LMs
+
+-   does finetuning give better results than grover, ctrl, etc
+-   multiple datasets/control codes
+    -   use control codes to train on a range of small (?) datasets
+    -   is finetuning lm to work with control codes enough? or should it be pretrained with control codes too?
+-   long-form generation with sliding windows
+    -   Try leaking data to the lm by training on contigous sequences (move the start position of input sequence 1 step up
+        -   would this even work or make a difference?
     -   can tf-xl be replaced with gpt2 and sliding windows
+-   pplm
+    -   generalize pplm
+        -   more attribute models for normal generation use
+        -   use a nn for the attribute model
+            -   train to predict topics
+            -   should make pplm edit text to make it more like chosen topic
+-   albert style gpt2
+-   distillation
+-   train a transformer without layernorm
+-   adapt ELECTRA to auto-regressive language modelling
+
+## Training
+
+-   finetune on small-medium datasets (1M - 10M tokens)
+-   use large context len
+-   check if 2-3 epochs is better
+    -   and if it is for larger (imdb) datasets
+-   redo all with context len 1024
+-   datasets
+    -   should you train differently when dataset is:
+        -   large
+            -   wikitext103
+            -   writingprompts
+        -   small
+            -   wikitext2
+        -   specialized
+            -   imdb
+        -   long context _later_
+            -   pg19
+        -   show proof that it is/isn't
+-   objective
+    -   mle
+    -   unlikelihood
+    -   electra
+-   fp16 _verify that it doesn't work_
+    -   pure fp16 training for gpus
+    -   tpu forced bfloat16
+-   sgd training to fit on gpu _colab_
+-   double descent
+    -   Can lms where train loss is close to 0 generate text well?
+    -   finetune for a long time, does double descent happen when train loss is 0?
+    -   anything special about generating text that makes double descent not a good choice?
+-   better to train on repeated parts of dataset, or go through a large dataset once
+    -   try with a large dataset
+
+## Evaluation
+
+-   see how models trained on different context lengths aren't comparable
+    -   train lms on some set context len, and evaluate on different context lens.
+    -   train lms on different context lens, and evaluate on set context len.
+-   see if model size changes anything about ppl
+    -   sample different models
+-   does a decrease in ppl lead to better text?
 -   effect of tokenizing approach (line by line, seq_len length chunks, lazy loading with random start point)
-    -   might have an effect on efficiency
+    -   what is the best way to tokenize
+    -   have a range of ways for different dataset sizes
     -   lazy loading
         -   choose a random start point
         -   get 1k chars from that point
         -   tokenize and discard excess
--   long-form generation with sliding windows
-    -   Try leaking data to the lm by training on contigous sequences (move the start position of input sequence 1 step up
--   pplm
-    -   generalize pplm
-        -   more attribute models for normal generation use
--   loss
-    -   unlikelihood training
--   multiple datasets/control codes
-    -   use control codes to train on a range of small (?) datasets
-    -   is finetuning lm to work with control codes enough? or should it be pretrained with control codes too?
--   models
-    -   gpt2
-    -   ctrl
-    -   grover
-    -   electra
-    -   distilgpt2
-    -   dialogpt2
-    -   compressive transformer
-    -   reformer
-    -   transformer xl
-    -   sparse transformer
-    -   Adaptive Span Transformers
-    -   Routing Transformer
--   objective
-    -   mle
-    -   electra
-    -   unlikelihood
-
-### Things to vary
-
--   model size
-    -   bigger is better, but only until gpt2-medium
--   batch size
-    -   bigger batch (64) is better
-    -   _check against dataset size too_
--   context size
-    -   bigger context len is better
-    -   smaller models can rival larger models if their context len is larger
-    -   _try increasing context size over time_
--   sampling strategy
-    -   how to evaluate?
--   model type
-
-### For making finetuning more efficient
-
--   optimizers
-    -   sgd/momentum
-        -   sgd gets similar results over a lot more epochs
-        -   momentum isn't worth it b/c adafactor uses less memory than sgd + momentum
-    -   adamw
-        -   works the best but uses too much memory
-    -   adafactor
-        -   default
-            -   works slightly worse than adamw but is needed for larger lms
-        -   beta1
-            -   no difference
-        -   warmup and adafactor
-            -   warmup is hard to replace, not worth it
-    -   https://github.com/deepmind/lamb ?
-    -   lars?
--   pure fp16 training
--   Compare a small finetuned lm to a larger non-finetuned lm
 -   how much worse is text generated by a non-finetuned lm?
+    -   run evaluation on non-finetuned lm
 -   based on a user's computation budget, should they finetune a small lm or use a large lm
--   tpu bfloat16
-
-### Theory of LMs
-
--   does a decrease in ppl lead to better text?
--   Can lms where train loss is close to 0 generate text well?
--   see if biases and layernorm should be finetuned
--   evaluation metrics
-    -   any better evaluation metrics than ppl
-    -   perplexity?
--   double descent
-    -   finetune for a long time, does double descent happen when train loss is 0?
-    -   anything special about generating text that makes double descent not a good choice?
--   better to train on repeated parts of dataset, or go through a large dataset once
-
-### Hyperparameter tuning
-
--   learning rate decay strategies
--   warmup
--   inv sqrt decay
--   effect of gpt-2's gelu and layernorm to inputs
+    -   see other papers' opinions on this
+-   any better evaluation metrics than ppl
 
 ## Finetuning Datasets
 
@@ -147,15 +127,12 @@ Some language models might have been pretrained on some of these datasets.
             -   ~550MB
             -   100M words
             -   1M sequences of length 256
+            -   ~10min to process
         -   Wikitext2
             -   ~10MB
             -   2M words
             -   10k sequences of length 256
-    -   Penn Treebank
-        -   get from https://github.com/salesforce/awd-lstm-lm/blob/master/getdata.sh#L33
-        -   ~5MB
-        -   1M words
-        -   5k sequences of length 256
+            -   ~10s to process
 -   reviews
     -   IMDB (Google Drive)
         -   https://www.kaggle.com/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
@@ -191,11 +168,60 @@ Some language models might have been pretrained on some of these datasets.
         -   Very large: 1.3GB
         -   300M words
         -   10M sequences of length 256
-    -   **collect own news dataset**
--   online comments
-    -   **find later**
+    -   CTRL data **get**
 
-### Won't use:
+## Models
+
+-   gpt2
+-   ctrl
+-   grover
+-   electra
+-   distilgpt2
+-   dialogpt2
+-   long context lens
+    -   compressive transformer
+    -   reformer
+    -   transformer xl
+    -   sparse transformer
+    -   Adaptive Span Transformers
+    -   Routing Transformer
+
+## Done
+
+-   model size
+    -   bigger is better, but only until gpt2-medium
+    -   verify that this holds with larger context lengths
+        -   it does, larger models are always better, ~3ppl for gpt2-medium vs gpt2-xl
+-   batch size
+    -   bigger batch (64) is better
+    -   bigger batch size is necessary and better as dataset size grows
+-   context size
+    -   bigger context len is better
+    -   smaller models can rival larger models if their context len is larger
+-   sampling strategy
+    -   how to evaluate?
+-   model type
+-   optimizers
+    -   sgd/momentum
+        -   sgd gets similar results over a lot more epochs
+        -   momentum isn't worth it b/c adafactor uses less memory than sgd + momentum
+    -   adamw
+        -   works the best but uses too much memory
+    -   adafactor
+        -   default
+            -   works slightly worse than adamw but is needed for larger lms
+        -   beta1
+            -   no difference
+        -   warmup and adafactor
+            -   warmup is hard to replace, not worth it
+-   see if biases and layernorm should be finetuned
+    -   not finetuning bias and layernorm is the default for only AdamW
+    -   but other implementations also use it for adafactor
+-   all experiments so far are done with epochs = 10
+    -   run wikitext2 with 1 epoch
+-   redo all with epochs = 1
+
+### Won't do
 
 -   enwiki8 (Looks like this has all the XML? or not)
     -   text8 (Cleaned version of enwiki8)
@@ -228,6 +254,21 @@ Some language models might have been pretrained on some of these datasets.
     -   174 GB of text
 -   Wikipedia (Devlin et al 2018)
     -   wikitext is a good enough alternative
+-   what is the best pretrained lm for text gen?
+    -   best for widest range of text gen
+    -   best for specific type of text gen (e.g. news, dialog)
+-   https://github.com/deepmind/lamb ?
+-   lars?
+-   learning rate decay strategies
+-   inv sqrt decay
+-   effect of gpt-2's gelu and layernorm to inputs
+-   try increasing context size over time
+-   Penn Treebank
+    -   get from https://github.com/salesforce/awd-lstm-lm/blob/master/getdata.sh#L33
+    -   ~5MB
+    -   1M words
+    -   5k sequences of length 256
+-   online comments
 
 ### Resources
 

@@ -1,6 +1,5 @@
 # Some code taken from Huggingface/transformers
 import os
-import fire
 import pickle
 import argparse
 import time
@@ -23,7 +22,7 @@ import wandb
 
 from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
-from optimizers import AdaFactor
+from optimizers import Adafactor
 
 MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
@@ -101,85 +100,16 @@ class TextDataset(Dataset):
         return torch.tensor(self.batches[index])
 
 
-def top_k_top_p_filtering(logits, top_k=0, top_p=0.0, filter_value=-float('Inf')):
-    """ Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
-        Args:
-            logits: logits distribution shape (batch size x vocabulary size)
-            top_k > 0: keep only top k tokens with highest probability (top-k filtering).
-            top_p > 0.0: keep the top tokens with cumulative probability >= top_p (nucleus filtering).
-                Nucleus filtering is described in Holtzman et al. (http://arxiv.org/abs/1904.09751)
-        From: https://gist.github.com/thomwolf/1a5a29f6962089e871b94cbd09daf317
-    """
-    top_k = min(top_k, logits.size(-1))  # Safety check
-    if top_k > 0:
-        # Remove all tokens with a probability less than the last token of the top-k
-        indices_to_remove = logits < torch.topk(logits, top_k)[
-            0][..., -1, None]
-        logits[indices_to_remove] = filter_value
-
-    if top_p > 0.0:
-        sorted_logits, sorted_indices = torch.sort(logits, descending=True)
-        cumulative_probs = torch.cumsum(
-            torch.softmax(sorted_logits, dim=-1), dim=-1)
-
-        # Remove tokens with cumulative probability above the threshold
-        sorted_indices_to_remove = cumulative_probs > top_p
-        # Shift the indices to the right to keep also the first token above the threshold
-        sorted_indices_to_remove[...,
-                                 1:] = sorted_indices_to_remove[..., :-1].clone()
-        sorted_indices_to_remove[..., 0] = 0
-
-        # scatter sorted tensors to original indexing
-        indices_to_remove = sorted_indices_to_remove.scatter(
-            dim=1, index=sorted_indices, src=sorted_indices_to_remove)
-        logits[indices_to_remove] = filter_value
-    return logits
-
-
-def sample(prompt, model, tokenizer, args):
-    model = model.to(args.device)
-
-    next_token = torch.tensor(tokenizer.encode(prompt)).unsqueeze(
-        0).repeat(args.n_samples, 1).to(args.device)
-    generated = next_token
-
-    past = None
-    with torch.no_grad():
-        for _ in tqdm(range(args.sample_len)):
-            logits, past = model(next_token, past=past)
-
-            # Get hidden state of next token only
-            logits = logits[:, -1, :]
-
-            logits /= args.temperature if args.temperature > 0 else 1
-
-            # Repetition penalty
-            for i in range(args.n_samples):
-                for j in set(generated[i].tolist()):
-                    logits[i, j] /= args.repetition_penalty
-
-            # Top-k or top-p
-            logits = top_k_top_p_filtering(
-                logits, top_k=args.top_k, top_p=args.top_p)
-
-            # Greedy sampling
-            if args.temperature == 0:
-                next_token = torch.argmax(logits, dim=-1).unsqueeze(-1)
-            # Top-k or top-p
-            else:
-                next_token = torch.multinomial(torch.softmax(
-                    logits.float(), dim=-1), num_samples=1)
-
-            generated = torch.cat([generated, next_token], dim=1)
-
-        print("Generated:\n")
-        samples = ""
-        for i, sample in enumerate(generated.tolist()):
-            samples += tokenizer.decode(sample) + "\n"
-
-        print(samples)
-
-    return samples
+def sample(model, tokenizer, args):
+    prompt = torch.tensor(tokenizer.encode(
+        "<|endoftext|> ")).unsqueeze(0).to(args.device)
+    outputs = model.generate(input_ids=prompt, max_length=args.sample_len, temperature=args.temperature,
+                             top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=1)
+    outputs = tokenizer.decode(
+        outputs[0].cpu().numpy(), skip_special_tokens=True)
+    print("Sampling:")
+    print(outputs)
+    print("\n")
 
 
 def run_eval(args):
@@ -207,18 +137,18 @@ def run_eval(args):
             out = model(inputs, labels=labels)
             loss = out[0]
 
+            # check
             val_loss += loss.item()
 
     val_loss /= (j + 1)
 
-    val_perplexity = torch.exp(torch.tensor(
+    val_perplexity = torch.exp(torch.tensor(val_loss))
+    adjusted_val_perplexity = torch.exp(torch.tensor(
         val_loss) * ((val_dataset.n_tokens - 1) / (val_dataset.n_original_tokens - 1)))
 
-    print('Sampling from model:\n')
-    out = sample(" ", model, tokenizer, args)
-    print('\n')
+    sample(model, tokenizer, args)
 
-    message = f'Loss: {val_loss} | Perplexity: {val_perplexity}'
+    message = f'Loss: {val_loss} | Perplexity: {val_perplexity} | Adjusted Perplexity: {adjusted_val_perplexity}'
     print(message)
 
 
@@ -232,14 +162,6 @@ def finetune(args):
 
     model = model.from_pretrained(args.checkpoint).to(args.device)
     tokenizer = tokenizer.from_pretrained(args.checkpoint)
-
-    no_decay = ["bias", "LayerNorm.weight"]
-    optimizer_grouped_parameters = [
-        {"params": [p for n, p in model.named_parameters() if not any(
-            nd in n for nd in no_decay)], "weight_decay": 0.0},
-        {"params": [p for n, p in model.named_parameters() if any(
-            nd in n for nd in no_decay)], "weight_decay": 0.0},
-    ]
 
     train_dataset = TextDataset(args.train_path, tokenizer, args)
     val_dataset = TextDataset(args.val_path, tokenizer, args)
@@ -258,13 +180,22 @@ def finetune(args):
                       args.grad_steps * args.epochs)
 
     if args.optimizer == 'AdamW':
+        no_decay = ["bias", "LayerNorm.weight"]
+        optimizer_grouped_parameters = [
+            {"params": [p for n, p in model.named_parameters() if not any(
+                nd in n for nd in no_decay)], "weight_decay": 0.0},
+            {"params": [p for n, p in model.named_parameters() if any(
+                nd in n for nd in no_decay)], "weight_decay": 0.0},
+        ]
+
         optimizer = AdamW(optimizer_grouped_parameters, lr=args.lr, eps=1e-8)
     elif args.optimizer == 'SGD':
-        optimizer = SGD(optimizer_grouped_parameters, lr=args.lr)
+        optimizer = SGD(model.parameters(), lr=args.lr)
     elif args.optimizer == 'Adafactor':
-        optimizer = AdaFactor(
-            optimizer_grouped_parameters, lr=args.lr, beta1=0)
+        optimizer = Adafactor(
+            model.parameters(), lr=args.lr, beta1=0)
 
+    # check
     if args.lr_schedule:
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(
             0.1 * train_steps), num_training_steps=train_steps)
@@ -297,6 +228,7 @@ def finetune(args):
     if os.path.exists(args.checkpoint):
         global_step = int(args.checkpoint.split('-')[-1].split('/')[0])
 
+        # check
         epochs_trained = global_step // (len(train_dataloader) //
                                          args.grad_steps)
         steps_trained_in_current_epoch = global_step % (
@@ -321,24 +253,24 @@ def finetune(args):
 
             loss = loss / args.grad_steps
 
+            # check
             train_loss += loss.item()
 
-            if args.accelerator == 'GPU':
-                if args.fp16 == True:
-                    with amp.scale_loss(loss, optimizer) as scaled_loss:
-                        scaled_loss.backward()
-                else:
-                    loss.backward()
+            if args.accelerator == 'GPU' and args.fp16 == True:
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
             else:
                 loss.backward()
 
             if (i + 1) % args.grad_steps == 0:
+                # check
                 if args.accelerator == 'GPU' and args.fp16 == True:
                     torch.nn.utils.clip_grad_norm_(
                         amp.master_params(optimizer), 1)
                 else:
                     torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
 
+                # check
                 if args.accelerator == 'TPU':
                     xm.optimizer_step(optimizer, barrier=True)
                 else:
@@ -412,9 +344,7 @@ def finetune(args):
         adjusted_val_perplexity = torch.exp(torch.tensor(
             val_loss) * ((val_dataset.n_tokens - 1) / (val_dataset.n_original_tokens - 1)))
 
-        print('Sampling from model:\n')
-        out = sample(" ", model, tokenizer, args)
-        print('\n')
+        sample(model, tokenizer, args)
 
         table_data.append([f'{epoch}', out])
         wandb.log({"train_epoch_loss": train_loss, "train_perplexity": train_perplexity, "adjusted_train_perplexity": adjusted_train_perplexity, 'val_epoch_loss': val_loss,
@@ -436,18 +366,16 @@ def finetune(args):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--train_path', default=None,
-                        type=str, required=False)
-    parser.add_argument('--val_path', default=None,
-                        type=str, required=False)
+    parser.add_argument(
+        '--train_path', default='./data/wikitext-2-raw/wiki.train.raw', type=str, required=False)
+    parser.add_argument(
+        '--val_path', default='./data/wikitext-2-raw/wiki.valid.raw', type=str, required=False)
     parser.add_argument('--save_dir', default=None,
                         type=str, required=False)
-    parser.add_argument('--seq_len', default=256,
-                        type=int, required=False)
 
+    parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
-    parser.add_argument('--n_batches',
-                        default=-1, type=int, required=False)
+    parser.add_argument('--n_batches', default=-1, type=int, required=False)
     parser.add_argument('--fast', default=False,
                         action="store_true", required=False)
     parser.add_argument('--efficient', default=False,
@@ -455,15 +383,17 @@ def main():
 
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--checkpoint', default='distilgpt2', type=str)
+
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
+    parser.add_argument('--lr_schedule', default=True, type=bool)
+
     parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--grad_steps', default=1, type=int)
     parser.add_argument('--epochs', default=1, type=int)
-    parser.add_argument('--lr_schedule', default=True, type=bool)
 
-    parser.add_argument('--eval_only', default=False, action="store_true")
-
+    # check
+    # add multiple tpu cores
     parser.add_argument('--accelerator', default='GPU', type=str)
     parser.add_argument('--fp16', default=False, action="store_true")
     parser.add_argument('--apex_mode', default='O1', type=str)
@@ -479,6 +409,7 @@ def main():
     parser.add_argument('--top_p', default=1, type=int)
     parser.add_argument('--repetition_penalty', default=1, type=int)
 
+    parser.add_argument('--eval_only', default=False, action="store_true")
     parser.add_argument('--debug', default=False, action="store_true")
 
     args = parser.parse_args()
