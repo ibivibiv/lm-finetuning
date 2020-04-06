@@ -86,5 +86,5 @@ val_loss gets increasingly worse as eval context len decreases
 | eval context len | loss  | val_ppl | adj_val_ppl |
 | ---------------- | ----- | ------- | ----------- |
 | 256              | 2.838 | 18.419  | 28.323      |
-| 512              |
+| 512              | 2.72  | 15.29   | 22.893      |
 | 1024             |

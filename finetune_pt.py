@@ -115,7 +115,11 @@ def sample(model, tokenizer, args):
 def run_eval(args):
     model, tokenizer = MODEL_CLASSES[args.model_type]
 
-    model = model.from_pretrained(args.checkpoint).to(args.device).half()
+    if args.fp16:
+        model = model.from_pretrained(args.checkpoint).to(args.device).half()
+    else:
+        model = model.from_pretrained(args.checkpoint).to(args.device)
+
     tokenizer = tokenizer.from_pretrained(args.checkpoint)
 
     val_dataset = TextDataset(args.val_path, tokenizer, args)
