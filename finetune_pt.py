@@ -115,7 +115,7 @@ def sample(model, tokenizer, args):
 def run_eval(args):
     model, tokenizer = MODEL_CLASSES[args.model_type]
 
-    model = model.from_pretrained(args.checkpoint).to(args.device)
+    model = model.from_pretrained(args.checkpoint).to(args.device).half()
     tokenizer = tokenizer.from_pretrained(args.checkpoint)
 
     val_dataset = TextDataset(args.val_path, tokenizer, args)
