@@ -2,6 +2,14 @@
 
 See how models trained on different context lengths aren't comparable. Train lms on some set context len, and evaluate on different context lens.
 
+## Results
+
+eval on larger context len is almost as good as training on a larger context len
+
+But improvements from training at larger context lens are greater when using larger models (at most 2ppl on gpt2-xl context-len 1024)
+
+PPl goes down by 4 when eval at 1024 instead of 256 for all models
+
 ## Hyperparameters
 
 -   trained on wikitext2
@@ -36,7 +44,6 @@ val_loss gets increasingly worse as eval context len decreases
 
 -   ppl almost equal to that of larger models can be achieved by just increasing the context len at test time
 -   makes it hard to differentiate between models of different sizes
--   _check if this stays for larger models_
 
 ### Hyperparameters
 
@@ -74,12 +81,19 @@ val_loss gets increasingly worse as eval context len decreases
 
 ### Results
 
+Same, eval on larger context len is almost as good as training on a larger context len
+
+But improvements from training at larger context lens are greater when using larger models (at most 2ppl on gpt2-xl context-len 1024)
+
+PPl goes down by 4 when eval at 1024 instead of 256 for all models
+
 ### Hyperparameters
 
 -   trained using a context len of 256
 -   gpt2-xl
 
 -   _compare against models trained at higher context lens_
+-   _see if text generated is better or worse_
 
 ### Experiment
 
@@ -87,4 +101,4 @@ val_loss gets increasingly worse as eval context len decreases
 | ---------------- | ----- | ------- | ----------- |
 | 256              | 2.838 | 18.419  | 28.323      |
 | 512              | 2.72  | 15.29   | 22.893      |
-| 1024             |
+| 1024             | 2.65  | 14.17   | 20.98       |

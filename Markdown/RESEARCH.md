@@ -96,9 +96,7 @@
 
 ## Evaluation
 
--   _check if text quality isn't related to ppl only_
 -   see how models trained on different context lengths aren't comparable
-    -   train lms on some set context len, and evaluate on different context lens.
     -   train lms on different context lens, and evaluate on set context len.
 -   see if model size changes anything about ppl
     -   sample different models
@@ -221,6 +219,8 @@ Some language models might have been pretrained on some of these datasets.
 -   all experiments so far are done with epochs = 10
     -   run wikitext2 with 1 epoch
 -   redo all with epochs = 1
+-   train lms on some set context len, and evaluate on different context lens.
+    -   larger context len is better
 
 ### Won't do
 

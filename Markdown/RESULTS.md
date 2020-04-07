@@ -43,3 +43,13 @@
     -   use a small batch size (4-16) with 1 epoch
 -   you can train on small datasets in 1 epoch
 -   reduce batch size to counteract to small number of iterations
+
+## train lms on some set context len, and evaluate on different context lens.
+
+-   eval on larger context len is almost as good as training on a larger context len
+-   But improvements from training at larger context lens are greater when using larger models (at most 2ppl on gpt2-xl context-len 1024)
+-   PPl goes down by 4 when eval at 1024 instead of 256 for all models
+
+## Train Lms on diff context lens, evaluate on the same
+
+-   The models perform almost identically, not sure there is much point of finetuning on a larger context len
