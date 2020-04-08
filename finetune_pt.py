@@ -104,21 +104,37 @@ def sample(model, tokenizer, args):
     prompt = torch.tensor(tokenizer.encode(
         "<|endoftext|> ")).unsqueeze(0).to(args.device)
     outputs = model.generate(input_ids=prompt, max_length=args.max_length, do_sample=args.do_sample, temperature=args.temperature,
-                             top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=1)
-    outputs = tokenizer.decode(
-        outputs[0].cpu().numpy(), skip_special_tokens=True)
+                             top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=args.n_samples)
+
     print("Sampling:")
-    print(outputs)
-    print("\n")
+    for i in range(args.n_samples):
+        output = tokenizer.decode(
+            outputs[i].cpu().numpy(), skip_special_tokens=True)
+        print(output)
+        print("\n\n")
+
+
+def run_sample(args):
+    model, tokenizer = MODEL_CLASSES[args.model_type]
+
+    model = model.from_pretrained(args.checkpoint).to(args.device)
+    tokenizer = tokenizer.from_pretrained(args.checkpoint)
+
+    if args.fp16:
+        model = model.half()
+    model.eval()
+
+    with torch.no_grad():
+        sample(model, tokenizer, args)
 
 
 def run_eval(args):
     model, tokenizer = MODEL_CLASSES[args.model_type]
 
+    model = model.from_pretrained(args.checkpoint).to(args.device)
+
     if args.fp16:
-        model = model.from_pretrained(args.checkpoint).to(args.device).half()
-    else:
-        model = model.from_pretrained(args.checkpoint).to(args.device)
+        model = model.half()
 
     tokenizer = tokenizer.from_pretrained(args.checkpoint)
 
@@ -406,15 +422,16 @@ def main():
     parser.add_argument('--hist_steps', default=100, type=int)
     parser.add_argument('--save_steps', default=100, type=int)
 
+    parser.add_argument('--do_sample', default=False, action="store_true")
     parser.add_argument('--n_samples', default=1, type=int)
     parser.add_argument('--max_length', default=256, type=int)
-    parser.add_argument('--do_sample', default=False, type=bool)
     parser.add_argument('--temperature', default=None, type=any)
     parser.add_argument('--top_k', default=None, type=any)
     parser.add_argument('--top_p', default=None, type=any)
     parser.add_argument('--repetition_penalty', default=None, type=any)
 
     parser.add_argument('--eval_only', default=False, action="store_true")
+    parser.add_argument('--sample_only', default=False, action="store_true")
     parser.add_argument('--debug', default=False, action="store_true")
 
     args = parser.parse_args()
@@ -434,7 +451,9 @@ def main():
         args.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
 
-    if args.eval_only:
+    if args.sample_only:
+        run_sample(args)
+    elif args.eval_only:
         run_eval(args)
     else:
         finetune(args)

@@ -53,3 +53,7 @@
 ## Train Lms on diff context lens, evaluate on the same
 
 -   The models perform almost identically, not sure there is much point of finetuning on a larger context len
+
+## Non finetuned Lms
+
+-   Non-finetuned LMs can't compete with finetuned lms on ppl and definitely can't transfer over the text style
