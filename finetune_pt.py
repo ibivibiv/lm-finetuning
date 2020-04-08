@@ -119,7 +119,7 @@ def run_sample(args):
 
     model = model.from_pretrained(
         args.checkpoint, from_tf=args.from_tf).to(args.device)
-    tokenizer = tokenizer.from_pretrained(args.checkpoint)
+    tokenizer = tokenizer.from_pretrained('distilgpt2')
 
     if args.fp16:
         model = model.half()
