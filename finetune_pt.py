@@ -117,7 +117,8 @@ def sample(model, tokenizer, args):
 def run_sample(args):
     model, tokenizer = MODEL_CLASSES[args.model_type]
 
-    model = model.from_pretrained(args.checkpoint).to(args.device)
+    model = model.from_pretrained(
+        args.checkpoint, from_tf=args.from_tf).to(args.device)
     tokenizer = tokenizer.from_pretrained(args.checkpoint)
 
     if args.fp16:
@@ -131,7 +132,8 @@ def run_sample(args):
 def run_eval(args):
     model, tokenizer = MODEL_CLASSES[args.model_type]
 
-    model = model.from_pretrained(args.checkpoint).to(args.device)
+    model = model.from_pretrained(
+        args.checkpoint, from_tf=args.from_tf).to(args.device)
 
     if args.fp16:
         model = model.half()
@@ -180,7 +182,8 @@ def finetune(args):
 
     model, tokenizer = MODEL_CLASSES[args.model_type]
 
-    model = model.from_pretrained(args.checkpoint).to(args.device)
+    model = model.from_pretrained(
+        args.checkpoint, from_tf=args.from_tf).to(args.device)
     tokenizer = tokenizer.from_pretrained(args.checkpoint)
 
     train_dataset = TextDataset(args.train_path, tokenizer, args)
@@ -403,6 +406,7 @@ def main():
 
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--checkpoint', default='distilgpt2', type=str)
+    parser.add_argument('--from_tf', default=False, action="store_true")
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
