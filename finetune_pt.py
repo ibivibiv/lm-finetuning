@@ -108,6 +108,7 @@ def sample(model, tokenizer, args):
 
     print("Sampling:")
     for i in range(args.n_samples):
+        print(f'Sample #{i}\n')
         output = tokenizer.decode(
             outputs[i].cpu().numpy(), skip_special_tokens=True)
         print(output)
@@ -175,7 +176,7 @@ def run_eval(args):
 
 
 def finetune(args):
-    wandb.init(project="lm-finetuning", config=args)
+    wandb.init(project="lm-finetuning", config=args, tags=args.tags)
 
     if args.save_dir == None:
         args.save_dir = wandb.run.dir
@@ -437,6 +438,7 @@ def main():
     parser.add_argument('--eval_only', default=False, action="store_true")
     parser.add_argument('--sample_only', default=False, action="store_true")
     parser.add_argument('--debug', default=False, action="store_true")
+    parser.add_argument('--tags', nargs='+')
 
     args = parser.parse_args()
 
