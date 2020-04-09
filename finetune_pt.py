@@ -139,7 +139,7 @@ def run_eval(args):
     if args.fp16:
         model = model.half()
 
-    tokenizer = tokenizer.from_pretrained(args.checkpoint)
+    tokenizer = tokenizer.from_pretrained(args.model_type)
 
     val_dataset = TextDataset(args.val_path, tokenizer, args)
 

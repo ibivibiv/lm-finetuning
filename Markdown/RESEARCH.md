@@ -103,6 +103,8 @@
     -   any better evaluation metrics than ppl
     -   see if model size changes anything about ppl
         -   sample different models
+    -   see if trained/eval context len changes anything about text quality
+    -   generate with sliding windows
 -   effect of tokenizing approach (line by line, seq_len length chunks, lazy loading with random start point)
     -   what is the best way to tokenize
     -   have a range of ways for different dataset sizes
