@@ -1,4 +1,4 @@
-# Evaluating non-finetuned lms
+# evaluating non-finetuned lms
 
 ## Results
 

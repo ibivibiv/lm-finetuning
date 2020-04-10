@@ -1,4 +1,4 @@
-# Comparing Context Lengths
+# train at a set context len, eval at different context lens
 
 See how models trained on different context lengths aren't comparable. Train lms on some set context len, and evaluate on different context lens.
 
@@ -9,6 +9,8 @@ eval on larger context len is almost as good as training on a larger context len
 But improvements from training at larger context lens are greater when using larger models (at most 2ppl on gpt2-xl context-len 1024)
 
 PPl goes down by 4 when eval at 1024 instead of 256 for all models
+
+Improvement of training at 1024 is even less when training at 512 instead of 256
 
 ## Hyperparameters
 
@@ -131,11 +133,15 @@ PPl goes down by 4 when eval at 1024 instead of 256 for all models
 
 ## Train on 512, eval at higher
 
-_todo_
+### Results
+
+-   There is less of a difference between eval at 512 and 1024 vs training and eval at 512 when the model is trained at 512 instead of 256
 
 ### gpt2-medium
 
 #### results
+
+-   practically no difference
 
 #### hyperparameters
 
@@ -146,26 +152,58 @@ _todo_
 | eval context len | loss  | val_ppl | adj_val_ppl |
 | ---------------- | ----- | ------- | ----------- |
 | 512              | 2.842 | 17.927  | 27.508      |
-| 1024             |
+| 1024             | 2.75  | 15.78   | 23.74       |
 
 #### original
+
+| context length | model       | train loss | val loss | val ppl | adj val ppl | best epoch | framework | run               |
+| -------------- | ----------- | ---------- | -------- | ------- | ----------- | ---------- | --------- | ----------------- |
+| 512            | gpt2-medium | -          | 2.842    | 17.927  | 27.508      | 0          | TF        | pious-music-801   |
+| 1024           | gpt2-medium | -          | 2.756    | 16.271  | 24.647      | 0          | TF        | exalted-dream-802 |
 
 ### gpt2-large
 
 #### results
 
+-   less of a diff when eval at 1024 if trained at 512 than if trained at 256
+    -   1ppl diff to almost 0
+
 #### hyperparameters
+
+-   train at context len 512
 
 #### experiment
 
+| eval context len | loss  | val_ppl | adj_val_ppl |
+| ---------------- | ----- | ------- | ----------- |
+| 512              | 2.713 | 15.764  | 23.74       |
+| 1024             | 2.63  | 13.91   | 20.54       |
+
 #### original
+
+| context length | model      | train loss | val loss | val ppl | adj val ppl | best epoch | framework | run                  |
+| -------------- | ---------- | ---------- | -------- | ------- | ----------- | ---------- | --------- | -------------------- |
+| 512            | gpt2-large | -          | 2.713    | 15.764  | 23.74       | 0          | TF        | magic-pyramid-803    |
+| 1024           | gpt2-large | -          | 2.609    | 14.052  | 20.833      | 0          | TF        | volcanic-silence-804 |
 
 ### gpt2-xl
 
 #### results
 
+-   even less of a diff than gpt2-large
+
 #### hyperparameters
 
 #### experiment
 
+| eval context len | loss  | val_ppl | adj_val_ppl |
+| ---------------- | ----- | ------- | ----------- |
+| 512              | 2.623 | 14.425  | 21.466      |
+| 1024             | 2.54  | 12.74   | 18.56       |
+
 #### original
+
+| context length | model   | train loss | val loss | val ppl | adj val ppl | best epoch | framework | run                |
+| -------------- | ------- | ---------- | -------- | ------- | ----------- | ---------- | --------- | ------------------ |
+| 512            | gpt2-xl | -          | 2.623    | 14.425  | 21.466      | 0          | TF        | skilled-breeze-806 |
+| 1024           | gpt2-xl | -          | 2.513    | 12.746  | 18.659      | 0          | TF        | vibrant-eon-807    |

@@ -46,7 +46,7 @@
 -   you can train on small datasets in 1 epoch
 -   reduce batch size to counteract to small number of iterations
 
-## train lms on some set context len, and evaluate on different context lens.
+## train at a set context len, eval at different context lens
 
 -   ppl almost equal to that of larger models can be achieved by just increasing the context len at test time
 -   original differences between model sizes is at most 4ppl anyway
@@ -54,16 +54,16 @@
 -   But improvements from training at larger context lens are greater when using larger models (<1ppl for gpt2-medium and at most 2ppl on gpt2-xl)
 -   PPl goes down by 4 when eval at 1024 instead of 256 for all models
     -   The ppl metric itself becomes that much easier for models that are of comparable performance at higher context lens
--   _show what the ppl is when trained on a larger context len_
+-   Improvement of training at 1024 is even less when training at 512 instead of 256
 
-## Train Lms on diff context lens, evaluate on the same
+## train at multiple context lengths, eval at the same
 
--   The models perform almost identically, not sure there is much point of finetuning on a larger context len
--   _redo with gpt2-xl_
+-   models that are trained on larger context lengths (> gpt2-medium) perform better on a given context len
 
-## Non finetuned Lms
+## evaluating non-finetuned lms
 
--   Non-finetuned LMs can't compete with finetuned lms on ppl and definitely can't transfer over the text style
+-   models that are trained on larger context lengths (> gpt2-medium) perform better on a given context len (2ppl, from 256->512; no big improvement for 1024)
+    -   diminishing returns after gpt2-large
 
 ## Sampling, varying model size
 
