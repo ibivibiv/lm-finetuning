@@ -111,8 +111,9 @@ def sample(model, tokenizer, args):
         for i in range(args.n_sliding_windows):
             prompt = outputs[:, -args.sliding_window_size:]
 
+            # num_return_sequences = 1 not a bug
             outputs_t = model.generate(input_ids=prompt, max_length=args.max_length, do_sample=args.do_sample, temperature=args.temperature,
-                                       top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=args.n_samples)
+                                       top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=1)
 
             outputs = torch.cat(
                 [outputs[:, :-args.sliding_window_size], outputs_t], dim=-1)
