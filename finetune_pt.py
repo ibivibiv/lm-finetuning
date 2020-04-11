@@ -412,8 +412,10 @@ def main():
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
     parser.add_argument('--n_batches', default=-1, type=int, required=False)
+    # Uses fast tokenization
     parser.add_argument('--fast', default=False,
                         action="store_true", required=False)
+    # Efficient for large datasets
     parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
 

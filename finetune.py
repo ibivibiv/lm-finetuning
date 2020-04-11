@@ -151,7 +151,7 @@ class LM(pl.LightningModule):
         else:
             lr = self.scheduler.get_last_lr()[0]
 
-        return {'loss': loss, "log": {"train_loss": loss, "learning_rate": self.last_lr}}
+        return {'loss': loss, "log": {"train_loss": loss, "learning_rate": lr}}
 
     def validation_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]

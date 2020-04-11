@@ -93,20 +93,9 @@
 
 ## Evaluation
 
--   sampling
-    -   does a decrease in ppl lead to better text?
-        -   usually, yes
-    -   any better evaluation metrics than ppl
-        -   not that I know of
-        -   pretty much everyone uses ppl
-    -   see if model size changes anything about ppl
-        -   larger models can have lower ppl
-        -   sample different models
-    -   see if trained/eval context len changes anything about text quality
-        -   nope, not much
-    -   generate with sliding windows _do_
 -   effect of tokenizing approach (line by line, seq_len length chunks, lazy loading with random start point)
     -   should have a negligble difference, see whats the most efficient and what the performance diff is
+    -   check --fast
     -   what is the best way to tokenize
     -   have a range of ways for different dataset sizes
     -   lazy loading
@@ -128,7 +117,7 @@ Some language models might have been pretrained on some of these datasets.
             -   ~550MB
             -   100M words
             -   1M sequences of length 256
-            -   ~10min to process
+            -   ~10min to process with normal
         -   Wikitext2
             -   ~10MB
             -   2M words
@@ -232,6 +221,19 @@ Some language models might have been pretrained on some of these datasets.
     -   gather notes
     -   see if gpt2-xl finetuning experiments are similar to papers
     -   take a look at memory saving techniques in the reformer
+-   sampling
+    -   does a decrease in ppl lead to better text?
+        -   usually, yes
+    -   any better evaluation metrics than ppl
+        -   not that I know of
+        -   pretty much everyone uses ppl
+    -   see if model size changes anything about ppl
+        -   larger models can have lower ppl
+        -   sample different models
+    -   see if trained/eval context len changes anything about text quality
+        -   nope, not much
+    -   generate with sliding windows
+        -   done, no worse than normal text
 
 ### Won't do
 

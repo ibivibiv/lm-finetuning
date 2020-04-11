@@ -80,3 +80,7 @@
 ## Samping train 1024 eval context length
 
 -   gpt2-xl looks only a little better possibly
+
+## Sliding windows generation
+
+-   Text generated with sliding windows isn't worse than normal text
