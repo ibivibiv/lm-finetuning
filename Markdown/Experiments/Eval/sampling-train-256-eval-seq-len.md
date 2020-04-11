@@ -1,4 +1,4 @@
-# Samping eval context length
+# Samping train 256 eval context length
 
 ## Results
 

@@ -62,14 +62,20 @@
 
 ## evaluating non-finetuned lms
 
+-   gpt2-medium sees almost no improvements
 -   models that are trained on larger context lengths (> gpt2-medium) perform better on a given context len (2ppl, from 256->512; no big improvement for 1024)
     -   diminishing returns after gpt2-large
+    -   training on a larger context len gives you a better language model
+    -   but as expected, its not much
 
 ## Sampling, varying model size
 
 -   No obvious differences in text quality, but can't be 100% sure
--   _redo with 1024_
 
 ## sampling, train on 256, eval on multiple
 
 -   No degredation of text quality after the first 256 chars
+
+## Samping train 1024 eval context length
+
+-   gpt2-xl looks only a little better possibly

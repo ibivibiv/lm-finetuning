@@ -146,16 +146,12 @@ class LM(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
 
-        if self.trainer.global_step % 10 == 0:
-            if self.args.disable_lr_schedule:
-                lr = self.trainer.optimizers[0].param_groups[0]['lr']
-            else:
-                lr = self.scheduler.get_last_lr()[0]
+        if self.args.disable_lr_schedule:
+            lr = self.trainer.optimizers[0].param_groups[0]['lr']
+        else:
+            lr = self.scheduler.get_last_lr()[0]
 
-            self.last_loss = loss.item()
-            self.last_lr = lr
-
-        return {'loss': loss, "log": {"train_loss": self.last_loss, "learning_rate": self.last_lr}}
+        return {'loss': loss, "log": {"train_loss": loss, "learning_rate": self.last_lr}}
 
     def validation_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]

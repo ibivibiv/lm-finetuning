@@ -3,7 +3,6 @@
 ## Results
 
 -   No obvious differences in text quality, but can't be 100% sure
--   _redo with 1024_
 
 ## hyperparameters
 

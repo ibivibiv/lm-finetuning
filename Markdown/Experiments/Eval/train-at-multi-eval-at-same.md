@@ -6,6 +6,8 @@ See how models trained on different context lengths aren't comparable. Train lms
 
 -   models that are trained on larger context lengths (> gpt2-medium) perform better on a given context len (2ppl, from 256->512; no big improvement for 1024)
     -   diminishing returns after gpt2-large
+    -   training on a larger context len gives you a better language model
+    -   but as expected, its not much
 
 ## Hyperparameters
 
