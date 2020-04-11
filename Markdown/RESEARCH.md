@@ -93,15 +93,6 @@
 
 ## Evaluation
 
--   effect of tokenizing approach (line by line, seq_len length chunks, lazy loading with random start point)
-    -   should have a negligble difference, see whats the most efficient and what the performance diff is
-    -   check --fast
-    -   what is the best way to tokenize
-    -   have a range of ways for different dataset sizes
-    -   lazy loading
-        -   choose a random start point
-        -   get 1k chars from that point
-        -   tokenize and discard excess
 -   based on a user's computation budget, should they finetune a small lm or use a large lm
     -   see other papers' opinions on this
 
@@ -283,6 +274,17 @@ Some language models might have been pretrained on some of these datasets.
     -   1M words
     -   5k sequences of length 256
 -   online comments
+-   effect of tokenizing approach (line by line, seq_len length chunks, lazy loading with random start point)
+    -   `--fast` doesn't work well with small lines, it gives out 3x more examples than normal for wikitext2
+        -   also makes the result not entirely comparable with most other approaches
+    -   `efficient` has loss at 1.x
+    -   should have a negligble difference, see whats the most efficient and what the performance diff is
+    -   what is the best way to tokenize
+    -   have a range of ways for different dataset sizes
+    -   lazy loading
+        -   choose a random start point
+        -   get 1k chars from that point
+        -   tokenize and discard excess
 
 ### Resources
 
