@@ -1,6 +1,7 @@
 # Results
 
 -   usually larger gap in context len performances when using a larger model
+-   ppl is a relatively good way to evaluate performance of language models
 
 ## Model size
 

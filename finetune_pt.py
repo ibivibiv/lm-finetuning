@@ -103,8 +103,19 @@ class TextDataset(Dataset):
 def sample(model, tokenizer, args):
     prompt = torch.tensor(tokenizer.encode(
         "<|endoftext|> ")).unsqueeze(0).to(args.device)
+
     outputs = model.generate(input_ids=prompt, max_length=args.max_length, do_sample=args.do_sample, temperature=args.temperature,
                              top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=args.n_samples)
+
+    if args.use_sliding_windows:
+        for i in range(args.n_sliding_windows):
+            prompt = outputs[:, -args.sliding_window_size:]
+
+            outputs_t = model.generate(input_ids=prompt, max_length=args.max_length, do_sample=args.do_sample, temperature=args.temperature,
+                                       top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=args.n_samples)
+
+            outputs = torch.cat(
+                [outputs[:, :-args.sliding_window_size], outputs_t], dim=-1)
 
     print("Sampling:")
     for i in range(args.n_samples):
@@ -434,6 +445,11 @@ def main():
     parser.add_argument('--top_k', default=None, type=any)
     parser.add_argument('--top_p', default=None, type=any)
     parser.add_argument('--repetition_penalty', default=None, type=any)
+
+    parser.add_argument('--use_sliding_windows',
+                        default=False, action="store_true")
+    parser.add_argument('--n_sliding_windows', default=5, type=int)
+    parser.add_argument('--sliding_window_size', default=128, type=int)
 
     parser.add_argument('--eval_only', default=False, action="store_true")
     parser.add_argument('--sample_only', default=False, action="store_true")

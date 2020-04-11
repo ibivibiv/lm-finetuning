@@ -97,6 +97,8 @@
     -   does a decrease in ppl lead to better text?
         -   usually, yes
     -   any better evaluation metrics than ppl
+        -   not that I know of
+        -   pretty much everyone uses ppl
     -   see if model size changes anything about ppl
         -   larger models can have lower ppl
         -   sample different models
