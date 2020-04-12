@@ -37,4 +37,4 @@ _Selected on best val score_
 | gpt2        |
 | gpt2-medium | -          | 2.971    | 20.875  | 32.641      | 0          | TF        | clear-puddle-793    |
 | gpt2-large  | -          | 2.902    | 19.56   | 30.321      | 0          | TF        | cerulean-sunset-794 |
-| gpt2-xl     | -          | 2.838    | 8.419   | 28.323      | 0          | TF        | morning-vortex-795  |
+| gpt2-xl     | -          | 2.838    | 18.419  | 28.323      | 0          | TF        | morning-vortex-795  |

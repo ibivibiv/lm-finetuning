@@ -12,7 +12,7 @@
 
 -   Find best practices or good defaults for finetuning tranformer language models for text generation.
 
--   Understand the effect of model and dataset size on generating coherent text
+-   Understand the effect of context len, model, and dataset size on generating coherent text
 -   Understand the effect of loss and sampling stategies on generating coherent text
 
 -   Understand the "theory" of how language models can be finetuned
@@ -33,7 +33,32 @@
 -   new lm experiments
 
 -   evaluate lms on the actual test set
--   use invertible detokenizers like in gpt2 to get ppl calculations
+-   use invertible detokenizers and word level data like in gpt2 to get ppl calculations
+
+-   check other models
+    -   check eval ppl code for
+        -   tf xl
+            -   uses word level pre-tokenized wikitext
+        -   distilgpt2
+            -   _not sure, check further_
+        -   unlikelihood training
+            -   word level pre-tokenized wikitext
+        -   megatron lm
+            -   megatron-lm normalizes the loss in my way (https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L282)
+                -   uses word level wikitext data
+                -   uses invertible tokenizers
+                    -   https://github.com/NVIDIA/Megatron-LM/blob/master/detokenizer.py
+                -   evals on sliding windows
+                    -   https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L350
+    -   _todo_:
+        -   use word level
+        -   use detokenizers
+        -   use adjusted loss
+        -   consider effect of sliding windows/eval seq len
+-   run multiple times with different random seeds
+-   make sure test set dataloader doesn't drop last batch
+-   check if pytorch grad accumulation works similarly to tf
+    -   then run gpt2-xl experiments on larger batch sizes
 
 ## New LMs
 
@@ -56,6 +81,8 @@
 -   train a transformer without layernorm
 -   adapt ELECTRA to auto-regressive language modelling
 -   finetune on multiple datasets with control codes if individual dataset is too small
+-   train gpt2-xl on a larger context len
+-   tf-xl is trained on a larger context len and isn't comparable
 
 ## Training
 
@@ -92,9 +119,6 @@
     -   try with a large dataset
 
 ## Evaluation
-
--   based on a user's computation budget, should they finetune a small lm or use a large lm
-    -   see other papers' opinions on this
 
 ## Finetuning Datasets
 
@@ -225,6 +249,9 @@ Some language models might have been pretrained on some of these datasets.
         -   nope, not much
     -   generate with sliding windows
         -   done, no worse than normal text
+-   based on a user's computation budget, should they finetune a small lm or use a large lm
+    -   see other papers' opinions on this
+    -   Scaling laws: pretrain a larger lm
 
 ### Won't do
 

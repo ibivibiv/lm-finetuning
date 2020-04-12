@@ -20,6 +20,7 @@
 
 -   wikitext103
     -   avg len of 3k tokens/article
+    -   use pretokenized wikitext2 and 103
 
 ## Model
 

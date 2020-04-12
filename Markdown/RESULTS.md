@@ -5,7 +5,7 @@
 
 ## Model size
 
--   lower ppl with larger models, but you get diminishing returns after gpt2-medium
+-   lower ppl with larger models, but you get diminishing returns after gpt2-medium/gpt2-large on small datasets
 
 ## Adafactor
 
@@ -13,11 +13,12 @@
 
 ## Batch size
 
--   this is when using early stopping to stop training after the first epoch
+-   this is only for using early stopping to stop training after the first epoch
     -   Larger batch size is better
     -   It trains faster and to a lower loss
     -   larger batch size is almost always better, but improves for more epochs than at a smaller batch size
     -   So far, this has only been tested for wikitext2
+-   for epochs = 1, set a batch size low enough to get enough iterations through the dataset in one epoch
 
 ## Context size
 
@@ -59,15 +60,16 @@
 
 ## train at multiple context lengths, eval at the same
 
--   models that are trained on larger context lengths (> gpt2-medium) perform better on a given context len
-
-## evaluating non-finetuned lms
-
--   gpt2-medium sees almost no improvements
 -   models that are trained on larger context lengths (> gpt2-medium) perform better on a given context len (2ppl, from 256->512; no big improvement for 1024)
+    -   for gpt2-medium, the improvement is <1ppl
     -   diminishing returns after gpt2-large
     -   training on a larger context len gives you a better language model
     -   but as expected, its not much
+-   **diminishing results from finetuning at beyond 512**
+
+## evaluating non-finetuned lms
+
+    - non finetuned are bad
 
 ## Sampling, varying model size
 

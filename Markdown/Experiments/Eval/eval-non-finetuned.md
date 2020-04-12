@@ -6,8 +6,6 @@ Non-finetuned LMs can't compete with finetuned lms on ppl and definitely can't t
 
 ## Hyperparameters
 
--   trained on wikitext2
--   temperature 1
 -   original models are trained at 1024
 
 ### gpt2-medium
