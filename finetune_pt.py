@@ -459,8 +459,11 @@ def main():
     parser.add_argument('--sample_only', default=False, action="store_true")
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--tags', nargs='+')
+    parser.add_argument('--seed', default=42, type=int)
 
     args = parser.parse_args()
+
+    torch.manual_seed(args.seed)
 
     if args.debug:
         import ptvsd

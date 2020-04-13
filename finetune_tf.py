@@ -242,8 +242,11 @@ def main():
     parser.add_argument('--epochs', default=1, type=int)
 
     parser.add_argument('--debug', default=False, action="store_true")
+    parser.add_argument('--seed', default=42, type=int)
 
     args = parser.parse_args()
+
+    tf.random.set_seed(args.seed)
 
     if args.debug:
         import ptvsd

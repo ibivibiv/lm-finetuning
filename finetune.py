@@ -2,6 +2,7 @@ import os
 import argparse
 import time
 import glob
+import math
 
 from typing import Callable
 from functools import wraps
@@ -106,7 +107,7 @@ class TextDataset(torch.utils.data.Dataset):
                     batches.append(
                         tokenizer.build_inputs_with_special_tokens(tokenized_text))
                 else:
-                    for i in range(len(tokenized_text) // args.seq_len):
+                    for i in range(math.ceil(len(tokenized_text) / args.seq_len)):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
                             tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
 

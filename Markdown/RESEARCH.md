@@ -4,7 +4,7 @@
 
 -   n_tokens and n_original_tokens not the same when using `--fast` or `--efficient`
 -   adj ppl not accurate when using `--n_batches` or `--n_tokens`
--   use tokenized wikitext2?
+-   tf drops last batch on training and its val metrics arent accurate
 
 ## Objectives
 
@@ -36,7 +36,6 @@
 -   use word level
 -   use detokenizers
 -   run multiple times with different random seeds
--   make sure test set dataloader doesn't drop last batch
 -   check if pytorch grad accumulation works similarly to tf
     -   then run gpt2-xl experiments on larger batch sizes
 -   evaluate lms on the actual test set
@@ -274,6 +273,7 @@ Some language models might have been pretrained on some of these datasets.
             -   https://github.com/huggingface/transformers/issues/491
             -   https://github.com/openai/gpt-2/issues/131
             -   https://github.com/openai/gpt-2/issues/131
+-   make sure test set dataloader doesn't drop last batch
 
 ### Won't do
 
