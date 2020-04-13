@@ -4,6 +4,7 @@ import pickle
 import argparse
 import time
 import glob
+import math
 
 import numpy as np
 from tqdm import tqdm
@@ -82,7 +83,7 @@ class TextDataset(Dataset):
                     batches.append(
                         tokenizer.build_inputs_with_special_tokens(tokenized_text))
                 else:
-                    for i in range(len(tokenized_text) // args.seq_len):
+                    for i in range(math.ceil(len(tokenized_text) / args.seq_len)):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
                             tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
 

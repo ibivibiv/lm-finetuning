@@ -26,39 +26,24 @@
 -   have a pytorch and TF codebase for easy finetuning
 -   writeup the whole process
 
+### Secondary
+
+-   diminishing returns for increasing model size and context length
+-   context len can decrease ppl values by itself
+
 ## ToDo
 
--   evaluation experiments
--   training experiments
--   new lm experiments
-
--   evaluate lms on the actual test set
--   use invertible detokenizers and word level data like in gpt2 to get ppl calculations
-
--   check other models
-    -   check eval ppl code for
-        -   tf xl
-            -   uses word level pre-tokenized wikitext
-        -   distilgpt2
-            -   _not sure, check further_
-        -   unlikelihood training
-            -   word level pre-tokenized wikitext
-        -   megatron lm
-            -   megatron-lm normalizes the loss in my way (https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L282)
-                -   uses word level wikitext data
-                -   uses invertible tokenizers
-                    -   https://github.com/NVIDIA/Megatron-LM/blob/master/detokenizer.py
-                -   evals on sliding windows
-                    -   https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L350
-    -   _todo_:
-        -   use word level
-        -   use detokenizers
-        -   use adjusted loss
-        -   consider effect of sliding windows/eval seq len
+-   use word level
+-   use detokenizers
 -   run multiple times with different random seeds
 -   make sure test set dataloader doesn't drop last batch
 -   check if pytorch grad accumulation works similarly to tf
     -   then run gpt2-xl experiments on larger batch sizes
+-   evaluate lms on the actual test set
+
+-   evaluation experiments
+-   training experiments
+-   new lm experiments
 
 ## New LMs
 
@@ -252,6 +237,43 @@ Some language models might have been pretrained on some of these datasets.
 -   based on a user's computation budget, should they finetune a small lm or use a large lm
     -   see other papers' opinions on this
     -   Scaling laws: pretrain a larger lm
+-   check other models
+    -   check eval ppl code for
+        -   gpt2
+            -   uses word-level
+        -   tf xl
+            -   uses word level pre-tokenized wikitext
+        -   distilgpt2
+            -   not adjusted
+        -   unlikelihood training
+            -   word level pre-tokenized wikitext
+        -   megatron lm
+            -   megatron-lm normalizes the loss in my way (https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L282)
+                -   uses word level wikitext data
+                -   uses invertible tokenizers
+                    -   https://github.com/NVIDIA/Megatron-LM/blob/master/detokenizer.py
+                -   evals on sliding windows
+                    -   https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L350
+    -   gpt2 wikitext ppl numbers are a mess
+        -   gpt2 uses word level data
+        -   can't reproduce zero-shot results
+            -   code for evaluation isn't available
+            -   most likely possibility: they are reporting un-normalized results
+                -   very close to my un-normalized zero-shot results too
+            -   possible that they run the entire test set/each article in one context length then normalize
+                -   would be like eval at a very high context len
+        -   megatron-lm normalizes the loss in my way (https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L282)
+            -   uses word level wikitext data
+            -   uses invertible tokenizers
+                -   https://github.com/NVIDIA/Megatron-LM/blob/master/detokenizer.py
+            -   evals on sliding windows
+                -   https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L350
+        -   proof:
+            -   https://github.com/huggingface/transformers/issues/483
+            -   https://github.com/openai/gpt-2/issues/78
+            -   https://github.com/huggingface/transformers/issues/491
+            -   https://github.com/openai/gpt-2/issues/131
+            -   https://github.com/openai/gpt-2/issues/131
 
 ### Won't do
 

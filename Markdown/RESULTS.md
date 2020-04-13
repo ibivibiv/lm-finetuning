@@ -51,7 +51,7 @@
 ## train at a set context len, eval at different context lens
 
 -   ppl almost equal to that of larger models can be achieved by just increasing the context len at test time
--   original differences between model sizes is at most 4ppl anyway
+-   original differences between model sizes (medium-xl) is at most 4ppl anyway
 -   eval on larger context len is almost as good as training on a larger context len
 -   But improvements from training at larger context lens are greater when using larger models (<1ppl for gpt2-medium and at most 2ppl on gpt2-xl)
 -   PPl goes down by 4 when eval at 1024 instead of 256 for all models
