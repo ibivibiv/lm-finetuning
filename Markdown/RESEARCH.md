@@ -5,6 +5,7 @@
 -   don't use `--fast`, `--efficient`, `--n_batches`, or `--n_tokens` if you want correct results
     -   `--n_batches` doesn't work at all
 -   tf drops last batch on training and its val metrics arent accurate
+-   comments with `#check`
 
 ## Objectives
 
