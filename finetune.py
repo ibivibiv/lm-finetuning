@@ -152,7 +152,7 @@ class LM(pl.LightningModule):
         if self.args.disable_lr_schedule:
             lr = self.trainer.optimizers[0].param_groups[0]['lr']
         else:
-            lr = self.scheduler.get_lr()[0]
+            lr = self.scheduler.get_last_lr()[0]
 
         return {'loss': loss, "log": {"train_loss": loss, "learning_rate": lr}}
 

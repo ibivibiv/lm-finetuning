@@ -3,6 +3,7 @@
 ## Notes
 
 -   don't use `--fast`, `--efficient`, `--n_batches`, or `--n_tokens` if you want correct results
+    -   `--n_batches` doesn't work at all
 -   tf drops last batch on training and its val metrics arent accurate
 
 ## Objectives
@@ -35,6 +36,7 @@
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
 -   evaluation experiments
     -   make sure all versions work
+        -   tf doesn't work on colab
         -   check if pytorch grad accumulation works similarly to tf
             -   then run gpt2-xl experiments on larger batch sizes
     -   redo wikitext2 and imdb experiments

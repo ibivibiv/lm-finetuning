@@ -322,7 +322,7 @@ def finetune(args):
                     if args.lr_schedule:
                         lr = optimizer.param_groups[0]['lr']
                     else:
-                        lr = scheduler.get_lr()[0]
+                        lr = scheduler.get_last_lr()[0]
 
                     wandb.log({"train_loss": loss.item() * args.grad_steps,
                                "learning_rate": lr}, step=global_step)
