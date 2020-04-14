@@ -34,8 +34,9 @@
 
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
 -   evaluation experiments
-    -   check if pytorch grad accumulation works similarly to tf
-        -   then run gpt2-xl experiments on larger batch sizes
+    -   make sure all versions work
+        -   check if pytorch grad accumulation works similarly to tf
+            -   then run gpt2-xl experiments on larger batch sizes
     -   redo wikitext2 and imdb experiments
         -   use word level
         -   run multiple times with different random seeds
