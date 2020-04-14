@@ -33,13 +33,11 @@
 ## ToDo
 
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
-
 -   evaluation experiments
-    -   use word level
-    -   use detokenizers
     -   check if pytorch grad accumulation works similarly to tf
         -   then run gpt2-xl experiments on larger batch sizes
-    -   final experiments
+    -   redo wikitext2 and imdb experiments
+        -   use word level
         -   run multiple times with different random seeds
         -   evaluate lms on the actual test set
 -   training experiments
@@ -277,6 +275,7 @@ Some language models might have been pretrained on some of these datasets.
             -   https://github.com/openai/gpt-2/issues/131
             -   https://github.com/openai/gpt-2/issues/131
 -   make sure test set dataloader doesn't drop last batch
+-   use detokenizers
 
 ### Won't do
 
