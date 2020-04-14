@@ -22,6 +22,7 @@ from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 
 from optimizers import Adafactor
+from detokenizer import wikitext_detokenizer
 
 MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
@@ -88,8 +89,9 @@ class TextDataset(torch.utils.data.Dataset):
             # Default way reads in entire file into memory
             else:
                 temp = handle.read()
-                text.append(temp)
                 self.n_original_tokens += len(temp.strip().split(" "))
+
+                text.append(wikitext_detokenizer(temp))
 
         # Fast way uses `batch_encode_plus`. Drawbacks: only the first seq_len chars get kept
         if args.fast:
@@ -316,11 +318,11 @@ class LM(pl.LightningModule):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--train_path', default='./data/wikitext-2-raw/wiki.train.raw',
+    parser.add_argument('--train_path', default='./data/wikitext-2/wiki.train.tokens',
                         type=str, required=False)
-    parser.add_argument('--val_path', default='./data/wikitext-2-raw/wiki.valid.raw',
+    parser.add_argument('--val_path', default='./data/wikitext-2/wiki.valid.tokens',
                         type=str, required=False)
-    parser.add_argument('--test_path', default='./data/wikitext-2-raw/wiki.test.raw',
+    parser.add_argument('--test_path', default='./data/wikitext-2/wiki.test.tokens',
                         type=str, required=False)
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)

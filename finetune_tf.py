@@ -22,7 +22,7 @@ import wandb
 from wandb.keras import WandbCallback
 
 from optimizers_tf import *
-
+from detokenizer import wikitext_detokenizer
 
 MODEL_CLASSES = {
     'gpt2': (TFGPT2LMHeadModel, GPT2TokenizerFast)
@@ -69,8 +69,9 @@ class TextDataset(object):
             # Default way reads in entire file into memory
             else:
                 temp = handle.read()
-                text.append(temp)
                 self.n_original_tokens += len(temp.strip().split(" "))
+
+                text.append(wikitext_detokenizer(temp))
 
         for l in tqdm(text):
             tokenized_text = tokenizer.convert_tokens_to_ids(
@@ -213,9 +214,9 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--train_path', default='./data/wikitext-2-raw/wiki.train.raw',
+    parser.add_argument('--train_path', default='./data/wikitext-2/wiki.train.tokens',
                         type=str, required=False)
-    parser.add_argument('--val_path', default='./data/wikitext-2-raw/wiki.valid.raw',
+    parser.add_argument('--val_path', default='./data/wikitext-2/wiki.valid.tokens',
                         type=str, required=False)
     parser.add_argument('--use_serialized', default=False, action='store_true')
 

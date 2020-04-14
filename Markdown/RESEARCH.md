@@ -2,8 +2,7 @@
 
 ## Notes
 
--   n_tokens and n_original_tokens not the same when using `--fast` or `--efficient`
--   adj ppl not accurate when using `--n_batches` or `--n_tokens`
+-   don't use `--fast`, `--efficient`, `--n_batches`, or `--n_tokens` if you want correct results
 -   tf drops last batch on training and its val metrics arent accurate
 
 ## Objectives
@@ -26,21 +25,23 @@
 -   have a pytorch and TF codebase for easy finetuning
 -   writeup the whole process
 
-### Secondary
+### Context len research
 
 -   diminishing returns for increasing model size and context length
 -   context len can decrease ppl values by itself
 
 ## ToDo
 
--   use word level
--   use detokenizers
--   run multiple times with different random seeds
--   check if pytorch grad accumulation works similarly to tf
-    -   then run gpt2-xl experiments on larger batch sizes
--   evaluate lms on the actual test set
+-   get framework ready for quickly running large scale experiments then reapply for tfrc
 
 -   evaluation experiments
+    -   use word level
+    -   use detokenizers
+    -   check if pytorch grad accumulation works similarly to tf
+        -   then run gpt2-xl experiments on larger batch sizes
+    -   final experiments
+        -   run multiple times with different random seeds
+        -   evaluate lms on the actual test set
 -   training experiments
 -   new lm experiments
 
@@ -54,6 +55,8 @@
     -   Try leaking data to the lm by training on contigous sequences (move the start position of input sequence 1 step up
         -   would this even work or make a difference?
     -   can tf-xl be replaced with gpt2 and sliding windows
+    -   eval tf-xl on smaller context lengths
+        -   _is its extended context the reason for low ppl?_
 -   pplm
     -   generalize pplm
         -   more attribute models for normal generation use

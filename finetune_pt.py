@@ -24,6 +24,7 @@ import wandb
 from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
 
 from optimizers import Adafactor
+from detokenizer import wikitext_detokenizer
 
 MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
@@ -65,8 +66,9 @@ class TextDataset(Dataset):
                         text.append(line)
             else:
                 temp = handle.read()
-                text.append(temp)
                 self.n_original_tokens += len(temp.strip().split(" "))
+
+                text.append(wikitext_detokenizer(temp))
 
         if args.fast:
             batches = tokenizer.batch_encode_plus(
@@ -404,9 +406,9 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '--train_path', default='./data/wikitext-2-raw/wiki.train.raw', type=str, required=False)
+        '--train_path', default='./data/wikitext-2/wiki.train.tokens', type=str, required=False)
     parser.add_argument(
-        '--val_path', default='./data/wikitext-2-raw/wiki.valid.raw', type=str, required=False)
+        '--val_path', default='./data/wikitext-2/wiki.valid.tokens', type=str, required=False)
     parser.add_argument('--save_dir', default=None,
                         type=str, required=False)
 
