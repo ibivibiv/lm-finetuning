@@ -36,6 +36,7 @@
 
 ## ToDo
 
+-   check ram needed for datasets
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
 -   evaluation experiments
     -   redo wikitext2 and imdb experiments
@@ -48,23 +49,10 @@
 ## New LMs
 
 -   features
-
-    -   control codes and multiple datasets
-        -   tokenizer doesn't add eos token by default
-        -   multiple datasets works
-        -   for control codes
-            -   prepend to each sequence
-            -   can either use special tokens or just let it get tokenized
-                -   will hardcore
-            -   run temp experiments with wikitext2 and imdb
-        -   make sure --fast and --efficient work
-            -   they work
-            -   both return 3x the number of sequences
-            -   loss is too low because of padding
-
 -   datasets
 
     -   pg-19
+        -   for large datasets, train for n iterations instead of epochs
     -   wikitext103
     -   imdb
     -   writingprompts
@@ -322,7 +310,19 @@ Some language models might have been pretrained on some of these datasets.
 -   check if pytorch grad accumulation works similarly to tf
     -   then run gpt2-xl experiments on larger batch sizes
 -   tf doesn't work on colab
-    -   need to roll back to tf2.1
+    -   need to roll back to tf2.1- control codes and multiple datasets
+    -   tokenizer doesn't add eos token by default
+    -   multiple datasets works
+    -   for control codes
+        -   prepend to each sequence
+        -   can either use special tokens or just let it get tokenized
+            -   will hardcore
+        -   run temp experiments with wikitext2 and imdb
+    -   make sure --fast and --efficient work
+        -   they work
+        -   both return 3x the number of sequences
+        -   loss is too low because of padding
+            -   masking isn't worth it, just use more ram and the tf version
 
 ### Won't do
 

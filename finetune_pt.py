@@ -93,8 +93,8 @@ class TextDataset(Dataset):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
                             tokenized_control_code + tokenized_text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)]))
 
-                if args.n_batches > -1 and len(batches) >= args.n_batches:
-                    break
+                        if args.n_batches > -1 and len(batches) >= args.n_batches:
+                            break
 
         self.n_tokens += sum([len(batch) for batch in batches])
 

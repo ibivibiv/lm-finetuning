@@ -40,8 +40,8 @@ class TextDataset(object):
         if os.path.isdir(path):
             self.batches = []
             self.labels = []
-            for f in glob.glob(os.path.join(path, '*.txt')):
-                batches, labels = self._tokenize(f, tokenizer, args)
+            for i, f in enumerate(glob.glob(os.path.join(path, '*.txt'))):
+                batches, labels = self._tokenize(f, tokenizer, args, i)
                 self.batches += batches
                 self.labels += labels
         else:
@@ -54,7 +54,10 @@ class TextDataset(object):
         print(
             f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
 
-    def _tokenize(self, path, tokenizer, args):
+    def _tokenize(self, path, tokenizer, args, i):
+        tokenized_control_code = tokenizer.convert_tokens_to_ids(
+            tokenizer.tokenize(args.control_codes[i]))
+
         batches = []
         labels = []
 
@@ -65,7 +68,7 @@ class TextDataset(object):
                 for line in handle:
                     self.n_original_tokens += len(line.split(" "))
                     if len(line) > 0 and not line.isspace():
-                        text.append(line)
+                        text.append(wikitext_detokenizer(line))
             # Default way reads in entire file into memory
             else:
                 temp = handle.read()
@@ -80,22 +83,22 @@ class TextDataset(object):
             if args.n_tokens > -1:
                 tokenized_text = tokenized_text[:args.n_tokens]
 
-            if len(tokenized_text) < args.seq_len:
+            if len(tokenized_text) < args.seq_len - 1:
                 example = tokenizer.build_inputs_with_special_tokens(
-                    tokenized_text)
+                    tokenized_control_code + tokenized_text)
 
                 batches.append(example[:-1])
                 labels.append(example[1:])
             else:
-                for i in range(len(tokenized_text) // args.seq_len):
+                for i in range(len(tokenized_text) // (args.seq_len - 1)):
                     example = tokenizer.build_inputs_with_special_tokens(
-                        tokenized_text[i * args.seq_len: (i + 1) * args.seq_len])
+                        tokenized_control_code + tokenized_text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
 
                     batches.append(example[:-1])
                     labels.append(example[1:])
 
-            if args.n_batches > -1 and len(batches) >= args.n_batches:
-                break
+                    if args.n_batches > -1 and len(batches) >= args.n_batches:
+                        break
 
         self.n_tokens += sum([len(batch) for batch in batches])
 
@@ -219,6 +222,8 @@ def main():
     parser.add_argument('--val_path', default='./data/wikitext-2/wiki.valid.tokens',
                         type=str, required=False)
     parser.add_argument('--use_serialized', default=False, action='store_true')
+    parser.add_argument('--control_codes', nargs='+',
+                        default=['<|endoftext|>'])
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
@@ -270,6 +275,10 @@ def main():
         model = model.from_pretrained(args.model_name)
 
         tokenizer = tokenizer.from_pretrained(args.model_name)
+
+        tokenizer.add_special_tokens(
+            {'additional_special_tokens': args.control_codes})
+        model.resize_token_embeddings(len(tokenizer))
 
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
