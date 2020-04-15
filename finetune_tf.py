@@ -45,7 +45,8 @@ class TextDataset(object):
                 self.batches += batches
                 self.labels += labels
         else:
-            self.batches, self.labels = self._tokenize(path, tokenizer, args)
+            self.batches, self.labels = self._tokenize(
+                path, tokenizer, args, 0)
 
         end = time.time()
 
