@@ -143,7 +143,7 @@ class LM(pl.LightningModule):
 
         self.tokenizer.add_special_tokens(
             {'additional_special_tokens': args.control_codes})
-        self.model.resize_token_embeddings(len(tokenizer))
+        self.model.resize_token_embeddings(len(self.tokenizer))
 
         self.train_dataset = TextDataset(
             self.args.train_path, self.tokenizer, self.args)
