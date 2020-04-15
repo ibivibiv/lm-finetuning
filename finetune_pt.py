@@ -42,8 +42,8 @@ class TextDataset(Dataset):
 
         if os.path.isdir(path):
             self.batches = []
-            for f in glob.glob(os.path.join(path, '*.txt')):
-                self.batches += self._tokenize(f, tokenizer, args)
+            for i, f in enumerate(glob.glob(os.path.join(path, '*.txt'))):
+                self.batches += self._tokenize(f, tokenizer, args, i)
         else:
             self.batches = self._tokenize(path, tokenizer, args)
 
@@ -54,7 +54,10 @@ class TextDataset(Dataset):
         print(
             f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
 
-    def _tokenize(self, path, tokenizer, args):
+    def _tokenize(self, path, tokenizer, args, i):
+        tokenized_control_code = tokenizer.convert_tokens_to_ids(
+            tokenizer.tokenize(args.control_codes[i]))
+
         batches = []
 
         text = []
@@ -72,7 +75,8 @@ class TextDataset(Dataset):
 
         if args.fast:
             batches = tokenizer.batch_encode_plus(
-                text, add_special_tokens=True, max_length=args.seq_len)["input_ids"]
+                text, add_special_tokens=True, max_length=args.seq_len-1)["input_ids"]
+            batches = [tokenized_control_code + batch for batch in batches]
         else:
             for l in tqdm(text):
                 tokenized_text = tokenizer.convert_tokens_to_ids(
@@ -81,13 +85,13 @@ class TextDataset(Dataset):
                 if args.n_tokens > -1:
                     tokenized_text = tokenized_text[:args.n_tokens]
 
-                if len(tokenized_text) < args.seq_len:
+                if len(tokenized_text) < args.seq_len - 1:
                     batches.append(
-                        tokenizer.build_inputs_with_special_tokens(tokenized_text))
+                        tokenizer.build_inputs_with_special_tokens(tokenized_control_code + tokenized_text))
                 else:
-                    for i in range(math.ceil(len(tokenized_text) / args.seq_len)):
+                    for i in range(math.ceil(len(tokenized_text) / (args.seq_len - 1))):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
-                            tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
+                            tokenized_control_code + tokenized_text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)]))
 
                 if args.n_batches > -1 and len(batches) >= args.n_batches:
                     break
@@ -201,6 +205,10 @@ def finetune(args):
     model = model.from_pretrained(
         args.checkpoint, from_tf=args.from_tf).to(args.device)
     tokenizer = tokenizer.from_pretrained(args.checkpoint)
+
+    tokenizer.add_special_tokens(
+        {'additional_special_tokens': [args.control_codes]})
+    model.resize_token_embeddings(len(tokenizer))
 
     train_dataset = TextDataset(args.train_path, tokenizer, args)
     val_dataset = TextDataset(args.val_path, tokenizer, args)
@@ -409,6 +417,8 @@ def main():
         '--val_path', default='./data/wikitext-2/wiki.valid.tokens', type=str, required=False)
     parser.add_argument('--save_dir', default=None,
                         type=str, required=False)
+    parser.add_argument('--control_codes', nargs='+',
+                        default=['<|endoftext|>'])
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)

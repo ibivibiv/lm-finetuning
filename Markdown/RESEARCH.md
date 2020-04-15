@@ -36,10 +36,6 @@
 
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
 -   evaluation experiments
-    -   make sure all versions work
-        -   tf doesn't work on colab
-        -   check if pytorch grad accumulation works similarly to tf
-            -   then run gpt2-xl experiments on larger batch sizes
     -   redo wikitext2 and imdb experiments
         -   use word level
         -   run multiple times with different random seeds
@@ -49,29 +45,67 @@
 
 ## New LMs
 
--   does finetuning give better results than grover, ctrl, etc
--   multiple datasets/control codes
-    -   use control codes to train on a range of small (?) datasets
-    -   is finetuning lm to work with control codes enough? or should it be pretrained with control codes too?
+-   features
+
+    -   control codes and multiple datasets
+        -   tokenizer doesn't add eos token by default
+        -   multiple datasets works
+        -   for control codes
+            -   prepend to each sequence
+            -   can either use special tokens or just let it get tokenized
+                -   will hardcore
+            -   run temp experiments with wikitext2 and imdb
+        -   make sure --fast and --efficient work
+
+-   datasets
+
+    -   pg-19
+    -   wikitext103
+    -   imdb
+    -   writingprompts
+    -   cnn/dailymail
+
+-   new lms
+
+    -   albert-style
+    -   distilled
+    -   no layernorm
+        -   fixup init has been used before
+        -   try in-place layer norm?
+    -   electra
+    -   unlikelihood
+    -   double descent
+
+*   ideas
+
+    -   does finetuning give better results than grover, ctrl, etc
+        -   finetune on news article datasets
+    -   multiple datasets/control codes
+        -   is finetuning lm to work with control codes enough? or should it be pretrained with control codes too?
+        -   finetune on multiple datasets with control codes if individual dataset is too small
+        -   use control codes to train on a range of small (?) datasets
+            -   wikitext2
+            -   imdb
+        -   eval control code lm on only one dataset
+            -   is it worse?
+    -   just to prove that larger context lens make results uncomparable
+        -   train gpt2-xl on a larger context len
+        -   tf-xl is trained on a larger context len and isn't comparable
+
 -   long-form generation with sliding windows
+
     -   Try leaking data to the lm by training on contigous sequences (move the start position of input sequence 1 step up
         -   would this even work or make a difference?
     -   can tf-xl be replaced with gpt2 and sliding windows
     -   eval tf-xl on smaller context lengths
         -   _is its extended context the reason for low ppl?_
+
 -   pplm
     -   generalize pplm
         -   more attribute models for normal generation use
         -   use a nn for the attribute model
             -   train to predict topics
             -   should make pplm edit text to make it more like chosen topic
--   albert style gpt2
--   distillation
--   train a transformer without layernorm
--   adapt ELECTRA to auto-regressive language modelling
--   finetune on multiple datasets with control codes if individual dataset is too small
--   train gpt2-xl on a larger context len
--   tf-xl is trained on a larger context len and isn't comparable
 
 ## Training
 
@@ -280,6 +314,10 @@ Some language models might have been pretrained on some of these datasets.
             -   https://github.com/openai/gpt-2/issues/131
 -   make sure test set dataloader doesn't drop last batch
 -   use detokenizers
+-   check if pytorch grad accumulation works similarly to tf
+    -   then run gpt2-xl experiments on larger batch sizes
+-   tf doesn't work on colab
+    -   need to roll back to tf2.1
 
 ### Won't do
 
