@@ -45,7 +45,7 @@ class TextDataset(Dataset):
             for i, f in enumerate(glob.glob(os.path.join(path, '*.txt'))):
                 self.batches += self._tokenize(f, tokenizer, args, i)
         else:
-            self.batches = self._tokenize(path, tokenizer, args)
+            self.batches = self._tokenize(path, tokenizer, args, 0)
 
         end = time.time()
 
@@ -141,6 +141,10 @@ def run_sample(args):
         args.checkpoint, from_tf=args.from_tf).to(args.device)
     tokenizer = tokenizer.from_pretrained('distilgpt2')
 
+    tokenizer.add_special_tokens(
+        {'additional_special_tokens': args.control_codes})
+    model.resize_token_embeddings(len(tokenizer))
+
     if args.fp16:
         model = model.half()
     model.eval()
@@ -159,6 +163,10 @@ def run_eval(args):
         model = model.half()
 
     tokenizer = tokenizer.from_pretrained(args.model_type)
+
+    tokenizer.add_special_tokens(
+        {'additional_special_tokens': args.control_codes})
+    model.resize_token_embeddings(len(tokenizer))
 
     val_dataset = TextDataset(args.val_path, tokenizer, args)
 
@@ -207,7 +215,7 @@ def finetune(args):
     tokenizer = tokenizer.from_pretrained(args.checkpoint)
 
     tokenizer.add_special_tokens(
-        {'additional_special_tokens': [args.control_codes]})
+        {'additional_special_tokens': args.control_codes})
     model.resize_token_embeddings(len(tokenizer))
 
     train_dataset = TextDataset(args.train_path, tokenizer, args)
