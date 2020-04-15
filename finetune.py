@@ -66,7 +66,7 @@ class TextDataset(torch.utils.data.Dataset):
             for i, f in enumerate(glob.glob(os.path.join(path, '*.txt'))):
                 self.batches += self._tokenize(f, tokenizer, args, i)
         else:
-            self.batches = self._tokenize(path, tokenizer, args)
+            self.batches = self._tokenize(path, tokenizer, args, i)
 
         end = time.time()
 
