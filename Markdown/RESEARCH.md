@@ -6,6 +6,8 @@
     -   `--n_batches` doesn't work at all
 -   tf drops last batch on training and its val metrics arent accurate
 -   comments with `#check`
+-   if multiple files, there must be a control code for each and an equal number of validation files
+    -   val metrics will be averaged over training metrics
 
 ## Objectives
 
@@ -56,6 +58,9 @@
                 -   will hardcore
             -   run temp experiments with wikitext2 and imdb
         -   make sure --fast and --efficient work
+            -   they work
+            -   both return 3x the number of sequences
+            -   loss is too low because of padding
 
 -   datasets
 

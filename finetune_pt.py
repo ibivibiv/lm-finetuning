@@ -66,7 +66,7 @@ class TextDataset(Dataset):
                 for line in handle:
                     self.n_original_tokens += len(line.split(" "))
                     if len(line) > 0 and not line.isspace():
-                        text.append(line)
+                        text.append(wikitext_detokenizer(line))
             else:
                 temp = handle.read()
                 self.n_original_tokens += len(temp.strip().split(" "))
