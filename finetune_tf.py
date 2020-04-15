@@ -277,9 +277,10 @@ def main():
 
         tokenizer = tokenizer.from_pretrained(args.model_name)
 
-        tokenizer.add_special_tokens(
-            {'additional_special_tokens': args.control_codes})
-        model.resize_token_embeddings(len(tokenizer))
+        # Can't use since TF models don't have resize_token_embeddings implemented
+        # tokenizer.add_special_tokens(
+        #     {'additional_special_tokens': args.control_codes})
+        # model.resize_token_embeddings(len(tokenizer))
 
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 

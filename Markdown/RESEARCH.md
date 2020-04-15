@@ -48,11 +48,10 @@
 
 ## New LMs
 
--   features
 -   datasets
 
     -   pg-19
-        -   for large datasets, train for n iterations instead of epochs
+        -   for large datasets, train for n iterations/batches instead of epochs
     -   wikitext103
     -   imdb
     -   writingprompts
