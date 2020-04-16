@@ -109,8 +109,9 @@ class TextDataset(torch.utils.data.Dataset):
                     tokenized_text = tokenized_text[:args.n_tokens]
 
                 if len(tokenized_text) < args.seq_len - 1:
-                    batches.append(
-                        tokenizer.build_inputs_with_special_tokens(tokenized_control_code + tokenized_text))
+                    if not args.min_seq_len:
+                        batches.append(
+                            tokenizer.build_inputs_with_special_tokens(tokenized_control_code + tokenized_text))
                 else:
                     for i in range(math.ceil(len(tokenized_text) / (args.seq_len - 1))):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
@@ -341,6 +342,7 @@ if __name__ == "__main__":
                         action="store_true", required=False)
     parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
+    parser.add_argument('--min_seq_len', default=False, action='store_true')
 
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--model_name', default='distilgpt2', type=str)

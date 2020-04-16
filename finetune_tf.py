@@ -85,11 +85,12 @@ class TextDataset(object):
                 tokenized_text = tokenized_text[:args.n_tokens]
 
             if len(tokenized_text) < args.seq_len - 1:
-                example = tokenizer.build_inputs_with_special_tokens(
-                    tokenized_control_code + tokenized_text)
+                if not args.min_seq_len:
+                    example = tokenizer.build_inputs_with_special_tokens(
+                        tokenized_control_code + tokenized_text)
 
-                batches.append(example[:-1])
-                labels.append(example[1:])
+                    batches.append(example[:-1])
+                    labels.append(example[1:])
             else:
                 for i in range(len(tokenized_text) // (args.seq_len - 1)):
                     example = tokenizer.build_inputs_with_special_tokens(
@@ -231,6 +232,7 @@ def main():
     parser.add_argument('--n_batches', default=-1, type=int, required=False)
     parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
+    parser.add_argument('--min_seq_len', default=False, action='store_true')
 
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--model_name', default='distilgpt2', type=str)

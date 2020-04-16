@@ -36,7 +36,21 @@
 
 ## ToDo
 
+-   add option to skip lines with less than seqlen tokens
+-   will see how much data is needed for pretraining
+    -   tf-xl did it with only wikitext103
+    -   gpt2 and variants used giant datasets
+    -   will see if giant datasets are necessary
+        -   giant datasets are more varied
+    -   will need to use tfrecords or on the fly tokenization for giant datasets
+        -   full dataset can't fit in memory
 -   check ram needed for datasets
+    -   wikitext103
+        -   --fast, 13m
+        -   --efficient, 10m
+    -   benchmark on gcp
+    -   will have to use --fast and --efficient for larger finetuning datasets
+    -   get --fast working for tf
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
 -   evaluation experiments
     -   redo wikitext2 and imdb experiments
@@ -49,16 +63,13 @@
 ## New LMs
 
 -   datasets
-
     -   pg-19
         -   for large datasets, train for n iterations/batches instead of epochs
     -   wikitext103
     -   imdb
     -   writingprompts
     -   cnn/dailymail
-
 -   new lms
-
     -   albert-style
     -   distilled
     -   no layernorm
@@ -67,8 +78,7 @@
     -   electra
     -   unlikelihood
     -   double descent
-
-*   ideas
+-   ideas
 
     -   does finetuning give better results than grover, ctrl, etc
         -   finetune on news article datasets
@@ -322,6 +332,7 @@ Some language models might have been pretrained on some of these datasets.
         -   both return 3x the number of sequences
         -   loss is too low because of padding
             -   masking isn't worth it, just use more ram and the tf version
+    -   can't use more than the default control code with tf
 
 ### Won't do
 
