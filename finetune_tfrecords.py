@@ -136,6 +136,8 @@ def get_dataset(args, tokenizer):
         train_dataset = TextDataset(args.train_path, tokenizer, args)
         val_dataset = TextDataset(args.val_path, tokenizer, args)
 
+        train_len = int(len(train_dataset.batches) / args.batch_size)
+
         with tf.io.TFRecordWriter('train.tfrecords') as writer:
             for data, label in tqdm(zip(train_dataset.batches, train_dataset.labels)):
                 example = serialize_example(data, label)
@@ -180,7 +182,7 @@ def get_dataset(args, tokenizer):
     # val_dataset = val_dataset.shuffle(100).batch(
     #     args.batch_size, drop_remainder=True)
 
-    return tokenizer, train_dataset, val_dataset, 2, 2, 2, 2
+    return tokenizer, train_dataset, val_dataset, train_len
 
 
 class AdjLoss(object):
@@ -336,10 +338,15 @@ def main():
             optimizer = AdafactorOptimizer(
                 learning_rate=args.lr, beta1=args.momentum)
 
-    tokenizer, train_dataset, val_dataset, train_n_original_tokens, train_n_tokens, val_n_original_tokens, val_n_tokens = get_dataset(
+    tokenizer, train_dataset, val_dataset, train_len = get_dataset(
         args, tokenizer)
 
-    n_train_steps = int(len(list(train_dataset))) * args.epochs
+    ####
+    # add args
+    ####
+    print(train_len)
+
+    n_train_steps = train_len * args.epochs
 
     wandb_callback = WandbCallback(log_weights=True)
     checkpoint_callback = Checkpoint(wandb.run.dir)
