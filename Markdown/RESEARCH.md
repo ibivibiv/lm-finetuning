@@ -36,7 +36,9 @@
 
 ## ToDo
 
--   add option to skip lines with less than seqlen tokens
+-   do gcp benchmarks
+-   get tfrecords for tf version
+
 -   will see how much data is needed for pretraining
     -   tf-xl did it with only wikitext103
     -   gpt2 and variants used giant datasets
@@ -46,6 +48,7 @@
         -   full dataset can't fit in memory
 -   check ram needed for datasets
     -   wikitext103
+        -   basic, _check on gcp_
         -   --fast, 13m
         -   --efficient, 10m
     -   benchmark on gcp
@@ -78,6 +81,7 @@
     -   electra
     -   unlikelihood
     -   double descent
+    -   bert-style, but on webtext
 -   ideas
 
     -   does finetuning give better results than grover, ctrl, etc
@@ -333,6 +337,11 @@ Some language models might have been pretrained on some of these datasets.
         -   loss is too low because of padding
             -   masking isn't worth it, just use more ram and the tf version
     -   can't use more than the default control code with tf
+-   add option to skip lines with less than seqlen tokens
+    -   reduces wikitext103 train seqs from 1.16M to 140k
+        -   100m tokens to 22m tokens
+            -   won't work for wikitext, but it will for larger datasets
+    -   also fixes the padding problem of low losses
 
 ### Won't do
 
