@@ -158,7 +158,7 @@ def get_dataset(args, tokenizer):
         x = tf.io.parse_single_example(example_proto, feature_description)
         return (x['batches'], x['labels'])
 
-    train_dataset = tf.data.TFRecordDataset(['temp.tfrecords'])
+    train_dataset = tf.data.TFRecordDataset(['train.tfrecords'])
     train_dataset = train_dataset.map(_parse_function).shuffle(
         100).batch(args.batch_size, drop_remainder=True)
 
