@@ -351,12 +351,8 @@ def main():
     wandb_callback = WandbCallback(log_weights=True)
     checkpoint_callback = Checkpoint(wandb.run.dir)
 
-    val_adj_loss = AdjLoss(val_n_tokens, val_n_original_tokens, 'val_adj_loss')
-    val_ppl = PPL('val_ppl')
-    val_adj_ppl = AdjPPL(val_n_tokens, val_n_original_tokens, 'val_adj_ppl')
-
     model.compile(optimizer=optimizer, loss=[
-                  loss, *[None] * model.config.n_layer], metrics=[val_adj_loss, val_ppl, val_adj_ppl])
+                  loss, *[None] * model.config.n_layer])
 
     if args.disable_lr_schedule:
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
