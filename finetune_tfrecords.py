@@ -83,6 +83,7 @@ def main():
                         type=str, required=False)
     parser.add_argument('--train_len', default=100, type=int, required=False)
 
+    parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--model_name', default='distilgpt2', type=str)
     parser.add_argument('--checkpoint', default=None, type=str)
