@@ -39,6 +39,9 @@
 -   do gcp benchmarks
 -   get tfrecords for tf version
 
+    -   put tfrecords on gcp buckets
+    -   expand callback and checkpoint
+
 -   will see how much data is needed for pretraining
     -   tf-xl did it with only wikitext103
     -   gpt2 and variants used giant datasets
