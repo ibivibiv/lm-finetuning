@@ -36,11 +36,25 @@
 
 ## ToDo
 
--   do gcp benchmarks
 -   get tfrecords for tf version
 
     -   put tfrecords on gcp buckets
-    -   expand callback and checkpoint
+    -   references
+        -   https://www.tensorflow.org/tutorials/load_data/tfrecord#reading_a_tfrecord_file_2
+        -   https://www.tensorflow.org/guide/data#consuming_tfrecord_data
+        -   https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset
+        -   https://www.tensorflow.org/guide/tpu
+        -   https://jkjung-avt.github.io/tfrecords-for-keras/
+        -   https://cloud.google.com/tpu/docs/troubleshooting#cannot_use_local_filesystem
+        -   https://github.com/tensorflow/tensorflow/issues/32651
+        -   https://github.com/tensorflow/models/issues/7753
+        -   https://cloud.google.com/storage/docs/access-control/making-data-public
+        -   https://cloud.google.com/storage/pricing
+
+-   do gcp benchmarks
+-   expand callback and checkpoint
+-   make sure training works for wikitext103
+-   look at other implementations
 
 -   will see how much data is needed for pretraining
     -   tf-xl did it with only wikitext103
