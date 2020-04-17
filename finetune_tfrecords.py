@@ -151,9 +151,12 @@ def main():
     tokenizer, train_dataset, val_dataset = get_dataset(
         args, tokenizer)
 
-    train_dataset.__len__ = args.train_len
+    def __len__(self):
+        return args.train_len // args.batch_size
 
-    n_train_steps = args.train_len * args.epochs
+    train_dataset.__len__ = __len__
+
+    n_train_steps = (args.train_len // args.batch_size) * args.epochs
 
     wandb_callback = WandbCallback()
     checkpoint_callback = Checkpoint(wandb.run.dir)
