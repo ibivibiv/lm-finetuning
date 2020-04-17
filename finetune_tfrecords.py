@@ -151,6 +151,8 @@ def main():
     tokenizer, train_dataset, val_dataset = get_dataset(
         args, tokenizer)
 
+    train_dataset.__len__ = args.train_len
+
     n_train_steps = args.train_len * args.epochs
 
     wandb_callback = WandbCallback()
