@@ -25,7 +25,7 @@ from optimizers_tf import *
 from detokenizer import wikitext_detokenizer
 
 MODEL_CLASSES = {
-    'gpt2': (TFGPT2LMHeadModel, GPT2TokenizerFast)
+    'gpt2': TFGPT2LMHeadModel
 }
 
 
@@ -99,9 +99,9 @@ def main():
     parser.add_argument('--train_len', default=100, type=int, required=False)
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
+    parser.add_argument('--config_path', default='./', type=str)
     parser.add_argument('--model_type', default='gpt2', type=str)
-    parser.add_argument('--model_name', default='distilgpt2', type=str)
-    parser.add_argument('--checkpoint', default=None, type=str)
+    parser.add_argument('--tokenizer', default='gpt2', type=str)
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
@@ -138,17 +138,23 @@ def main():
     tf.config.experimental_connect_to_cluster(resolver)
     tf.tpu.experimental.initialize_tpu_system(resolver)
 
+    config = AutoConfig.from_pretrained(args.config_path)
+    model = AutoModelWithLMHead.from_config(config=config)
+    os.mkdir('./temp')
+    model.save_pretrained('./temp')
+
     strategy = tf.distribute.experimental.TPUStrategy(resolver)
     with strategy.scope():
-        model, tokenizer = MODEL_CLASSES[args.model_type]
-        model = model.from_pretrained(args.model_name)
+        model = MODEL_CLASSES[args.model_type]
+        model = model.from_pretrained('./temp', from_pt=True)
 
-        tokenizer = tokenizer.from_pretrained(args.model_name)
+    os.rmdir('./temp')
 
-        # Can't use since TF models don't have resize_token_embeddings implemented
-        # tokenizer.add_special_tokens(
-        #     {'additional_special_tokens': args.control_codes})
-        # model.resize_token_embeddings(len(tokenizer))
+    tokenizer = tokenizer.from_pretrained(args.tokenizer)
+    # Can't use since TF models don't have resize_token_embeddings implemented
+    # tokenizer.add_special_tokens(
+    #     {'additional_special_tokens': args.control_codes})
+    # model.resize_token_embeddings(len(tokenizer))
 
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
