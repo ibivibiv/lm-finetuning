@@ -5,6 +5,7 @@ import glob
 import time
 import argparse
 import pickle
+import shutil
 
 import numpy as np
 from tqdm import tqdm
@@ -148,7 +149,7 @@ def main():
         model = MODEL_CLASSES[args.model_type]
         model = model.from_pretrained('./temp', from_pt=True)
 
-    os.rmdir('./temp')
+    shutil.rmtree('./temp')
 
     tokenizer = tokenizer.from_pretrained(args.tokenizer)
     # Can't use since TF models don't have resize_token_embeddings implemented
