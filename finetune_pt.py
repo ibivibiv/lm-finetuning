@@ -213,7 +213,7 @@ def finetune(args):
 
     if args.from_scratch:
         config = AutoConfig.from_pretrained(args.model_type)
-        model = AutoModelWithLMHead.from_config(config=config)
+        model = AutoModelWithLMHead.from_config(config=config).to(args.device)
     else:
         model = AutoModelWithLMHead.from_pretrained(
             args.checkpoint, from_tf=args.from_tf).to(args.device)
