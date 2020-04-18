@@ -97,8 +97,8 @@ def main():
     parser.add_argument('--val_path', nargs='*',
                         default=['gs://wikitext-2/0.tfrecord'], required=False)
     parser.add_argument('--train_len', default=100, type=int, required=False)
-
     parser.add_argument('--seq_len', default=256, type=int, required=False)
+
     parser.add_argument('--config_path', default='./', type=str)
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--tokenizer', default='gpt2', type=str)
