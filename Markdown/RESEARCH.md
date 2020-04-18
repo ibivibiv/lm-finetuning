@@ -1,10 +1,3 @@
----
-note:
-    createdAt: 2020-04-18T17:12:46.795Z
-    modifiedAt: 2020-04-18T17:13:15.665Z
-    tags: []
----
-
 # Research
 
 ## Notes
@@ -69,6 +62,7 @@ note:
             -   https://colab.research.google.com/github/huggingface/blog/blob/master/notebooks/01_how_to_train.ipynb
             -   https://huggingface.co/transformers/main_classes/model.html#tfpretrainedmodel
         -   this is only for pt, maybe init with pt, save, then reload as tf
+            -   this works
 -   record dataset metadata
 -   replicate training on wikitext2 and 103
 -   make sure training works for wikitext103
