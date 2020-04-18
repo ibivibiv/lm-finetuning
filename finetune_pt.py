@@ -136,11 +136,10 @@ def sample(model, tokenizer, args):
 
 
 def run_sample(args):
-    model, tokenizer = MODEL_CLASSES[args.model_type]
-
-    model = model.from_pretrained(
+    model = AutoModelWithLMHead.from_pretrained(
         args.checkpoint, from_tf=args.from_tf).to(args.device)
-    tokenizer = tokenizer.from_pretrained('distilgpt2')
+
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
 
     tokenizer.add_special_tokens(
         {'additional_special_tokens': args.control_codes})
@@ -155,15 +154,13 @@ def run_sample(args):
 
 
 def run_eval(args):
-    model, tokenizer = MODEL_CLASSES[args.model_type]
-
-    model = model.from_pretrained(
+    model = AutoModelWithLMHead.from_pretrained(
         args.checkpoint, from_tf=args.from_tf).to(args.device)
 
     if args.fp16:
         model = model.half()
 
-    tokenizer = tokenizer.from_pretrained(args.model_type)
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
 
     tokenizer.add_special_tokens(
         {'additional_special_tokens': args.control_codes})
@@ -212,7 +209,7 @@ def finetune(args):
     tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
 
     if args.from_scratch:
-        config = AutoConfig.from_pretrained(args.model_type)
+        config = AutoConfig.from_pretrained(args.config)
         model = AutoModelWithLMHead.from_config(config=config).to(args.device)
     else:
         model = AutoModelWithLMHead.from_pretrained(
@@ -443,11 +440,15 @@ def main():
     parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
 
-    parser.add_argument('--model_type', default='gpt2', type=str)
-    parser.add_argument('--tokenizer', default='gpt2', type=str)
-    parser.add_argument('--checkpoint', default='distilgpt2', type=str)
-    parser.add_argument('--from_tf', default=False, action="store_true")
+    # if from scratch
     parser.add_argument('--from_scratch', default=False, action="store_true")
+    parser.add_argument('--config', default='gpt2', type=str)
+
+    # if from a pretrained model
+    parser.add_argument('--checkpoint', default='distilgpt2', type=str)
+
+    parser.add_argument('--tokenizer', default='gpt2', type=str)
+    parser.add_argument('--from_tf', default=False, action="store_true")
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
