@@ -51,10 +51,25 @@ def get_dataset(args, tokenizer):
 
 
 class Checkpoint(tf.keras.callbacks.Callback):
-    def __init__(self, dir):
+    def __init__(self, dir, args):
         super(Checkpoint, self).__init__()
 
         self.dir = dir
+        self.args = args
+
+        self.n_batch = 0
+
+    def on_batch_end(self, batch, logs=None):
+        if (self.n_batch + 1) % self.args.save_batches == 0:
+            checkpoint_dir = os.path.join(
+                self.dir, f'checkpoint-batch-{self.n_batch}')
+
+            if not os.path.exists(checkpoint_dir):
+                os.makedirs(checkpoint_dir)
+
+            self.model.save_pretrained(checkpoint_dir)
+
+        self.n_batch += 1
 
     def on_epoch_end(self, epoch, logs=None):
         checkpoint_dir = os.path.join(self.dir, f'checkpoint-{epoch}')
@@ -97,8 +112,9 @@ def main():
                         default=False, action='store_true')
 
     parser.add_argument('--batch_size', default=4, type=int)
-    parser.add_argument('--grad_steps', default=1, type=int)
     parser.add_argument('--epochs', default=1, type=int)
+
+    parser.add_argument('--save_batches', default=1000, type=int)
 
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--seed', default=42, type=int)
@@ -159,7 +175,7 @@ def main():
     n_train_steps = (args.train_len // args.batch_size) * args.epochs
 
     wandb_callback = WandbCallback()
-    checkpoint_callback = Checkpoint(wandb.run.dir)
+    checkpoint_callback = Checkpoint(wandb.run.dir, args)
 
     model.compile(optimizer=optimizer, loss=[
                   loss, *[None] * model.config.n_layer])

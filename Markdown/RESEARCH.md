@@ -1,3 +1,10 @@
+---
+note:
+    createdAt: 2020-04-18T17:12:46.795Z
+    modifiedAt: 2020-04-18T17:13:15.665Z
+    tags: []
+---
+
 # Research
 
 ## Notes
@@ -8,6 +15,7 @@
 -   comments with `#check`
 -   if multiple files, there must be a control code for each and an equal number of validation files
     -   val metrics will be averaged over training metrics
+-   note that all experiments have been done on a max of gpt2-xl, larger models like megatron lm will be better
 
 ## Objectives
 
@@ -36,6 +44,17 @@
 
 ## ToDo
 
+-   expand callback and checkpoint
+-   get restarting to work
+-   figure out eval on train set
+-   multiple tfrecord files
+-   weight init
+-   make sure training works for wikitext103
+-   do gcp benchmarks
+-   find out how to evaluate on full dataset
+
+    -   issue/email
+
 -   get tfrecords for tf version
 
     -   put tfrecords on gcp buckets
@@ -50,11 +69,6 @@
         -   https://github.com/tensorflow/models/issues/7753
         -   https://cloud.google.com/storage/docs/access-control/making-data-public
         -   https://cloud.google.com/storage/pricing
-
--   do gcp benchmarks
--   expand callback and checkpoint
--   make sure training works for wikitext103
--   look at other implementations
 
 -   will see how much data is needed for pretraining
     -   tf-xl did it with only wikitext103
@@ -359,6 +373,8 @@ Some language models might have been pretrained on some of these datasets.
         -   100m tokens to 22m tokens
             -   won't work for wikitext, but it will for larger datasets
     -   also fixes the padding problem of low losses
+-   look at other pretraining implementations
+    -   mostly like mine
 
 ### Won't do
 

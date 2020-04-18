@@ -114,6 +114,7 @@ def main():
 
     if os.path.isdir(args.path):
         files = glob.glob(os.path.join(args.path, '*'))
+        print(f'Tokenizing {len(files)} files')
 
         for i in range(len(files) // args.files_per_tfrecord):
             files_subset = files[i *
