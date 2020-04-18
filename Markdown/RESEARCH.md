@@ -44,12 +44,15 @@ note:
 
 ## ToDo
 
--   expand callback and checkpoint
--   get restarting to work
--   figure out eval on train set
 -   multiple tfrecord files
--   weight init
+-   figure out
+    -   figure out how the learning rate and scheduler should work
+    -   figure out eval on train subset
+    -   weight init
+-   record dataset metadata
+-   replicate training on wikitext2 and 103
 -   make sure training works for wikitext103
+-   finetune wikitext103 from scratch
 -   do gcp benchmarks
 -   find out how to evaluate on full dataset
 
@@ -85,6 +88,7 @@ note:
     -   benchmark on gcp
     -   will have to use --fast and --efficient for larger finetuning datasets
     -   get --fast working for tf
+        -   wont do
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
 -   evaluation experiments
     -   redo wikitext2 and imdb experiments
@@ -373,8 +377,7 @@ Some language models might have been pretrained on some of these datasets.
         -   100m tokens to 22m tokens
             -   won't work for wikitext, but it will for larger datasets
     -   also fixes the padding problem of low losses
--   look at other pretraining implementations
-    -   mostly like mine
+-   expand callback and checkpoint
 
 ### Won't do
 
@@ -435,6 +438,8 @@ Some language models might have been pretrained on some of these datasets.
         -   choose a random start point
         -   get 1k chars from that point
         -   tokenize and discard excess
+-   get restarting to work
+    -   won't do
 
 ### Resources
 
