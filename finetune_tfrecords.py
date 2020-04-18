@@ -151,7 +151,7 @@ def main():
 
     shutil.rmtree('./temp')
 
-    tokenizer = tokenizer.from_pretrained(args.tokenizer)
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
     # Can't use since TF models don't have resize_token_embeddings implemented
     # tokenizer.add_special_tokens(
     #     {'additional_special_tokens': args.control_codes})

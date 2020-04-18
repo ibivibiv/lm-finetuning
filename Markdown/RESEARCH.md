@@ -63,6 +63,7 @@ note:
         -   runs every epoch
         -   can sync wandb checkpoint and eval in colab
     -   weight init
+        -   see other implementations
         -   try local config file
             -   https://github.com/huggingface/transformers/issues/3767
             -   https://colab.research.google.com/github/huggingface/blog/blob/master/notebooks/01_how_to_train.ipynb
