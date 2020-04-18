@@ -218,12 +218,6 @@ def finetune(args):
         model = AutoModelWithLMHead.from_pretrained(
             args.checkpoint, from_tf=args.from_tf).to(args.device)
 
-    # model, tokenizer = MODEL_CLASSES[args.model_type]
-
-    # model = model.from_pretrained(
-    #     args.checkpoint, from_tf=args.from_tf).to(args.device)
-    # tokenizer = tokenizer.from_pretrained(args.checkpoint)
-
     tokenizer.add_special_tokens(
         {'additional_special_tokens': args.control_codes})
     model.resize_token_embeddings(len(tokenizer))
