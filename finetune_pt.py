@@ -21,7 +21,7 @@ from torch.utils.data import Dataset
 
 import wandb
 
-from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
+from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup, AutoConfig, AutoModelWithLMHead, AutoTokenizer
 
 from optimizers import Adafactor
 from detokenizer import wikitext_detokenizer
@@ -209,11 +209,20 @@ def finetune(args):
     if args.save_dir == None:
         args.save_dir = wandb.run.dir
 
-    model, tokenizer = MODEL_CLASSES[args.model_type]
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
 
-    model = model.from_pretrained(
-        args.checkpoint, from_tf=args.from_tf).to(args.device)
-    tokenizer = tokenizer.from_pretrained(args.checkpoint)
+    if args.from_scratch:
+        config = AutoConfig.from_pretrained(args.model_type)
+        model = AutoModelWithLMHead.from_config(config=config)
+    else:
+        model = AutoModelWithLMHead.from_pretrained(
+            args.checkpoint, from_tf=args.from_tf).to(args.device)
+
+    # model, tokenizer = MODEL_CLASSES[args.model_type]
+
+    # model = model.from_pretrained(
+    #     args.checkpoint, from_tf=args.from_tf).to(args.device)
+    # tokenizer = tokenizer.from_pretrained(args.checkpoint)
 
     tokenizer.add_special_tokens(
         {'additional_special_tokens': args.control_codes})
@@ -441,8 +450,10 @@ def main():
                         action="store_true", required=False)
 
     parser.add_argument('--model_type', default='gpt2', type=str)
+    parser.add_argument('--tokenizer', default='gpt2', type=str)
     parser.add_argument('--checkpoint', default='distilgpt2', type=str)
     parser.add_argument('--from_tf', default=False, action="store_true")
+    parser.add_argument('--from_scratch', default=False, action="store_true")
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)

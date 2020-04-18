@@ -10,7 +10,7 @@
 
 -   seqlen: 384 in training and 1600 test
 -   batch size: 512
--   iterations: 800k
+-   iterations: 200k-400M (20-400 epochs)
 -   optimizer: Adafactor
 -   weight decay: 0.01
 -   learning rate: 1e-4

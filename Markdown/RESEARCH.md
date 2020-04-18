@@ -41,14 +41,33 @@ note:
 
 -   diminishing returns for increasing model size and context length
 -   context len can decrease ppl values by itself
+-   ctrl also sees small difference when using smaller context lengths
 
 ## ToDo
 
--   multiple tfrecord files
+-   find out ppl of a plain transformer
+    -   20-40ish?
+-   train tokenizer
+    -   probably yes
 -   figure out
-    -   figure out how the learning rate and scheduler should work
-    -   figure out eval on train subset
+    -   how the learning rate and scheduler should work
+        -   ctrl
+            -   warmup from 0-0.05 + no lr decay (adagrad)
+            -   batch size 1024
+            -   800k training iterations
+        -   grover
+            -   warmup from 0-1e-4 then linear decay
+            -   batch size 512
+            -   800k iterations (20 epochs)
+    -   eval on train subset
+        -   runs every epoch
+        -   can sync wandb checkpoint and eval in colab
     -   weight init
+        -   try local config file
+            -   https://github.com/huggingface/transformers/issues/3767
+            -   https://colab.research.google.com/github/huggingface/blog/blob/master/notebooks/01_how_to_train.ipynb
+            -   https://huggingface.co/transformers/main_classes/model.html#tfpretrainedmodel
+        -   this is only for pt, maybe init with pt, save, then reload as tf
 -   record dataset metadata
 -   replicate training on wikitext2 and 103
 -   make sure training works for wikitext103
@@ -378,6 +397,7 @@ Some language models might have been pretrained on some of these datasets.
             -   won't work for wikitext, but it will for larger datasets
     -   also fixes the padding problem of low losses
 -   expand callback and checkpoint
+-   multiple tfrecord files
 
 ### Won't do
 

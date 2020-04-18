@@ -8,6 +8,7 @@
 
 -   seqlen: 1024 tokens
 -   batch size: 512
+-   lr manually tuned
 
 ## Dataset
 
