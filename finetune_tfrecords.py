@@ -39,11 +39,11 @@ def get_dataset(args, tokenizer):
         x = tf.io.parse_single_example(example_proto, feature_description)
         return (x['inputs'], x['labels'])
 
-    train_dataset = tf.data.TFRecordDataset('gs://wikitext-2')
+    train_dataset = tf.data.TFRecordDataset(args.train_path)
     train_dataset = train_dataset.map(_parse_function).shuffle(
         100).batch(args.batch_size, drop_remainder=True)
 
-    val_dataset = tf.data.TFRecordDataset([args.val_path])
+    val_dataset = tf.data.TFRecordDataset(args.val_path)
     val_dataset = val_dataset.map(_parse_function).shuffle(
         100).batch(args.batch_size, drop_remainder=True)
 
@@ -92,9 +92,10 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--train_path', nargs='+')
-    parser.add_argument('--val_path', default='gs://wikitext-2/0.tfrecord',
-                        type=str, required=False)
+    parser.add_argument('--train_path', nargs='*',
+                        default=['gs://wikitext-2/0.tfrecord'], required=False)
+    parser.add_argument('--val_path', nargs='*',
+                        default=['gs://wikitext-2/0.tfrecord'], required=False)
     parser.add_argument('--train_len', default=100, type=int, required=False)
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
