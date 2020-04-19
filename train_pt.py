@@ -200,7 +200,7 @@ def run_eval(args):
     print(message)
 
 
-def finetune(args):
+def train(args):
     wandb.init(project="lm-finetuning", config=args, tags=args.tags)
 
     if args.save_dir == None:
@@ -511,7 +511,7 @@ def main():
     elif args.eval_only:
         run_eval(args)
     else:
-        finetune(args)
+        train(args)
 
 
 if __name__ == "__main__":

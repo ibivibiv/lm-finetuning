@@ -37,3 +37,5 @@
 ## Notes
 
 -   All models underfit
+-   byte level bpe tokenizer
+    -   stops merges across char categories

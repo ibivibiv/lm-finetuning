@@ -38,62 +38,18 @@
 
 ## ToDo
 
--   find out ppl of a plain transformer
-    -   20-40ish?
 -   train tokenizer
-    -   probably yes
--   figure out
-    -   how the learning rate and scheduler should work
-        -   ctrl
-            -   warmup from 0-0.05 + no lr decay (adagrad)
-            -   batch size 1024
-            -   800k training iterations
-        -   grover
-            -   warmup from 0-1e-4 then linear decay
-            -   batch size 512
-            -   800k iterations (20 epochs)
-    -   eval on train subset
-        -   runs every epoch
-        -   can sync wandb checkpoint and eval in colab
-    -   weight init
-        -   see other implementations
-        -   try local config file
-            -   https://github.com/huggingface/transformers/issues/3767
-            -   https://colab.research.google.com/github/huggingface/blog/blob/master/notebooks/01_how_to_train.ipynb
-            -   https://huggingface.co/transformers/main_classes/model.html#tfpretrainedmodel
-        -   this is only for pt, maybe init with pt, save, then reload as tf
-            -   this works
+    -   will use default byte level bpe tokenizer
+    -   must have a config.json file in same directory as new tokenizer
+-   move buckets to correct zone
+    -   https://cloud.google.com/storage/pricing#network-pricing
 -   record dataset metadata
 -   replicate training on wikitext2 and 103
 -   make sure training works for wikitext103
 -   finetune wikitext103 from scratch
 -   do gcp benchmarks
 -   find out how to evaluate on full dataset
-
     -   issue/email
-
--   get tfrecords for tf version
-
-    -   put tfrecords on gcp buckets
-    -   references
-        -   https://www.tensorflow.org/tutorials/load_data/tfrecord#reading_a_tfrecord_file_2
-        -   https://www.tensorflow.org/guide/data#consuming_tfrecord_data
-        -   https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset
-        -   https://www.tensorflow.org/guide/tpu
-        -   https://jkjung-avt.github.io/tfrecords-for-keras/
-        -   https://cloud.google.com/tpu/docs/troubleshooting#cannot_use_local_filesystem
-        -   https://github.com/tensorflow/tensorflow/issues/32651
-        -   https://github.com/tensorflow/models/issues/7753
-        -   https://cloud.google.com/storage/docs/access-control/making-data-public
-        -   https://cloud.google.com/storage/pricing
-
--   will see how much data is needed for pretraining
-    -   tf-xl did it with only wikitext103
-    -   gpt2 and variants used giant datasets
-    -   will see if giant datasets are necessary
-        -   giant datasets are more varied
-    -   will need to use tfrecords or on the fly tokenization for giant datasets
-        -   full dataset can't fit in memory
 -   check ram needed for datasets
     -   wikitext103
         -   basic, _check on gcp_
@@ -393,6 +349,48 @@ Some language models might have been pretrained on some of these datasets.
     -   also fixes the padding problem of low losses
 -   expand callback and checkpoint
 -   multiple tfrecord files
+-   figure out
+    -   how the learning rate and scheduler should work
+        -   ctrl
+            -   warmup from 0-0.05 + no lr decay (adagrad)
+            -   batch size 1024
+            -   800k training iterations
+        -   grover
+            -   warmup from 0-1e-4 then linear decay
+            -   batch size 512
+            -   800k iterations (20 epochs)
+    -   val set
+        -   make
+        -   runs every epoch
+        -   can sync wandb checkpoint and eval in colab
+    -   weight init
+        -   N(0, 0.02)
+        -   try local config file
+            -   https://github.com/huggingface/transformers/issues/3767
+            -   https://colab.research.google.com/github/huggingface/blog/blob/master/notebooks/01_how_to_train.ipynb
+            -   https://huggingface.co/transformers/main_classes/model.html#tfpretrainedmodel
+        -   this is only for pt, maybe init with pt, save, then reload as tf
+            -   this works
+-   get tfrecords for tf version
+    -   put tfrecords on gcp buckets
+    -   references
+        -   https://www.tensorflow.org/tutorials/load_data/tfrecord#reading_a_tfrecord_file_2
+        -   https://www.tensorflow.org/guide/data#consuming_tfrecord_data
+        -   https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset
+        -   https://www.tensorflow.org/guide/tpu
+        -   https://jkjung-avt.github.io/tfrecords-for-keras/
+        -   https://cloud.google.com/tpu/docs/troubleshooting#cannot_use_local_filesystem
+        -   https://github.com/tensorflow/tensorflow/issues/32651
+        -   https://github.com/tensorflow/models/issues/7753
+        -   https://cloud.google.com/storage/docs/access-control/making-data-public
+        -   https://cloud.google.com/storage/pricing
+-   will see how much data is needed for pretraining
+    -   tf-xl did it with only wikitext103
+    -   gpt2 and variants used giant datasets
+    -   will see if giant datasets are necessary
+        -   giant datasets are more varied
+    -   will need to use tfrecords or on the fly tokenization for giant datasets
+        -   full dataset can't fit in memory
 
 ### Won't do
 
