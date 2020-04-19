@@ -38,39 +38,40 @@
 
 ## ToDo
 
--   train tokenizer
-    -   will use default byte level bpe tokenizer
-    -   must have a config.json file in same directory as new tokenizer
--   move buckets to correct zone
-    -   https://cloud.google.com/storage/pricing#network-pricing
--   record dataset metadata
+-   look at opengpt2
+-   gcp
+    -   check ram needed for datasets
+        -   wikitext103
+            -   basic, _check on gcp_
+            -   --fast, 13m
+            -   --efficient, 10m
+            -   tfrecords,
+        -   imdb
+        -   pg-19
+        -   writing prompts
+        -   cnn/dailymail
+        -   will have to use --fast and --efficient for larger finetuning datasets
+    -   create tfrecords
+        -   record dataset metadata
+        -   move buckets to correct zone
+            -   https://cloud.google.com/storage/pricing#network-pricing
 -   replicate training on wikitext2 and 103
--   make sure training works for wikitext103
--   finetune wikitext103 from scratch
--   do gcp benchmarks
 -   find out how to evaluate on full dataset
     -   issue/email
--   check ram needed for datasets
-    -   wikitext103
-        -   basic, _check on gcp_
-        -   --fast, 13m
-        -   --efficient, 10m
-    -   benchmark on gcp
-    -   will have to use --fast and --efficient for larger finetuning datasets
-    -   get --fast working for tf
-        -   wont do
+-   create and validate new lms
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
 -   evaluation experiments
     -   redo wikitext2 and imdb experiments
         -   use word level
         -   run multiple times with different random seeds
         -   evaluate lms on the actual test set
+-   retrain gpt2 or similar first to prove that code works
 -   training experiments
 -   new lm experiments
 
 ## New LMs
 
--   datasets
+-   gpt2 on
     -   pg-19
         -   for large datasets, train for n iterations/batches instead of epochs
     -   wikitext103
@@ -78,15 +79,18 @@
     -   writingprompts
     -   cnn/dailymail
 -   new lms
+
     -   albert-style
-    -   distilled
+    -   electra-style
     -   no layernorm
         -   fixup init has been used before
         -   try in-place layer norm?
-    -   electra
+    -   distilled
+        -   ?
     -   unlikelihood
     -   double descent
     -   bert-style, but on webtext
+
 -   ideas
 
     -   does finetuning give better results than grover, ctrl, etc
@@ -102,21 +106,20 @@
     -   just to prove that larger context lens make results uncomparable
         -   train gpt2-xl on a larger context len
         -   tf-xl is trained on a larger context len and isn't comparable
+    -   long-form generation with sliding windows
 
--   long-form generation with sliding windows
+        -   Try leaking data to the lm by training on contigous sequences (move the start position of input sequence 1 step up
+            -   would this even work or make a difference?
+        -   can tf-xl be replaced with gpt2 and sliding windows
+        -   eval tf-xl on smaller context lengths
+            -   _is its extended context the reason for low ppl?_
 
-    -   Try leaking data to the lm by training on contigous sequences (move the start position of input sequence 1 step up
-        -   would this even work or make a difference?
-    -   can tf-xl be replaced with gpt2 and sliding windows
-    -   eval tf-xl on smaller context lengths
-        -   _is its extended context the reason for low ppl?_
-
--   pplm
-    -   generalize pplm
-        -   more attribute models for normal generation use
-        -   use a nn for the attribute model
-            -   train to predict topics
-            -   should make pplm edit text to make it more like chosen topic
+    -   pplm
+        -   generalize pplm
+            -   more attribute models for normal generation use
+            -   use a nn for the attribute model
+                -   train to predict topics
+                -   should make pplm edit text to make it more like chosen topic
 
 ## Training
 
@@ -288,6 +291,8 @@ Some language models might have been pretrained on some of these datasets.
     -   Scaling laws: pretrain a larger lm
 -   check other models
     -   check eval ppl code for
+        -   sha-rnn and awd-lstm
+            -   eval at seqlen 1024
         -   gpt2
             -   uses word-level
         -   tf xl
@@ -391,6 +396,9 @@ Some language models might have been pretrained on some of these datasets.
         -   giant datasets are more varied
     -   will need to use tfrecords or on the fly tokenization for giant datasets
         -   full dataset can't fit in memory
+-   train tokenizer
+    -   will use default byte level bpe tokenizer
+    -   must have a config.json file in same directory as new tokenizer
 
 ### Won't do
 
@@ -453,6 +461,8 @@ Some language models might have been pretrained on some of these datasets.
         -   tokenize and discard excess
 -   get restarting to work
     -   won't do
+    -   get --fast working for tf
+        -   wont do
 
 ### Resources
 

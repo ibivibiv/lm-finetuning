@@ -102,7 +102,7 @@ def main():
 
     parser.add_argument('--config_path', default='./', type=str)
     parser.add_argument('--model_type', default='gpt2', type=str)
-    parser.add_argument('--tokenizer', default='gpt2', type=str)
+    parser.add_argument('--tokenizer', default='./', type=str)
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
