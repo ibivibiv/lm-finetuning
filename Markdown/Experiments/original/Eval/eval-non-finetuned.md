@@ -39,4 +39,4 @@ Non-finetuned LMs can't compete with finetuned lms on ppl and definitely can't t
 | gpt2        | 3.149 | 23.33   | 35.12       | 37.5                   |
 | gpt2-medium | 2.923 | 18.59   | 27.18       | 26.37                  |
 | gpt2-large  | 2.786 | 16.23   | 23.30       | 22.05                  |
-| gpt2-xl     |
+| gpt2-xl     | 2.706 | 14.97   | 21.28       | 17.48                  |

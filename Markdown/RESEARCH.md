@@ -38,19 +38,13 @@
 
 ## ToDo
 
--   get sota with large context lengths?
--   according to this (https://github.com/NVIDIA/Megatron-LM) moving the layernorm is why gpt2 can scale
-    -   why?
--   detokenizer shouldn't be for all datasets
--   look at opengpt2
-    -   headshot?
 -   gcp
     -   check ram needed for datasets
         -   wikitext103
-            -   basic, _check on gcp_
-            -   --fast, 13m
-            -   --efficient, 10m
-            -   tfrecords,
+            -   basic: 50gb ram and 10m
+            -   --fast: 20gb ram and 2 minutes
+            -   --efficient: 2gb, 10m
+            -   tfrecords:
         -   imdb
         -   pg-19
         -   writing prompts
@@ -60,6 +54,7 @@
         -   record dataset metadata
         -   move buckets to correct zone
             -   https://cloud.google.com/storage/pricing#network-pricing
+    -   train tokenizer
 -   replicate training on wikitext2 and 103
 -   find out how to evaluate on full dataset
     -   issue/email
@@ -120,11 +115,17 @@
             -   _is its extended context the reason for low ppl?_
 
     -   pplm
+
         -   generalize pplm
             -   more attribute models for normal generation use
             -   use a nn for the attribute model
                 -   train to predict topics
                 -   should make pplm edit text to make it more like chosen topic
+
+    -   get sota with large context lengths?
+        -   headshot?
+    -   according to this (https://github.com/NVIDIA/Megatron-LM) moving the layernorm is why gpt2 can scale
+        -   why?
 
 ## Training
 
@@ -472,6 +473,7 @@ Some language models might have been pretrained on some of these datasets.
     -   won't do
     -   get --fast working for tf
         -   wont do
+-   detokenizer shouldn't be for all datasets
 
 ### Resources
 

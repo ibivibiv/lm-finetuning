@@ -48,6 +48,10 @@ def tokenize(i, paths, tokenizer, args):
                         line = tokenizer.convert_tokens_to_ids(
                             tokenizer.tokenize(line))
 
+                        if args.min_seq_len:
+                            if len(line) < args.seq_len:
+                                continue
+
                         for i in range(len(line) // (args.seq_len - 1)):
                             example = tokenizer.build_inputs_with_special_tokens(
                                 tokenized_control_code + line[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
