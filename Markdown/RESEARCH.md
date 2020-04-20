@@ -38,7 +38,12 @@
 
 ## ToDo
 
+-   according to this (https://github.com/NVIDIA/Megatron-LM) moving the layernorm is why gpt2 can scale
+    -   why?
+-   try effect of detokenizer
+-   detokenizer shouldn't be for all datasets
 -   look at opengpt2
+    -   headshot?
 -   gcp
     -   check ram needed for datasets
         -   wikitext103
