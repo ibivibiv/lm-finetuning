@@ -42,30 +42,57 @@ def tokenize(i, paths, tokenizer, args):
     n_examples = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
         for path in tqdm(paths):
-            with open(path, encoding="utf-8") as handle:
-                text = handle.read()
 
-            text = tokenizer.convert_tokens_to_ids(
-                tokenizer.tokenize(text))
+            if args.line_by_line:
+                with open(path, encoding="utf-8") as handle:
+                    for line in handle:
+                        if len(line) > 0 and not line.isspace():
+                            line = tokenizer.convert_tokens_to_ids(
+                                tokenizer.tokenize(line))
 
-            if args.min_seq_len:
-                if len(text) < args.seq_len:
-                    continue
+                            if args.min_seq_len:
+                                if len(line) < args.seq_len:
+                                    continue
 
-            for i in range(len(text) // (args.seq_len - 1)):
-                example = tokenizer.build_inputs_with_special_tokens(
-                    tokenized_control_code + text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
+                            for i in range(len(line) // (args.seq_len - 1)):
+                                example = tokenizer.build_inputs_with_special_tokens(
+                                    tokenized_control_code + line[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
 
-                inputs = example[:-1]
-                labels = example[1:]
+                                inputs = example[:-1]
+                                labels = example[1:]
 
-                example = serialize_example(inputs, labels)
-                writer.write(example)
+                                example = serialize_example(inputs, labels)
+                                writer.write(example)
 
-                if args.n_batches > -1 and len(n_examples) >= args.n_batches:
-                    break
+                                if args.n_batches > -1 and len(n_examples) >= args.n_batches:
+                                    break
 
-                n_examples += 1
+                                n_examples += 1
+            else:
+                with open(path, encoding="utf-8") as handle:
+                    text = handle.read()
+
+                text = tokenizer.convert_tokens_to_ids(
+                    tokenizer.tokenize(text))
+
+                if args.min_seq_len:
+                    if len(text) < args.seq_len:
+                        continue
+
+                for i in range(len(text) // (args.seq_len - 1)):
+                    example = tokenizer.build_inputs_with_special_tokens(
+                        tokenized_control_code + text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
+
+                    inputs = example[:-1]
+                    labels = example[1:]
+
+                    example = serialize_example(inputs, labels)
+                    writer.write(example)
+
+                    if args.n_batches > -1 and len(n_examples) >= args.n_batches:
+                        break
+
+                    n_examples += 1
 
     end = time.time()
     print(f'#examples: {n_examples}')
@@ -90,6 +117,7 @@ def main():
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
     parser.add_argument('--n_batches', default=-1, type=int, required=False)
     parser.add_argument('--min_seq_len', default=False, action='store_true')
+    parser.add_argument('--line_by_line', default=False, action='store_true')
 
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--model_name', default='distilgpt2', type=str)

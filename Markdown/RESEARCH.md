@@ -40,13 +40,14 @@
 
 -   cache wikitext103
 -   add option to read in entire file for tfrecords
+-   expand make_tfrecords to work with multiple tokenizers
 -   gcp
     -   check ram needed for datasets
         -   wikitext103
             -   basic: 50gb ram and 10m
             -   --fast: 20gb ram and 2 minutes
             -   --efficient: 2gb, 10m
-            -   tfrecords:
+            -   tfrecords: 50gb ram, 10m
         -   imdb
         -   pg-19
         -   writing prompts
