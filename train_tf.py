@@ -69,13 +69,19 @@ class TextDataset(object):
                 for line in handle:
                     self.n_original_tokens += len(line.split(" "))
                     if len(line) > 0 and not line.isspace():
-                        text.append(wikitext_detokenizer(line))
+                        if args.detokenizer:
+                            text.append(wikitext_detokenizer(line))
+                        else:
+                            text.append(line)
             # Default way reads in entire file into memory
             else:
                 temp = handle.read()
                 self.n_original_tokens += len(temp.strip().split(" "))
 
-                text.append(wikitext_detokenizer(temp))
+                if args.detokenizer:
+                    text.append(wikitext_detokenizer(temp))
+                else:
+                    text.append(temp)
 
         for l in tqdm(text):
             tokenized_text = tokenizer.convert_tokens_to_ids(
@@ -233,6 +239,8 @@ def main():
     parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
     parser.add_argument('--min_seq_len', default=False, action='store_true')
+    parser.add_argument('--detokenizer', default=False,
+                        action="store_true", required=False)
 
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--model_name', default='distilgpt2', type=str)

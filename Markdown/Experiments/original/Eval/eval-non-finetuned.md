@@ -31,3 +31,12 @@ Non-finetuned LMs can't compete with finetuned lms on ppl and definitely can't t
 | 256              | 3.22 | 25.22   | 40.67       |
 | 512              | 3.00 | 20.12   | 31.37       |
 | 1024             | 2.82 | 16.91   | 25.72       |
+
+### Detokenizers + test set + seqlen 1024
+
+| model       | loss  | val_ppl | adj_val_ppl | papers ppl wikitext103 |
+| ----------- | ----- | ------- | ----------- | ---------------------- |
+| gpt2        | 3.149 | 23.33   | 35.12       | 37.5                   |
+| gpt2-medium | 2.923 | 18.59   | 27.18       | 26.37                  |
+| gpt2-large  | 2.786 | 16.23   | 23.30       | 22.05                  |
+| gpt2-xl     |

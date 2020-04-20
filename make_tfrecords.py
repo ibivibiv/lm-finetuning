@@ -45,7 +45,6 @@ def tokenize(i, paths, tokenizer, args):
             with open(path, encoding="utf-8") as handle:
                 for line in handle:
                     if len(line) > 0 and not line.isspace():
-                        line = wikitext_detokenizer(line)
                         line = tokenizer.convert_tokens_to_ids(
                             tokenizer.tokenize(line))
 

@@ -66,12 +66,18 @@ class TextDataset(Dataset):
                 for line in handle:
                     self.n_original_tokens += len(line.split(" "))
                     if len(line) > 0 and not line.isspace():
-                        text.append(wikitext_detokenizer(line))
+                        if args.detokenizer:
+                            text.append(wikitext_detokenizer(line))
+                        else:
+                            text.append(line)
             else:
                 temp = handle.read()
                 self.n_original_tokens += len(temp.strip().split(" "))
 
-                text.append(wikitext_detokenizer(temp))
+                if args.detokenizer:
+                    text.append(wikitext_detokenizer(temp))
+                else:
+                    text.append(temp)
 
         if args.fast:
             batches = tokenizer.batch_encode_plus(
@@ -438,6 +444,8 @@ def main():
                         action="store_true", required=False)
     # Efficient for large datasets
     parser.add_argument('--efficient', default=False,
+                        action="store_true", required=False)
+    parser.add_argument('--detokenizer', default=False,
                         action="store_true", required=False)
 
     # if from scratch

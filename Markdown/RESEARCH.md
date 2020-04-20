@@ -38,9 +38,9 @@
 
 ## ToDo
 
+-   get sota with large context lengths?
 -   according to this (https://github.com/NVIDIA/Megatron-LM) moving the layernorm is why gpt2 can scale
     -   why?
--   try effect of detokenizer
 -   detokenizer shouldn't be for all datasets
 -   look at opengpt2
     -   headshot?
@@ -314,6 +314,7 @@ Some language models might have been pretrained on some of these datasets.
                 -   evals on sliding windows
                     -   https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L350
     -   gpt2 wikitext ppl numbers are a mess
+        -   **can reproduce openai results when using detokenizers**
         -   gpt2 uses word level data
         -   can't reproduce zero-shot results
             -   code for evaluation isn't available
@@ -404,6 +405,9 @@ Some language models might have been pretrained on some of these datasets.
 -   train tokenizer
     -   will use default byte level bpe tokenizer
     -   must have a config.json file in same directory as new tokenizer
+-   try effect of detokenizer
+    -   can reproduce openai results
+    -   https://github.com/cybertronai/bflm
 
 ### Won't do
 
