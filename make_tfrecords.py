@@ -43,29 +43,29 @@ def tokenize(i, paths, tokenizer, args):
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
         for path in tqdm(paths):
             with open(path, encoding="utf-8") as handle:
-                for line in handle:
-                    if len(line) > 0 and not line.isspace():
-                        line = tokenizer.convert_tokens_to_ids(
-                            tokenizer.tokenize(line))
+                text = handle.read()
 
-                        if args.min_seq_len:
-                            if len(line) < args.seq_len:
-                                continue
+            text = tokenizer.convert_tokens_to_ids(
+                tokenizer.tokenize(text))
 
-                        for i in range(len(line) // (args.seq_len - 1)):
-                            example = tokenizer.build_inputs_with_special_tokens(
-                                tokenized_control_code + line[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
+            if args.min_seq_len:
+                if len(text) < args.seq_len:
+                    continue
 
-                            inputs = example[:-1]
-                            labels = example[1:]
+            for i in range(len(text) // (args.seq_len - 1)):
+                example = tokenizer.build_inputs_with_special_tokens(
+                    tokenized_control_code + text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
 
-                            example = serialize_example(inputs, labels)
-                            writer.write(example)
+                inputs = example[:-1]
+                labels = example[1:]
 
-                            if args.n_batches > -1 and len(n_examples) >= args.n_batches:
-                                break
+                example = serialize_example(inputs, labels)
+                writer.write(example)
 
-                            n_examples += 1
+                if args.n_batches > -1 and len(n_examples) >= args.n_batches:
+                    break
+
+                n_examples += 1
 
     end = time.time()
     print(f'#examples: {n_examples}')

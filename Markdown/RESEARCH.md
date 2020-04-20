@@ -38,6 +38,8 @@
 
 ## ToDo
 
+-   cache wikitext103
+-   add option to read in entire file for tfrecords
 -   gcp
     -   check ram needed for datasets
         -   wikitext103
