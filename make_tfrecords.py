@@ -15,10 +15,6 @@ from transformers import *
 
 from detokenizer import wikitext_detokenizer
 
-MODEL_CLASSES = {
-    'gpt2': (TFGPT2LMHeadModel, GPT2TokenizerFast)
-}
-
 
 def _int64_feature(value):
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
@@ -72,7 +68,7 @@ def tokenize(i, paths, tokenizer, args):
                 with open(path, encoding="utf-8") as handle:
                     text = handle.read()
 
-                text = tokenizer.batch_encode_plus(text)["input_ids"]
+                text = tokenizer.batch_encode_plus([text])["input_ids"][0]
 
                 if args.min_seq_len:
                     if len(text) < args.seq_len:
@@ -118,8 +114,7 @@ def main():
     parser.add_argument('--min_seq_len', default=False, action='store_true')
     parser.add_argument('--line_by_line', default=False, action='store_true')
 
-    parser.add_argument('--model_type', default='gpt2', type=str)
-    parser.add_argument('--model_name', default='distilgpt2', type=str)
+    parser.add_argument('--tokenizer', default='gpt2', type=str)
 
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--seed', default=42, type=int)
@@ -135,8 +130,9 @@ def main():
         ptvsd.wait_for_attach()
         breakpoint()
 
-    _, tokenizer = MODEL_CLASSES[args.model_type]
-    tokenizer = tokenizer.from_pretrained(args.model_name)
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
+    tokenizer.add_special_tokens(
+        {'additional_special_tokens': args.control_codes})
 
     start = time.time()
 

@@ -9,6 +9,7 @@
 -   if multiple files, there must be a control code for each and an equal number of validation files
     -   val metrics will be averaged over training metrics
 -   note that all experiments have been done on a max of gpt2-xl, larger models like megatron lm will be better
+-   for custom tokenizers, there must be a model config.json file in the same directory as the pretrained tokenizers
 
 ## Objectives
 
@@ -39,38 +40,27 @@
 ## ToDo
 
 -   encode wikitext, pg19, and writingprompts with custom tokenizers
--   ask batch_encode_plus truncation
--   use batch_encode_plus for tfrecords
-    -   most of the time is spent tokenizing, not loading lines
-    -   load n files at a time and tokenize in parallel
-        -   no max len, but will have to collect everything and break it up into seqlen chunks
-            -   works identically for eval nonfinetuned
-    -   tokenizer speeds
-        -   https://github.com/huggingface/tokenizers/issues/66
-        -   https://github.com/VKCOM/YouTokenToMe/blob/master/benchmark.md
-        -   https://github.com/VKCOM/YouTokenToMe/blob/master/tests/speed_test/speed_test.py
-        -   https://github.com/huggingface/tokenizers/pull/165
-        -   https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.batch_encode_plus
--   add option to turn off lr decay?
--   expand make_tfrecords to work with multiple tokenizers
 -   gcp
     -   check ram needed for datasets
         -   wikitext2
-            -   train: 9601
-            -   valid: 1014
-            -   test: 1160
+            -   gpt2
+                -   train: 9601
+                -   valid: 1014
+                -   test: 1160
         -   wikitext103
-            -   basic: 60gb ram and 10m
-            -   --fast: 20gb ram and 2 minutes
-            -   --efficient: 2gb, 10m
-            -   tfrecords (seqlen 256): 50gb ram, 10m
-                -   train: 466953
-                -   val: 979
-                -   test: 1118
-            -   tokenizer
-                -   vocab size 52000
-                -   time: 3m
-                    -   most of the time was spent reading the file
+            -   gpt2tokenizer
+                -   basic: 60gb ram and 10m
+                -   --fast: 20gb ram and 2 minutes
+                -   --efficient: 2gb, 10m
+                -   tfrecords (seqlen 256): 50gb ram, 10m
+                    -   train: 466953
+                    -   val: 979
+                    -   test: 1118
+                -   tokenizer
+                    -   vocab size 52000
+                    -   time: 3m
+                        -   most of the time was spent reading the file
+            -   custom tokenizer
         -   pg-19
             -   train
                 -   won't do yet
@@ -450,6 +440,19 @@ Some language models might have been pretrained on some of these datasets.
     -   issue/email
     -   might not be a problem
     -   but implementations vary
+-   use batch_encode_plus for tfrecords
+    -   most of the time is spent tokenizing, not loading lines
+    -   load n files at a time and tokenize in parallel
+        -   no max len, but will have to collect everything and break it up into seqlen chunks
+            -   works identically for eval nonfinetuned
+    -   tokenizer speeds
+        -   https://github.com/huggingface/tokenizers/issues/66
+        -   https://github.com/VKCOM/YouTokenToMe/blob/master/benchmark.md
+        -   https://github.com/VKCOM/YouTokenToMe/blob/master/tests/speed_test/speed_test.py
+        -   https://github.com/huggingface/tokenizers/pull/165
+        -   https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.batch_encode_plus
+-   ask batch_encode_plus truncation
+    -   extra tokens are also returned, but it's easier to not do that and just tokenize the entire file/line and deal with seqlens later
 
 ### Won't do
 
@@ -515,6 +518,8 @@ Some language models might have been pretrained on some of these datasets.
     -   get --fast working for tf
         -   wont do
 -   detokenizer shouldn't be for all datasets
+-   add option to turn off lr decay?
+-   expand make_tfrecords to work with multiple tokenizers
 
 ### Resources
 
