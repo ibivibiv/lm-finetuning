@@ -43,6 +43,7 @@
 -   use batch_encode_plus for tfrecords
     -   most of the time is spent tokenizing, not loading lines
     -   load n files at a time and tokenize in parallel
+        -   no max len, but will have to collect everything and break it up into seqlen chunks
     -   tokenizer speeds
         -   https://github.com/huggingface/tokenizers/issues/66
         -   https://github.com/VKCOM/YouTokenToMe/blob/master/benchmark.md

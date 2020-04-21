@@ -84,9 +84,12 @@ class TextDataset(Dataset):
                 text, add_special_tokens=True, max_length=args.seq_len-1)["input_ids"]
             batches = [tokenized_control_code + batch for batch in batches]
         else:
+            text = tokenizer.batch_encode_plus(text)["input_ids"]
             for l in tqdm(text):
-                tokenized_text = tokenizer.convert_tokens_to_ids(
-                    tokenizer.tokenize(l))
+                # can be replaced with batch_encode_plus
+                # tokenized_text = tokenizer.convert_tokens_to_ids(
+                #     tokenizer.tokenize(l))
+                tokenized_text = l
 
                 if args.n_tokens > -1:
                     tokenized_text = tokenized_text[:args.n_tokens]
