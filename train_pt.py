@@ -85,23 +85,18 @@ class TextDataset(Dataset):
             batches = [tokenized_control_code + batch for batch in batches]
         else:
             text = tokenizer.batch_encode_plus(text)["input_ids"]
-            for l in tqdm(text):
-                # can be replaced with batch_encode_plus
-                # tokenized_text = tokenizer.convert_tokens_to_ids(
-                #     tokenizer.tokenize(l))
-                tokenized_text = l
-
+            for line in tqdm(text):
                 if args.n_tokens > -1:
-                    tokenized_text = tokenized_text[:args.n_tokens]
+                    line = line[:args.n_tokens]
 
-                if len(tokenized_text) < args.seq_len - 1:
+                if len(line) < args.seq_len - 1:
                     if not args.min_seq_len:
                         batches.append(
-                            tokenizer.build_inputs_with_special_tokens(tokenized_control_code + tokenized_text))
+                            tokenizer.build_inputs_with_special_tokens(tokenized_control_code + line))
                 else:
-                    for i in range(math.ceil(len(tokenized_text) / (args.seq_len - 1))):
+                    for i in range(math.ceil(len(line) / (args.seq_len - 1))):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
-                            tokenized_control_code + tokenized_text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)]))
+                            tokenized_control_code + line[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)]))
 
                         if args.n_batches > -1 and len(batches) >= args.n_batches:
                             break

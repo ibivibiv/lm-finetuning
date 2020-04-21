@@ -42,6 +42,7 @@ def tokenize(i, paths, tokenizer, args):
     n_examples = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
         for path in tqdm(paths):
+            # kept this way for compatibility and not needing to keep all lines of file in memory
             if args.line_by_line:
                 with open(path, encoding="utf-8") as handle:
                     for line in tqdm(handle):
@@ -71,8 +72,7 @@ def tokenize(i, paths, tokenizer, args):
                 with open(path, encoding="utf-8") as handle:
                     text = handle.read()
 
-                text = tokenizer.convert_tokens_to_ids(
-                    tokenizer.tokenize(text))
+                text = tokenizer.batch_encode_plus(text)["input_ids"]
 
                 if args.min_seq_len:
                     if len(text) < args.seq_len:
