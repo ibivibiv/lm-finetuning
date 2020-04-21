@@ -42,10 +42,9 @@ def tokenize(i, paths, tokenizer, args):
     n_examples = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
         for path in tqdm(paths):
-
             if args.line_by_line:
                 with open(path, encoding="utf-8") as handle:
-                    for line in handle:
+                    for line in tqdm(handle):
                         if len(line) > 0 and not line.isspace():
                             line = tokenizer.convert_tokens_to_ids(
                                 tokenizer.tokenize(line))

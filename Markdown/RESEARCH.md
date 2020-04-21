@@ -38,11 +38,18 @@
 
 ## ToDo
 
+-   encode wikitext, pg19, and writingprompts with their own tokenizers
+-   ask batch_encode_plus truncation
 -   use batch_encode_plus for tfrecords
     -   most of the time is spent tokenizing, not loading lines
     -   load n files at a time and tokenize in parallel
+    -   tokenizer speeds
+        -   https://github.com/huggingface/tokenizers/issues/66
+        -   https://github.com/VKCOM/YouTokenToMe/blob/master/benchmark.md
+        -   https://github.com/VKCOM/YouTokenToMe/blob/master/tests/speed_test/speed_test.py
+        -   https://github.com/huggingface/tokenizers/pull/165
+        -   https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.batch_encode_plus
 -   add option to turn off lr decay?
--   cache wikitext103
 -   expand make_tfrecords to work with multiple tokenizers
 -   gcp
     -   check ram needed for datasets
@@ -60,10 +67,22 @@
                 -   test: 1118
             -   tokenizer
                 -   vocab size 52000
+                -   time: 3m
+                    -   most of the time was spent reading the file
         -   pg-19
-            -   do
+            -   train
+                -   todo
+            -   validation: 13721
+                -   50 books
+            -   test: 40983
+                -   100 books
         -   writing prompts
-            -   do
+            -   train
+                -   used --line-by-line
+                -   ~1gb of text
+            -   tok
+                -   vocab size 52000
+                -   time: 5m
     -   create tfrecords
         -   record dataset metadata
 -   replicate training on wikitext2 and 103
