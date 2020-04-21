@@ -38,7 +38,7 @@
 
 ## ToDo
 
--   encode wikitext, pg19, and writingprompts with their own tokenizers
+-   encode wikitext, pg19, and writingprompts with custom tokenizers
 -   ask batch_encode_plus truncation
 -   use batch_encode_plus for tfrecords
     -   most of the time is spent tokenizing, not loading lines
@@ -71,25 +71,25 @@
                     -   most of the time was spent reading the file
         -   pg-19
             -   train
-                -   todo
+                -   won't do yet
             -   validation: 13721
                 -   50 books
             -   test: 40983
                 -   100 books
         -   writing prompts
-            -   train
+            -   train: 740801
                 -   used --line-by-line
                 -   ~1gb of text
+                    -   272k lines; ~15m
+            -   val: 42164
+            -   test: 41236
             -   tok
                 -   vocab size 52000
                 -   time: 5m
-    -   create tfrecords
-        -   record dataset metadata
--   replicate training on wikitext2 and 103
+-   train (pre and finetune) on wikitext, pg19, and writingprompts
+    -   replicate training on wikitext2 and 103
     -   train tokenizer
     -   pretrain on wikitext103
--   find out how to evaluate on full dataset
-    -   issue/email
 -   create and validate new lms
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
     -   openwebtext
@@ -444,6 +444,10 @@ Some language models might have been pretrained on some of these datasets.
     -   can reproduce openai results
     -   https://github.com/cybertronai/bflm
 -   add option to read in entire file for tfrecords
+-   find out how to evaluate on full dataset
+    -   issue/email
+    -   might not be a problem
+    -   but implementations vary
 
 ### Won't do
 
