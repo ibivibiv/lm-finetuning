@@ -38,31 +38,40 @@
 
 ## ToDo
 
+-   add option to turn off lr decay?
 -   cache wikitext103
--   add option to read in entire file for tfrecords
 -   expand make_tfrecords to work with multiple tokenizers
 -   gcp
     -   check ram needed for datasets
+        -   wikitext2
+            -   train: 9601
+            -   valid: 1014
+            -   test: 1160
         -   wikitext103
-            -   basic: 50gb ram and 10m
+            -   basic: 60gb ram and 10m
             -   --fast: 20gb ram and 2 minutes
             -   --efficient: 2gb, 10m
-            -   tfrecords: 50gb ram, 10m
-        -   imdb
+            -   tfrecords (seqlen 256): 50gb ram, 10m
+                -   train: 466953
+                -   val: 979
+                -   test: 1118
+            -   tokenizer
+                -   vocab size 52000
         -   pg-19
+            -   do
         -   writing prompts
-        -   cnn/dailymail
-        -   will have to use --fast and --efficient for larger finetuning datasets
+            -   do
     -   create tfrecords
         -   record dataset metadata
-        -   move buckets to correct zone
-            -   https://cloud.google.com/storage/pricing#network-pricing
-    -   train tokenizer
 -   replicate training on wikitext2 and 103
+    -   train tokenizer
+    -   pretrain on wikitext103
 -   find out how to evaluate on full dataset
     -   issue/email
 -   create and validate new lms
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
+    -   openwebtext
+    -   train tokenizer on openwebtext
 -   evaluation experiments
     -   redo wikitext2 and imdb experiments
         -   use word level
@@ -412,6 +421,7 @@ Some language models might have been pretrained on some of these datasets.
 -   try effect of detokenizer
     -   can reproduce openai results
     -   https://github.com/cybertronai/bflm
+-   add option to read in entire file for tfrecords
 
 ### Won't do
 
