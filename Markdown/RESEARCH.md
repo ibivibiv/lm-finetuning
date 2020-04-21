@@ -38,6 +38,9 @@
 
 ## ToDo
 
+-   use batch_encode_plus for tfrecords
+    -   most of the time is spent tokenizing, not loading lines
+    -   load n files at a time and tokenize in parallel
 -   add option to turn off lr decay?
 -   cache wikitext103
 -   expand make_tfrecords to work with multiple tokenizers

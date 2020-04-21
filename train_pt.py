@@ -80,11 +80,8 @@ class TextDataset(Dataset):
                     text.append(temp)
 
         if args.fast:
-            start = time.time()
             batches = tokenizer.batch_encode_plus(
                 text, add_special_tokens=True, max_length=args.seq_len-1)["input_ids"]
-            end = time.time()
-            print(end - start)
             batches = [tokenized_control_code + batch for batch in batches]
         else:
             for l in tqdm(text):
