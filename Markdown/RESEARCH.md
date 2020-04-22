@@ -42,6 +42,7 @@
 -   add custom model support to train_tfrecords
 -   encode wikitext, pg19, and writingprompts with custom tokenizers
 -   gcp
+
     -   custom tokenizer vocab size: 50257
     -   check ram needed for datasets
         -   wikitext2
@@ -70,18 +71,24 @@
                 -   valid: 18014
                 -   test: 40983
             -   custom
-                -   valid
-                -   test
+                -   valid: 16155
+                -   test: 39377
         -   writing prompts
-            -   train: 740801
-                -   used --line-by-line
-                -   ~1gb of text
-                    -   272k lines; ~15m
-            -   val: 42164
-            -   test: 41236
+            -   used --line-by-line
+            -   ~1gb of text
+                -   272k lines; ~15m
             -   tok
-                -   vocab size 52000
+                -   vocab size 50257
                 -   time: 5m
+            -   gpt2
+                -   train: 740801
+                -   val: 42164
+                -   test: 41236
+            -   custom
+                -   train: 685459
+                -   valid: 39039
+                -   test: 38186
+
 -   train (pre and finetune) on wikitext, pg19, and writingprompts
     -   replicate training on wikitext2 and 103
     -   train tokenizer
