@@ -30,7 +30,7 @@ MODEL_CLASSES = {
 }
 
 
-def get_dataset(args, tokenizer):
+def get_dataset(args):
     feature_description = {
         'inputs': tf.io.FixedLenFeature((args.seq_len - 1), tf.int64),
         'labels': tf.io.FixedLenFeature((args.seq_len - 1), tf.int64),
@@ -48,7 +48,7 @@ def get_dataset(args, tokenizer):
     val_dataset = val_dataset.map(_parse_function).shuffle(
         100).batch(args.batch_size, drop_remainder=True)
 
-    return tokenizer, train_dataset, val_dataset
+    return train_dataset, val_dataset
 
 
 class Checkpoint(tf.keras.callbacks.Callback):
@@ -102,7 +102,6 @@ def main():
 
     parser.add_argument('--config_path', default='./', type=str)
     parser.add_argument('--model_type', default='gpt2', type=str)
-    parser.add_argument('--tokenizer', default='./', type=str)
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
@@ -151,12 +150,6 @@ def main():
 
     shutil.rmtree('./temp')
 
-    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
-    # Can't use since TF models don't have resize_token_embeddings implemented
-    # tokenizer.add_special_tokens(
-    #     {'additional_special_tokens': args.control_codes})
-    # model.resize_token_embeddings(len(tokenizer))
-
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
     if args.optimizer == "SGD":
@@ -171,8 +164,7 @@ def main():
             optimizer = AdafactorOptimizer(
                 learning_rate=args.lr, beta1=args.momentum)
 
-    tokenizer, train_dataset, val_dataset = get_dataset(
-        args, tokenizer)
+    train_dataset, val_dataset = get_dataset(args)
 
     n_train_steps = (args.train_len // args.batch_size) * args.epochs
 

@@ -39,10 +39,7 @@
 
 ## ToDo
 
--   add custom model support to train_tfrecords
--   encode wikitext, pg19, and writingprompts with custom tokenizers
 -   gcp
-
     -   custom tokenizer vocab size: 50257
     -   check ram needed for datasets
         -   wikitext2
@@ -88,7 +85,6 @@
                 -   train: 685459
                 -   valid: 39039
                 -   test: 38186
-
 -   train (pre and finetune) on wikitext, pg19, and writingprompts
     -   replicate training on wikitext2 and 103
     -   train tokenizer
@@ -464,6 +460,7 @@ Some language models might have been pretrained on some of these datasets.
         -   https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.batch_encode_plus
 -   ask batch_encode_plus truncation
     -   extra tokens are also returned, but it's easier to not do that and just tokenize the entire file/line and deal with seqlens later
+-   encode wikitext, pg19, and writingprompts with custom tokenizers
 
 ### Won't do
 
