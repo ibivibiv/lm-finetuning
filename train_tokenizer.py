@@ -17,7 +17,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if os.path.isdir(args.train_path):
-        paths = glob.glob(os.path.join(args.train_path, '*.txt'))
+        paths = glob.glob(os.path.join(args.train_path, '*'))
     else:
         paths = [args.train_path]
 
