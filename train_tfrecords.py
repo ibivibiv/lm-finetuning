@@ -94,9 +94,9 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--train_path', nargs='*',
-                        default=['gs://wikitext-2/0.tfrecord'], required=False)
+                        default=['gs://lm-finetuning/wikitext-2/wiki.train.tokens.tfrecord'], required=False)
     parser.add_argument('--val_path', nargs='*',
-                        default=['gs://wikitext-2/0.tfrecord'], required=False)
+                        default=['gs://lm-finetuning/wikitext-2/wiki.valid.tokens.tfrecord'], required=False)
     parser.add_argument('--train_len', default=100, type=int, required=False)
     parser.add_argument('--seq_len', default=256, type=int, required=False)
 
