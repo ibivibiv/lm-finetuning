@@ -55,8 +55,11 @@ class TextDataset(Dataset):
             f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
 
     def _tokenize(self, path, tokenizer, args, i):
-        tokenized_control_code = tokenizer.convert_tokens_to_ids(
-            tokenizer.tokenize(args.control_codes[i]))
+        if args.use_control_codes:
+            tokenized_control_code = tokenizer.convert_tokens_to_ids(
+                tokenizer.tokenize(args.control_codes[i]))
+        else:
+            tokenized_control_code = []
 
         batches = []
 
@@ -430,6 +433,9 @@ def main():
         '--val_path', default='./data/wikitext-2/wiki.valid.tokens', type=str, required=False)
     parser.add_argument('--save_dir', default=None,
                         type=str, required=False)
+
+    parser.add_argument('--use_control_codes', default=False,
+                        action="store_true", required=False)
     parser.add_argument('--control_codes', nargs='+',
                         default=['<|endoftext|>'])
 

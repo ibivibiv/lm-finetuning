@@ -15,6 +15,7 @@
 -   weight decay: 0.01
 -   learning rate: 1e-4
 -   warmup: 10k
+-   cosine decay of lr
 
 ## Dataset
 

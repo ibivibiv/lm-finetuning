@@ -39,6 +39,7 @@
 
 ## ToDo
 
+-   <endoftext> wikitext103
 -   gcp
     -   custom tokenizer vocab size: 50257
     -   check ram needed for datasets
@@ -86,9 +87,8 @@
                 -   valid: 39039
                 -   test: 38186
 -   train (pre and finetune) on wikitext, pg19, and writingprompts
-    -   replicate training on wikitext2 and 103
     -   train tokenizer
-    -   pretrain on wikitext103
+    -   pretrain on wikitext2/103, writingprompts, and pg-19
 -   create and validate new lms
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
     -   openwebtext

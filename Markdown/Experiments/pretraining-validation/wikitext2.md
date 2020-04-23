@@ -8,6 +8,6 @@
 
 ## Results
 
-| model | train loss | val loss | val ppl | adj val ppl | best epoch | framework | run |
-| ----- | ---------- | -------- | ------- | ----------- | ---------- | --------- | --- |
-| gpt2  |
+| model | train loss | val loss | val ppl | adj val ppl | best epoch | framework | run           |
+| ----- | ---------- | -------- | ------- | ----------- | ---------- | --------- | ------------- |
+| gpt2  | 5.85       | 5.34     | 208     | -           | 9          | tf        | deft-fire-978 |
