@@ -32,8 +32,12 @@ def serialize_example(inputs, labels):
 
 def tokenize(i, paths, tokenizer, args):
     start = time.time()
-    tokenized_control_code = tokenizer.convert_tokens_to_ids(
-        tokenizer.tokenize(args.control_codes[0]))
+
+    if args.use_control_codes:
+        tokenized_control_code = tokenizer.convert_tokens_to_ids(
+            tokenizer.tokenize(args.control_codes[0]))
+    else:
+        tokenized_control_code = []
 
     n_examples = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
@@ -102,11 +106,15 @@ def main():
 
     parser.add_argument('--path', default='./data/wikitext-2/wiki.train.tokens',
                         type=str, required=False)
-    parser.add_argument('--control_codes', nargs='+',
-                        default=['<|endoftext|>'])
+
     parser.add_argument('--save_path', default='./', type=str, required=False)
     parser.add_argument('--files_per_tfrecord', default=1,
                         type=int, required=False)
+
+    parser.add_argument('--use_control_codes', default=False,
+                        action="store_true", required=False)
+    parser.add_argument('--control_codes', nargs='+',
+                        default=['<|endoftext|>'])
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
