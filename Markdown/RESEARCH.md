@@ -39,8 +39,9 @@
 
 ## ToDo
 
--   redo wikitext103 tfrecords
+-   add tensorboard dev support
 -   try esperanto, but with gpt2?
+    -   or with mlm on wikitext103
 -   gcp
     -   custom tokenizer vocab size: 50257
     -   check ram needed for datasets
@@ -463,6 +464,7 @@ Some language models might have been pretrained on some of these datasets.
     -   extra tokens are also returned, but it's easier to not do that and just tokenize the entire file/line and deal with seqlens later
 -   encode wikitext, pg19, and writingprompts with custom tokenizers
 -   <endoftext> wikitext103
+-   redo wikitext103 tfrecords
 
 ### Won't do
 

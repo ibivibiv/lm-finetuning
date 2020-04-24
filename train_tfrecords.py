@@ -172,18 +172,23 @@ def main():
     wandb_callback = WandbCallback()
     checkpoint_callback = Checkpoint(wandb.run.dir, args)
 
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(
+        log_dir='logs', histogram_freq=0, write_graph=True, write_images=False,
+        update_freq='epoch', profile_batch=2, embeddings_freq=0,
+        embeddings_metadata=None)
+
     model.compile(optimizer=optimizer, loss=[
                   loss, *[None] * model.config.n_layer])
 
     if args.disable_lr_schedule:
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback])
+                  wandb_callback, checkpoint_callback, tensorboard_callback])
     else:
         lr_callback = WarmUpLinearDecayScheduler(
             learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=int(0.1 * n_train_steps))
 
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback, lr_callback])
+                  wandb_callback, checkpoint_callback, lr_callback, tensorboard_callback])
 
 
 if __name__ == "__main__":
