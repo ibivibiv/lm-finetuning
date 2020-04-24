@@ -150,7 +150,7 @@ def main():
         model = model.from_pretrained('./temp', from_pt=True)
 
         tensorboard_callback = tf.keras.callbacks.TensorBoard(
-            log_dir='logs', histogram_freq=0, write_graph=True, write_images=False,
+            log_dir='gs://lm-finetuning/temp', histogram_freq=0, write_graph=True, write_images=False,
             update_freq='batch', profile_batch=2, embeddings_freq=0,
             embeddings_metadata=None)
 
