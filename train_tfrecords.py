@@ -149,6 +149,11 @@ def main():
         model = MODEL_CLASSES[args.model_type]
         model = model.from_pretrained('./temp', from_pt=True)
 
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(
+            log_dir='logs', histogram_freq=0, write_graph=True, write_images=False,
+            update_freq='batch', profile_batch=2, embeddings_freq=0,
+            embeddings_metadata=None)
+
     shutil.rmtree('./temp')
 
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -171,11 +176,6 @@ def main():
 
     wandb_callback = WandbCallback()
     checkpoint_callback = Checkpoint(wandb.run.dir, args)
-
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(
-        log_dir='logs', histogram_freq=0, write_graph=True, write_images=False,
-        update_freq='batch', profile_batch=2, embeddings_freq=0,
-        embeddings_metadata=None)
 
     model.compile(optimizer=optimizer, loss=[
                   loss, *[None] * model.config.n_layer])
