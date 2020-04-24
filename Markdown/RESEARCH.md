@@ -39,10 +39,7 @@
 
 ## ToDo
 
--   wikitext103 and custom tfrecords don't work
-    -   wikitext2 works
--   try esperanto, but with gpt2?
-    -   or with mlm on wikitext103
+-   redo wikitext103 tokenization again
 -   gcp
     -   custom tokenizer vocab size: 50257
     -   check ram needed for datasets
@@ -468,6 +465,8 @@ Some language models might have been pretrained on some of these datasets.
 -   redo wikitext103 tfrecords
 -   add tensorboard dev support
     -   tensorboard logger doesn't work with tpu filesystem
+-   try esperanto, but with gpt2?
+    -   or with mlm on wikitext103
 
 ### Won't do
 

@@ -31,7 +31,7 @@ MODEL_CLASSES = {
 
 
 def get_dataset(args):
-    if args.use_control_code:
+    if args.use_control_codes:
         seqlen = args.seq_len - 1
     else:
         seqlen = args.seq_len
