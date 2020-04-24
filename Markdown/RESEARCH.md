@@ -39,7 +39,8 @@
 
 ## ToDo
 
--   add tensorboard dev support
+-   wikitext103 and custom tfrecords don't work
+    -   wikitext2 works
 -   try esperanto, but with gpt2?
     -   or with mlm on wikitext103
 -   gcp
@@ -465,6 +466,8 @@ Some language models might have been pretrained on some of these datasets.
 -   encode wikitext, pg19, and writingprompts with custom tokenizers
 -   <endoftext> wikitext103
 -   redo wikitext103 tfrecords
+-   add tensorboard dev support
+    -   tensorboard logger doesn't work with tpu filesystem
 
 ### Won't do
 
