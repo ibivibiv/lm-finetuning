@@ -143,8 +143,9 @@ def sample(model, tokenizer, args):
 
 
 def run_sample(args):
+    config = AutoConfig.from_pretrained(args.config)
     model = AutoModelWithLMHead.from_pretrained(
-        args.checkpoint, from_tf=args.from_tf).to(args.device)
+        args.checkpoint, from_tf=args.from_tf, config=config).to(args.device)
 
     tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
 
