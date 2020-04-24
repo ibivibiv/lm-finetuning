@@ -174,7 +174,7 @@ def main():
 
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
         log_dir='logs', histogram_freq=0, write_graph=True, write_images=False,
-        update_freq='epoch', profile_batch=2, embeddings_freq=0,
+        update_freq='batch', profile_batch=2, embeddings_freq=0,
         embeddings_metadata=None)
 
     model.compile(optimizer=optimizer, loss=[
