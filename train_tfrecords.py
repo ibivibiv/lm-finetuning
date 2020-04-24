@@ -149,11 +149,6 @@ def main():
         model = MODEL_CLASSES[args.model_type]
         model = model.from_pretrained('./temp', from_pt=True)
 
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(
-            log_dir='gs://lm-finetuning/temp', histogram_freq=0, write_graph=True, write_images=False,
-            update_freq='batch', profile_batch=2, embeddings_freq=0,
-            embeddings_metadata=None)
-
     shutil.rmtree('./temp')
 
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -182,13 +177,13 @@ def main():
 
     if args.disable_lr_schedule:
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback, tensorboard_callback])
+                  wandb_callback, checkpoint_callback])
     else:
         lr_callback = WarmUpLinearDecayScheduler(
             learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=int(0.1 * n_train_steps))
 
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback, lr_callback, tensorboard_callback])
+                  wandb_callback, checkpoint_callback, lr_callback])
 
 
 if __name__ == "__main__":
