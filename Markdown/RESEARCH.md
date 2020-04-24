@@ -48,13 +48,13 @@
     -   check ram needed for datasets
         -   wikitext2
             -   gpt2
-                -   train: 9601
-                -   valid: 1014
+                -   train: 9563
+                -   valid: 1010
                 -   test: 1160
             -   custom
                 -   train: 8723
                 -   valid: 956
-                -   test: 1092
+                -   test: 1155
         -   wikitext103
             -   basic: 60gb ram and 10m
             -   --fast: 20gb ram and 2 minutes

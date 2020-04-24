@@ -59,9 +59,13 @@ def tokenize(i, paths, tokenizer, args):
                 else:
                     seqlen = args.seq_len
 
-                for i in range(len(l) // (seqlen)):
-                    example = tokenizer.build_inputs_with_special_tokens(
-                        tokenized_control_code + l[i * seqlen: (i + 1) * seqlen])
+                for i in range(len(l) // seqlen):
+                    if args.use_control_codes:
+                        example = tokenizer.build_inputs_with_special_tokens(
+                            tokenized_control_code + l[i * seqlen: (i + 1) * seqlen])
+                    else:
+                        example = tokenizer.build_inputs_with_special_tokens(
+                            l[i * seqlen: (i + 1) * seqlen])
 
                     inputs = example[:-1]
                     labels = example[1:]
