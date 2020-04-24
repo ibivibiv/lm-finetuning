@@ -33,54 +33,35 @@ def serialize_example(inputs, labels):
 def tokenize(i, paths, tokenizer, args):
     start = time.time()
 
-    if args.use_control_codes:
-        tokenized_control_code = tokenizer.convert_tokens_to_ids(
-            tokenizer.tokenize(args.control_codes[0]))
-    else:
-        tokenized_control_code = []
+    tokenized_control_code = tokenizer.convert_tokens_to_ids(
+        tokenizer.tokenize(args.control_codes[0]))
 
     n_examples = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
         for path in tqdm(paths):
-            # kept this way for compatibility and not needing to keep all lines of file in memory
-            if args.line_by_line:
-                with open(path, encoding="utf-8") as handle:
-                    for line in tqdm(handle):
-                        if len(line) > 0 and not line.isspace():
-                            line = tokenizer.convert_tokens_to_ids(
-                                tokenizer.tokenize(line))
+            text = []
+            with open(path, encoding="utf-8") as handle:
+                if args.line_by_line:
+                    for line in handle:
+                        text.append(line)
+                else:
+                    text.append(handle.read())
 
-                            if args.min_seq_len:
-                                if len(line) < args.seq_len:
-                                    continue
+            text = tokenizer.batch_encode_plus(text)["input_ids"]
 
-                            for i in range(len(line) // (args.seq_len - 1)):
-                                example = tokenizer.build_inputs_with_special_tokens(
-                                    tokenized_control_code + line[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
-
-                                inputs = example[:-1]
-                                labels = example[1:]
-
-                                example = serialize_example(inputs, labels)
-                                writer.write(example)
-
-                                if args.n_batches > -1 and len(n_examples) >= args.n_batches:
-                                    break
-
-                                n_examples += 1
-            else:
-                with open(path, encoding="utf-8") as handle:
-                    text = handle.read()
-
-                text = tokenizer.batch_encode_plus([text])["input_ids"][0]
-
+            for l in text:
                 if args.min_seq_len:
-                    if len(text) < args.seq_len:
+                    if len(l) < args.seq_len:
                         continue
 
-                for i in range(len(text) // (args.seq_len - 1)):
+                if args.use_control_codes:
+                    seqlen = args.seq_len - 1
+                else:
+                    seqlen = args.seq_len
+
+                for i in range(len(l) // (seqlen)):
                     example = tokenizer.build_inputs_with_special_tokens(
-                        tokenized_control_code + text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
+                        tokenized_control_code + l[i * seqlen: (i + 1) * seqlen])
 
                     inputs = example[:-1]
                     labels = example[1:]
