@@ -31,14 +31,9 @@ MODEL_CLASSES = {
 
 
 def get_dataset(args):
-    if args.use_control_codes:
-        seqlen = args.seq_len - 1
-    else:
-        seqlen = args.seq_len
-
     feature_description = {
-        'inputs': tf.io.FixedLenFeature((seqlen), tf.int64),
-        'labels': tf.io.FixedLenFeature((seqlen), tf.int64),
+        'inputs': tf.io.FixedLenFeature((args.seq_len - 1), tf.int64),
+        'labels': tf.io.FixedLenFeature((args.seq_len - 1), tf.int64),
     }
 
     def _parse_function(example_proto):
@@ -104,9 +99,6 @@ def main():
                         default=['gs://lm-finetuning/wikitext-2/wiki.valid.tokens.tfrecord'], required=False)
     parser.add_argument('--train_len', default=100, type=int, required=False)
     parser.add_argument('--seq_len', default=256, type=int, required=False)
-
-    parser.add_argument('--use_control_codes', default=False,
-                        action="store_true", required=False)
 
     parser.add_argument('--config_path', default='./', type=str)
     parser.add_argument('--model_type', default='gpt2', type=str)
