@@ -40,55 +40,10 @@
 ## ToDo
 
 -   redo wikitext103 tokenization again
--   gcp
-    -   custom tokenizer vocab size: 50257
-    -   check ram needed for datasets
-        -   wikitext2
-            -   gpt2
-                -   train: 9563
-                -   valid: 1010
-                -   test: 1160
-            -   custom
-                -   train: 8723
-                -   valid: 956
-                -   test: 1155
-        -   wikitext103
-            -   basic: 60gb ram and 10m
-            -   --fast: 20gb ram and 2 minutes
-            -   --efficient: 2gb, 10m
-            -   gpt2
-                -   train: 466953
-                -   val: 979
-                -   test: 1118
-            -   custom:
-                -   train: 435507
-                -   val: 915
-                -   test: 1039
-        -   pg-19
-            -   gpt2
-                -   valid: 18014
-                -   test: 40983
-            -   custom
-                -   valid: 16155
-                -   test: 39377
-        -   writing prompts
-            -   used --line-by-line
-            -   ~1gb of text
-                -   272k lines; ~15m
-            -   tok
-                -   vocab size 50257
-                -   time: 5m
-            -   gpt2
-                -   train: 740801
-                -   val: 42164
-                -   test: 41236
-            -   custom
-                -   train: 685459
-                -   valid: 39039
-                -   test: 38186
 -   train (pre and finetune) on wikitext, pg19, and writingprompts
     -   train tokenizer
     -   pretrain on wikitext2/103, writingprompts, and pg-19
+        -   prelim writingprompt experiments are good
 -   create and validate new lms
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
     -   openwebtext
@@ -467,6 +422,52 @@ Some language models might have been pretrained on some of these datasets.
     -   tensorboard logger doesn't work with tpu filesystem
 -   try esperanto, but with gpt2?
     -   or with mlm on wikitext103
+-   gcp
+    -   custom tokenizer vocab size: 50257
+    -   check ram needed for datasets
+    -   wikitext2
+        -   gpt2
+            -   train: 9563
+            -   valid: 1010
+            -   test: 1160
+        -   custom
+            -   train: 8723
+            -   valid: 956
+            -   test: 1155
+    -   wikitext103
+        -   basic: 60gb ram and 10m
+        -   --fast: 20gb ram and 2 minutes
+        -   --efficient: 2gb, 10m
+        -   gpt2
+            -   train: 466953
+            -   val: 979
+            -   test: 1118
+        -   custom:
+            -   train: 435507
+            -   val: 915
+            -   test: 1039
+    -   pg-19
+        -   gpt2
+            -   valid: 18014
+            -   test: 40983
+        -   custom
+            -   valid: 16155
+            -   test: 39377
+    -   writing prompts
+        -   used --line-by-line
+        -   ~1gb of text
+            -   272k lines; ~15m
+        -   tok
+            -   vocab size 50257
+            -   time: 5m
+        -   gpt2
+            -   train: 740801
+            -   val: 42164
+            -   test: 41236
+        -   custom
+            -   train: 685459
+            -   valid: 39039
+            -   test: 38186
 
 ### Won't do
 
