@@ -162,8 +162,9 @@ def run_sample(args):
 
 
 def run_eval(args):
+    config = AutoConfig.from_pretrained(args.config)
     model = AutoModelWithLMHead.from_pretrained(
-        args.checkpoint, from_tf=args.from_tf).to(args.device)
+        args.checkpoint, from_tf=args.from_tf, config=config).to(args.device)
 
     if args.fp16:
         model = model.half()
