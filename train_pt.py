@@ -4,6 +4,7 @@ import pickle
 import argparse
 import time
 import glob
+import math
 
 import numpy as np
 from tqdm import tqdm
@@ -20,9 +21,10 @@ from torch.utils.data import Dataset
 
 import wandb
 
-from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup
+from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CTRLTokenizer, AdamW, get_linear_schedule_with_warmup, AutoConfig, AutoModelWithLMHead, AutoTokenizer
 
 from optimizers import Adafactor
+from detokenizer import wikitext_detokenizer
 
 MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
@@ -40,10 +42,10 @@ class TextDataset(Dataset):
 
         if os.path.isdir(path):
             self.batches = []
-            for f in glob.glob(os.path.join(path, '*.txt')):
-                self.batches += self._tokenize(f, tokenizer, args)
+            for i, f in enumerate(glob.glob(os.path.join(path, '*.txt'))):
+                self.batches += self._tokenize(f, tokenizer, args, i)
         else:
-            self.batches = self._tokenize(path, tokenizer, args)
+            self.batches = self._tokenize(path, tokenizer, args, 0)
 
         end = time.time()
 
@@ -52,7 +54,13 @@ class TextDataset(Dataset):
         print(
             f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
 
-    def _tokenize(self, path, tokenizer, args):
+    def _tokenize(self, path, tokenizer, args, i):
+        if args.use_control_codes:
+            tokenized_control_code = tokenizer.convert_tokens_to_ids(
+                tokenizer.tokenize(args.control_codes[i]))
+        else:
+            tokenized_control_code = []
+
         batches = []
 
         text = []
@@ -61,33 +69,40 @@ class TextDataset(Dataset):
                 for line in handle:
                     self.n_original_tokens += len(line.split(" "))
                     if len(line) > 0 and not line.isspace():
-                        text.append(line)
+                        if args.detokenizer:
+                            text.append(wikitext_detokenizer(line))
+                        else:
+                            text.append(line)
             else:
                 temp = handle.read()
-                text.append(temp)
                 self.n_original_tokens += len(temp.strip().split(" "))
+
+                if args.detokenizer:
+                    text.append(wikitext_detokenizer(temp))
+                else:
+                    text.append(temp)
 
         if args.fast:
             batches = tokenizer.batch_encode_plus(
-                text, add_special_tokens=True, max_length=args.seq_len)["input_ids"]
+                text, add_special_tokens=True, max_length=args.seq_len-1)["input_ids"]
+            batches = [tokenized_control_code + batch for batch in batches]
         else:
-            for l in tqdm(text):
-                tokenized_text = tokenizer.convert_tokens_to_ids(
-                    tokenizer.tokenize(l))
-
+            text = tokenizer.batch_encode_plus(text)["input_ids"]
+            for line in tqdm(text):
                 if args.n_tokens > -1:
-                    tokenized_text = tokenized_text[:args.n_tokens]
+                    line = line[:args.n_tokens]
 
-                if len(tokenized_text) < args.seq_len:
-                    batches.append(
-                        tokenizer.build_inputs_with_special_tokens(tokenized_text))
+                if len(line) < args.seq_len - 1:
+                    if not args.min_seq_len:
+                        batches.append(
+                            tokenizer.build_inputs_with_special_tokens(tokenized_control_code + line))
                 else:
-                    for i in range(len(tokenized_text) // args.seq_len):
+                    for i in range(math.ceil(len(line) / (args.seq_len - 1))):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
-                            tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
+                            tokenized_control_code + line[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)]))
 
-                if args.n_batches > -1 and len(batches) >= args.n_batches:
-                    break
+                        if args.n_batches > -1 and len(batches) >= args.n_batches:
+                            break
 
         self.n_tokens += sum([len(batch) for batch in batches])
 
@@ -103,20 +118,62 @@ class TextDataset(Dataset):
 def sample(model, tokenizer, args):
     prompt = torch.tensor(tokenizer.encode(
         "<|endoftext|> ")).unsqueeze(0).to(args.device)
-    outputs = model.generate(input_ids=prompt, max_length=args.sample_len, temperature=args.temperature,
-                             top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=1)
-    outputs = tokenizer.decode(
-        outputs[0].cpu().numpy(), skip_special_tokens=True)
+
+    outputs = model.generate(input_ids=prompt, max_length=args.max_length, do_sample=args.do_sample, temperature=args.temperature,
+                             top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=args.n_samples)
+
+    if args.use_sliding_windows:
+        for i in range(args.n_sliding_windows):
+            prompt = outputs[:, -args.sliding_window_size:]
+
+            # num_return_sequences = 1 not a bug
+            outputs_t = model.generate(input_ids=prompt, max_length=args.max_length, do_sample=args.do_sample, temperature=args.temperature,
+                                       top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=1)
+
+            outputs = torch.cat(
+                [outputs[:, :-args.sliding_window_size], outputs_t], dim=-1)
+
     print("Sampling:")
-    print(outputs)
-    print("\n")
+    for i in range(args.n_samples):
+        print(f'Sample #{i}\n')
+        output = tokenizer.decode(
+            outputs[i].cpu().numpy(), skip_special_tokens=True)
+        print(output)
+        print("\n\n")
+
+
+def run_sample(args):
+    config = AutoConfig.from_pretrained(args.config)
+    model = AutoModelWithLMHead.from_pretrained(
+        args.checkpoint, from_tf=args.from_tf, config=config).to(args.device)
+
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
+
+    tokenizer.add_special_tokens(
+        {'additional_special_tokens': args.control_codes})
+    model.resize_token_embeddings(len(tokenizer))
+
+    if args.fp16:
+        model = model.half()
+    model.eval()
+
+    with torch.no_grad():
+        sample(model, tokenizer, args)
 
 
 def run_eval(args):
-    model, tokenizer = MODEL_CLASSES[args.model_type]
+    config = AutoConfig.from_pretrained(args.config)
+    model = AutoModelWithLMHead.from_pretrained(
+        args.checkpoint, from_tf=args.from_tf, config=config).to(args.device)
 
-    model = model.from_pretrained(args.checkpoint).to(args.device)
-    tokenizer = tokenizer.from_pretrained(args.checkpoint)
+    if args.fp16:
+        model = model.half()
+
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
+
+    tokenizer.add_special_tokens(
+        {'additional_special_tokens': args.control_codes})
+    model.resize_token_embeddings(len(tokenizer))
 
     val_dataset = TextDataset(args.val_path, tokenizer, args)
 
@@ -148,20 +205,28 @@ def run_eval(args):
 
     sample(model, tokenizer, args)
 
-    message = f'Loss: {val_loss} | Perplexity: {val_perplexity} | Adjusted Perplexity: {adjusted_val_perplexity}'
+    message = f'Loss: {round(val_loss, 4)} | Perplexity: {round(val_perplexity.item(), 4)} | Adjusted Perplexity: {round(adjusted_val_perplexity.item(), 4)}'
     print(message)
 
 
-def finetune(args):
-    wandb.init(project="lm-finetuning", config=args)
+def train(args):
+    wandb.init(project="lm-finetuning", config=args, tags=args.tags)
 
     if args.save_dir == None:
         args.save_dir = wandb.run.dir
 
-    model, tokenizer = MODEL_CLASSES[args.model_type]
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer, use_fast=True)
 
-    model = model.from_pretrained(args.checkpoint).to(args.device)
-    tokenizer = tokenizer.from_pretrained(args.checkpoint)
+    if args.from_scratch:
+        config = AutoConfig.from_pretrained(args.config)
+        model = AutoModelWithLMHead.from_config(config=config).to(args.device)
+    else:
+        model = AutoModelWithLMHead.from_pretrained(
+            args.checkpoint, from_tf=args.from_tf).to(args.device)
+
+    tokenizer.add_special_tokens(
+        {'additional_special_tokens': args.control_codes})
+    model.resize_token_embeddings(len(tokenizer))
 
     train_dataset = TextDataset(args.train_path, tokenizer, args)
     val_dataset = TextDataset(args.val_path, tokenizer, args)
@@ -220,7 +285,6 @@ def finetune(args):
     wandb.watch(model, log='parameters')
 
     gradients = {}
-    table_data = []
 
     global_step = 0
     epochs_trained = 0
@@ -284,7 +348,7 @@ def finetune(args):
                     if args.lr_schedule:
                         lr = optimizer.param_groups[0]['lr']
                     else:
-                        lr = scheduler.get_lr()[0]
+                        lr = scheduler.get_last_lr()[0]
 
                     wandb.log({"train_loss": loss.item() * args.grad_steps,
                                "learning_rate": lr}, step=global_step)
@@ -346,9 +410,8 @@ def finetune(args):
 
         sample(model, tokenizer, args)
 
-        table_data.append([f'{epoch}', out])
         wandb.log({"train_epoch_loss": train_loss, "train_perplexity": train_perplexity, "adjusted_train_perplexity": adjusted_train_perplexity, 'val_epoch_loss': val_loss,
-                   'val_perplexity': val_perplexity, 'adjusted_val_perplexity': adjusted_val_perplexity, "samples": wandb.Table(columns=['Epoch', 'Text'], data=table_data)}, step=global_step)
+                   'val_perplexity': val_perplexity, 'adjusted_val_perplexity': adjusted_val_perplexity}, step=global_step)
 
         message = f'Finished epoch {epoch} | Train loss: {train_loss} | Train perplexity: {train_perplexity} | Adjusted Train perplexity: {adjusted_train_perplexity} | Val Loss: {val_loss} | Val Perplexity: {val_perplexity} | Adjusted Val Perplexity: {adjusted_val_perplexity}'
         print(message)
@@ -367,22 +430,39 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '--train_path', default='./data/wikitext-2-raw/wiki.train.raw', type=str, required=False)
+        '--train_path', default='./data/wikitext-2/wiki.train.tokens', type=str, required=False)
     parser.add_argument(
-        '--val_path', default='./data/wikitext-2-raw/wiki.valid.raw', type=str, required=False)
+        '--val_path', default='./data/wikitext-2/wiki.valid.tokens', type=str, required=False)
     parser.add_argument('--save_dir', default=None,
                         type=str, required=False)
+
+    parser.add_argument('--use_control_codes', default=False,
+                        action="store_true", required=False)
+    parser.add_argument('--control_codes', nargs='+',
+                        default=['<|endoftext|>'])
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
     parser.add_argument('--n_batches', default=-1, type=int, required=False)
+    parser.add_argument('--min_seq_len', default=False, action='store_true')
+    # Uses fast tokenization
     parser.add_argument('--fast', default=False,
                         action="store_true", required=False)
+    # Efficient for large datasets
     parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
+    parser.add_argument('--detokenizer', default=False,
+                        action="store_true", required=False)
 
-    parser.add_argument('--model_type', default='gpt2', type=str)
+    # if from scratch
+    parser.add_argument('--from_scratch', default=False, action="store_true")
+    parser.add_argument('--config', default='gpt2', type=str)
+
+    # if from a pretrained model
     parser.add_argument('--checkpoint', default='distilgpt2', type=str)
+
+    parser.add_argument('--tokenizer', default='gpt2', type=str)
+    parser.add_argument('--from_tf', default=False, action="store_true")
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
@@ -402,17 +482,28 @@ def main():
     parser.add_argument('--hist_steps', default=100, type=int)
     parser.add_argument('--save_steps', default=100, type=int)
 
+    parser.add_argument('--do_sample', default=False, action="store_true")
     parser.add_argument('--n_samples', default=1, type=int)
-    parser.add_argument('--sample_len', default=256, type=int)
-    parser.add_argument('--temperature', default=1, type=int)
-    parser.add_argument('--top_k', default=1, type=int)
-    parser.add_argument('--top_p', default=1, type=int)
-    parser.add_argument('--repetition_penalty', default=1, type=int)
+    parser.add_argument('--max_length', default=256, type=int)
+    parser.add_argument('--temperature', default=None, type=any)
+    parser.add_argument('--top_k', default=None, type=any)
+    parser.add_argument('--top_p', default=None, type=any)
+    parser.add_argument('--repetition_penalty', default=None, type=any)
+
+    parser.add_argument('--use_sliding_windows',
+                        default=False, action="store_true")
+    parser.add_argument('--n_sliding_windows', default=5, type=int)
+    parser.add_argument('--sliding_window_size', default=128, type=int)
 
     parser.add_argument('--eval_only', default=False, action="store_true")
+    parser.add_argument('--sample_only', default=False, action="store_true")
     parser.add_argument('--debug', default=False, action="store_true")
+    parser.add_argument('--tags', nargs='+')
+    parser.add_argument('--seed', default=42, type=int)
 
     args = parser.parse_args()
+
+    torch.manual_seed(args.seed)
 
     if args.debug:
         import ptvsd
@@ -429,10 +520,12 @@ def main():
         args.device = torch.device(
             "cuda:0" if torch.cuda.is_available() else "cpu")
 
-    if args.eval_only:
+    if args.sample_only:
+        run_sample(args)
+    elif args.eval_only:
         run_eval(args)
     else:
-        finetune(args)
+        train(args)
 
 
 if __name__ == "__main__":

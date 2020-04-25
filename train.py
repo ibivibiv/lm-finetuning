@@ -2,6 +2,7 @@ import os
 import argparse
 import time
 import glob
+import math
 
 from typing import Callable
 from functools import wraps
@@ -21,6 +22,7 @@ from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 
 from optimizers import Adafactor
+from detokenizer import wikitext_detokenizer
 
 MODEL_CLASSES = {
     'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
@@ -61,10 +63,10 @@ class TextDataset(torch.utils.data.Dataset):
 
         if os.path.isdir(path):
             self.batches = []
-            for f in glob.glob(os.path.join(path, '*.txt')):
-                self.batches += self._tokenize(f, tokenizer, args)
+            for i, f in enumerate(glob.glob(os.path.join(path, '*.txt'))):
+                self.batches += self._tokenize(f, tokenizer, args, i)
         else:
-            self.batches = self._tokenize(path, tokenizer, args)
+            self.batches = self._tokenize(path, tokenizer, args, 0)
 
         end = time.time()
 
@@ -73,7 +75,9 @@ class TextDataset(torch.utils.data.Dataset):
         print(
             f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
 
-    def _tokenize(self, path, tokenizer, args):
+    def _tokenize(self, path, tokenizer, args, i):
+        tokenized_control_code = tokenizer.convert_tokens_to_ids(
+            tokenizer.tokenize(args.control_codes[i]))
         batches = []
 
         text = []
@@ -83,17 +87,19 @@ class TextDataset(torch.utils.data.Dataset):
                 for line in handle:
                     self.n_original_tokens += len(line.split(" "))
                     if len(line) > 0 and not line.isspace():
-                        text.append(line)
+                        text.append(wikitext_detokenizer(line))
             # Default way reads in entire file into memory
             else:
                 temp = handle.read()
-                text.append(temp)
                 self.n_original_tokens += len(temp.strip().split(" "))
+
+                text.append(wikitext_detokenizer(temp))
 
         # Fast way uses `batch_encode_plus`. Drawbacks: only the first seq_len chars get kept
         if args.fast:
             batches = tokenizer.batch_encode_plus(
-                text, add_special_tokens=True, max_length=args.seq_len)["input_ids"]
+                text, add_special_tokens=True, max_length=args.seq_len-1)["input_ids"]
+            batches = [tokenized_control_code + batch for batch in batches]
         else:
             for l in tqdm(text):
                 tokenized_text = tokenizer.convert_tokens_to_ids(
@@ -102,16 +108,17 @@ class TextDataset(torch.utils.data.Dataset):
                 if args.n_tokens > -1:
                     tokenized_text = tokenized_text[:args.n_tokens]
 
-                if len(tokenized_text) < args.seq_len:
-                    batches.append(
-                        tokenizer.build_inputs_with_special_tokens(tokenized_text))
+                if len(tokenized_text) < args.seq_len - 1:
+                    if not args.min_seq_len:
+                        batches.append(
+                            tokenizer.build_inputs_with_special_tokens(tokenized_control_code + tokenized_text))
                 else:
-                    for i in range(len(tokenized_text) // args.seq_len):
+                    for i in range(math.ceil(len(tokenized_text) / (args.seq_len - 1))):
                         batches.append(tokenizer.build_inputs_with_special_tokens(
-                            tokenized_text[i * args.seq_len: (i + 1) * args.seq_len]))
+                            tokenized_control_code + tokenized_text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)]))
 
-                if args.n_batches > -1 and len(batches) >= args.n_batches:
-                    break
+                        if args.n_batches > -1 and len(batches) >= args.n_batches:
+                            break
 
         self.n_tokens += sum([len(batch) for batch in batches])
 
@@ -135,6 +142,10 @@ class LM(pl.LightningModule):
         self.model = model.from_pretrained(self.args.model_name)
         self.tokenizer = tokenizer.from_pretrained(self.args.model_name)
 
+        self.tokenizer.add_special_tokens(
+            {'additional_special_tokens': args.control_codes})
+        self.model.resize_token_embeddings(len(self.tokenizer))
+
         self.train_dataset = TextDataset(
             self.args.train_path, self.tokenizer, self.args)
 
@@ -146,16 +157,12 @@ class LM(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
 
-        if self.trainer.global_step % 10 == 0:
-            if self.args.disable_lr_schedule:
-                lr = self.trainer.optimizers[0].param_groups[0]['lr']
-            else:
-                lr = self.scheduler.get_last_lr()[0]
+        if self.args.disable_lr_schedule:
+            lr = self.trainer.optimizers[0].param_groups[0]['lr']
+        else:
+            lr = self.scheduler.get_last_lr()[0]
 
-            self.last_loss = loss.item()
-            self.last_lr = lr
-
-        return {'loss': loss, "log": {"train_loss": self.last_loss, "learning_rate": self.last_lr}}
+        return {'loss': loss, "log": {"train_loss": loss, "learning_rate": lr}}
 
     def validation_step(self, batch, batch_idx):
         loss = self.forward(batch, batch)[0]
@@ -319,12 +326,14 @@ class LM(pl.LightningModule):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--train_path', default='./data/wikitext-2-raw/wiki.train.raw',
+    parser.add_argument('--train_path', default='./data/wikitext-2/wiki.train.tokens',
                         type=str, required=False)
-    parser.add_argument('--val_path', default='./data/wikitext-2-raw/wiki.valid.raw',
+    parser.add_argument('--val_path', default='./data/wikitext-2/wiki.valid.tokens',
                         type=str, required=False)
-    parser.add_argument('--test_path', default='./data/wikitext-2-raw/wiki.test.raw',
+    parser.add_argument('--test_path', default='./data/wikitext-2/wiki.test.tokens',
                         type=str, required=False)
+    parser.add_argument('--control_codes', nargs='+',
+                        default=['<|endoftext|>'])
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
@@ -333,6 +342,7 @@ if __name__ == "__main__":
                         action="store_true", required=False)
     parser.add_argument('--efficient', default=False,
                         action="store_true", required=False)
+    parser.add_argument('--min_seq_len', default=False, action='store_true')
 
     parser.add_argument('--model_type', default='gpt2', type=str)
     parser.add_argument('--model_name', default='distilgpt2', type=str)

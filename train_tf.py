@@ -22,7 +22,7 @@ import wandb
 from wandb.keras import WandbCallback
 
 from optimizers_tf import *
-
+from detokenizer import wikitext_detokenizer
 
 MODEL_CLASSES = {
     'gpt2': (TFGPT2LMHeadModel, GPT2TokenizerFast)
@@ -40,12 +40,13 @@ class TextDataset(object):
         if os.path.isdir(path):
             self.batches = []
             self.labels = []
-            for f in glob.glob(os.path.join(path, '*.txt')):
-                batches, labels = self._tokenize(f, tokenizer, args)
+            for i, f in enumerate(glob.glob(os.path.join(path, '*.txt'))):
+                batches, labels = self._tokenize(f, tokenizer, args, i)
                 self.batches += batches
                 self.labels += labels
         else:
-            self.batches, self.labels = self._tokenize(path, tokenizer, args)
+            self.batches, self.labels = self._tokenize(
+                path, tokenizer, args, 0)
 
         end = time.time()
 
@@ -54,7 +55,10 @@ class TextDataset(object):
         print(
             f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
 
-    def _tokenize(self, path, tokenizer, args):
+    def _tokenize(self, path, tokenizer, args, i):
+        tokenized_control_code = tokenizer.convert_tokens_to_ids(
+            tokenizer.tokenize(args.control_codes[i]))
+
         batches = []
         labels = []
 
@@ -65,12 +69,19 @@ class TextDataset(object):
                 for line in handle:
                     self.n_original_tokens += len(line.split(" "))
                     if len(line) > 0 and not line.isspace():
-                        text.append(line)
+                        if args.detokenizer:
+                            text.append(wikitext_detokenizer(line))
+                        else:
+                            text.append(line)
             # Default way reads in entire file into memory
             else:
                 temp = handle.read()
-                text.append(temp)
                 self.n_original_tokens += len(temp.strip().split(" "))
+
+                if args.detokenizer:
+                    text.append(wikitext_detokenizer(temp))
+                else:
+                    text.append(temp)
 
         for l in tqdm(text):
             tokenized_text = tokenizer.convert_tokens_to_ids(
@@ -79,22 +90,23 @@ class TextDataset(object):
             if args.n_tokens > -1:
                 tokenized_text = tokenized_text[:args.n_tokens]
 
-            if len(tokenized_text) < args.seq_len:
-                example = tokenizer.build_inputs_with_special_tokens(
-                    tokenized_text)
-
-                batches.append(example[:-1])
-                labels.append(example[1:])
-            else:
-                for i in range(len(tokenized_text) // args.seq_len):
+            if len(tokenized_text) < args.seq_len - 1:
+                if not args.min_seq_len:
                     example = tokenizer.build_inputs_with_special_tokens(
-                        tokenized_text[i * args.seq_len: (i + 1) * args.seq_len])
+                        tokenized_control_code + tokenized_text)
+
+                    batches.append(example[:-1])
+                    labels.append(example[1:])
+            else:
+                for i in range(len(tokenized_text) // (args.seq_len - 1)):
+                    example = tokenizer.build_inputs_with_special_tokens(
+                        tokenized_control_code + tokenized_text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
 
                     batches.append(example[:-1])
                     labels.append(example[1:])
 
-            if args.n_batches > -1 and len(batches) >= args.n_batches:
-                break
+                    if args.n_batches > -1 and len(batches) >= args.n_batches:
+                        break
 
         self.n_tokens += sum([len(batch) for batch in batches])
 
@@ -213,16 +225,21 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--train_path', default='./data/wikitext-2-raw/wiki.train.raw',
+    parser.add_argument('--train_path', default='./data/wikitext-2/wiki.train.tokens',
                         type=str, required=False)
-    parser.add_argument('--val_path', default='./data/wikitext-2-raw/wiki.valid.raw',
+    parser.add_argument('--val_path', default='./data/wikitext-2/wiki.valid.tokens',
                         type=str, required=False)
     parser.add_argument('--use_serialized', default=False, action='store_true')
+    parser.add_argument('--control_codes', nargs='+',
+                        default=['<|endoftext|>'])
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
     parser.add_argument('--n_tokens', default=-1, type=int, required=False)
     parser.add_argument('--n_batches', default=-1, type=int, required=False)
     parser.add_argument('--efficient', default=False,
+                        action="store_true", required=False)
+    parser.add_argument('--min_seq_len', default=False, action='store_true')
+    parser.add_argument('--detokenizer', default=False,
                         action="store_true", required=False)
 
     parser.add_argument('--model_type', default='gpt2', type=str)
@@ -242,8 +259,11 @@ def main():
     parser.add_argument('--epochs', default=1, type=int)
 
     parser.add_argument('--debug', default=False, action="store_true")
+    parser.add_argument('--seed', default=42, type=int)
 
     args = parser.parse_args()
+
+    tf.random.set_seed(args.seed)
 
     if args.debug:
         import ptvsd
@@ -266,6 +286,11 @@ def main():
         model = model.from_pretrained(args.model_name)
 
         tokenizer = tokenizer.from_pretrained(args.model_name)
+
+        # Can't use since TF models don't have resize_token_embeddings implemented
+        # tokenizer.add_special_tokens(
+        #     {'additional_special_tokens': args.control_codes})
+        # model.resize_token_embeddings(len(tokenizer))
 
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 

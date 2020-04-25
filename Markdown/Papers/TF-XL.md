@@ -10,16 +10,18 @@
 
 -   seqlen: 384 in training and 1600 test
 -   batch size: 512
--   iterations: 800k
+-   iterations: 200k-400M (20-400 epochs)
 -   optimizer: Adafactor
 -   weight decay: 0.01
 -   learning rate: 1e-4
 -   warmup: 10k
+-   cosine decay of lr
 
 ## Dataset
 
 -   wikitext103
     -   avg len of 3k tokens/article
+    -   use pretokenized wikitext2 and 103
 
 ## Model
 

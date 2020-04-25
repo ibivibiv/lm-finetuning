@@ -10,10 +10,11 @@
 
 -   seqlen: 1024
 -   batch size: 512
--   iterations: 800k
+-   iterations: 800k (20 epochs)
 -   optimizer: Adafactor
 -   weight decay: 0.01
 -   learning rate: 1e-4
+-   linear lr decay over remaining iterations
 -   warmup: 10k
 
 ## Dataset

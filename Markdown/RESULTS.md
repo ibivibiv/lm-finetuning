@@ -1,8 +1,11 @@
 # Results
 
+-   usually larger gap in context len performances when using a larger model
+-   ppl is a relatively good way to evaluate performance of language models
+
 ## Model size
 
--   lower ppl with larger models, but you get diminishing returns after gpt2-medium
+-   lower ppl with larger models, but you get diminishing returns after gpt2-medium/gpt2-large on small datasets
 
 ## Adafactor
 
@@ -10,11 +13,12 @@
 
 ## Batch size
 
--   this is when using early stopping to stop training after the first epoch
+-   this is only for using early stopping to stop training after the first epoch
     -   Larger batch size is better
     -   It trains faster and to a lower loss
     -   larger batch size is almost always better, but improves for more epochs than at a smaller batch size
     -   So far, this has only been tested for wikitext2
+-   for epochs = 1, set a batch size low enough to get enough iterations through the dataset in one epoch
 
 ## Context size
 
@@ -43,3 +47,42 @@
     -   use a small batch size (4-16) with 1 epoch
 -   you can train on small datasets in 1 epoch
 -   reduce batch size to counteract to small number of iterations
+
+## train at a set context len, eval at different context lens
+
+-   ppl almost equal to that of larger models can be achieved by just increasing the context len at test time
+-   original differences between model sizes (medium-xl) is at most 4ppl anyway
+-   eval on larger context len is almost as good as training on a larger context len
+-   But improvements from training at larger context lens are greater when using larger models (<1ppl for gpt2-medium and at most 2ppl on gpt2-xl)
+-   PPl goes down by 4 when eval at 1024 instead of 256 for all models
+    -   The ppl metric itself becomes that much easier for models that are of comparable performance at higher context lens
+-   Improvement of training at 1024 is even less when training at 512 instead of 256
+
+## train at multiple context lengths, eval at the same
+
+-   models that are trained on larger context lengths (> gpt2-medium) perform better on a given context len (2ppl, from 256->512; no big improvement for 1024)
+    -   for gpt2-medium, the improvement is <1ppl
+    -   diminishing returns after gpt2-large
+    -   training on a larger context len gives you a better language model
+    -   but as expected, its not much
+-   **diminishing results from finetuning at beyond 512**
+
+## evaluating non-finetuned lms
+
+    - non finetuned are bad
+
+## Sampling, varying model size
+
+-   No obvious differences in text quality, but can't be 100% sure
+
+## sampling, train on 256, eval on multiple
+
+-   No degredation of text quality after the first 256 chars
+
+## Samping train 1024 eval context length
+
+-   gpt2-xl looks only a little better possibly
+
+## Sliding windows generation
+
+-   Text generated with sliding windows isn't worse than normal text

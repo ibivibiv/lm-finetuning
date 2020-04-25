@@ -2,8 +2,14 @@
 
 ## Notes
 
--   n_tokens and n_original_tokens not the same when using `--fast` or `--efficient`
--   adj ppl not accurate when using `--n_batches` or `--n_tokens`
+-   don't use `--fast`, `--efficient`, `--n_batches`, or `--n_tokens` if you want correct results
+    -   `--n_batches` doesn't work at all
+-   tf drops last batch on training and its val metrics arent accurate
+-   comments with `#check`
+-   if multiple files, there must be a control code for each and an equal number of validation files
+    -   val metrics will be averaged over training metrics
+-   note that all experiments have been done on a max of gpt2-xl, larger models like megatron lm will be better
+-   for custom tokenizers, there must be a model config.json file in the same directory as the pretrained tokenizers
 
 ## Objectives
 
@@ -11,7 +17,7 @@
 
 -   Find best practices or good defaults for finetuning tranformer language models for text generation.
 
--   Understand the effect of model and dataset size on generating coherent text
+-   Understand the effect of context len, model, and dataset size on generating coherent text
 -   Understand the effect of loss and sampling stategies on generating coherent text
 
 -   Understand the "theory" of how language models can be finetuned
@@ -25,40 +31,89 @@
 -   have a pytorch and TF codebase for easy finetuning
 -   writeup the whole process
 
+### Context len research
+
+-   diminishing returns for increasing model size and context length
+-   context len can decrease ppl values by itself
+-   ctrl also sees small difference when using smaller context lengths
+
 ## ToDo
 
--   read through papers
-    -   update md files
-    -   gather notes
-    -   see if gpt2-xl finetuning experiments are similar to papers
-    -   take a look at memory saving techniques in the reformer
+-   redo wikitext103 tokenization again
+-   train (pre and finetune) on wikitext, pg19, and writingprompts
+    -   train tokenizer
+    -   pretrain on wikitext2/103, writingprompts, and pg-19
+        -   prelim writingprompt experiments are good
+-   create and validate new lms
+-   get framework ready for quickly running large scale experiments then reapply for tfrc
+    -   openwebtext
+    -   train tokenizer on openwebtext
 -   evaluation experiments
+    -   redo wikitext2 and imdb experiments
+        -   use word level
+        -   run multiple times with different random seeds
+        -   evaluate lms on the actual test set
+-   retrain gpt2 or similar first to prove that code works
 -   training experiments
 -   new lm experiments
 
--   evaluate lms on the actual test set
--   use invertible detokenizers like in gpt2 to get ppl calculations
-
 ## New LMs
 
--   does finetuning give better results than grover, ctrl, etc
--   multiple datasets/control codes
-    -   use control codes to train on a range of small (?) datasets
-    -   is finetuning lm to work with control codes enough? or should it be pretrained with control codes too?
--   long-form generation with sliding windows
-    -   Try leaking data to the lm by training on contigous sequences (move the start position of input sequence 1 step up
-        -   would this even work or make a difference?
-    -   can tf-xl be replaced with gpt2 and sliding windows
--   pplm
-    -   generalize pplm
-        -   more attribute models for normal generation use
-        -   use a nn for the attribute model
-            -   train to predict topics
-            -   should make pplm edit text to make it more like chosen topic
--   albert style gpt2
--   distillation
--   train a transformer without layernorm
--   adapt ELECTRA to auto-regressive language modelling
+-   gpt2 on
+    -   pg-19
+        -   for large datasets, train for n iterations/batches instead of epochs
+    -   wikitext103
+    -   imdb
+    -   writingprompts
+    -   cnn/dailymail
+-   new lms
+
+    -   albert-style
+    -   electra-style
+    -   no layernorm
+        -   fixup init has been used before
+        -   try in-place layer norm?
+    -   distilled
+        -   ?
+    -   unlikelihood
+    -   double descent
+    -   bert-style, but on webtext
+
+-   ideas
+
+    -   does finetuning give better results than grover, ctrl, etc
+        -   finetune on news article datasets
+    -   multiple datasets/control codes
+        -   is finetuning lm to work with control codes enough? or should it be pretrained with control codes too?
+        -   finetune on multiple datasets with control codes if individual dataset is too small
+        -   use control codes to train on a range of small (?) datasets
+            -   wikitext2
+            -   imdb
+        -   eval control code lm on only one dataset
+            -   is it worse?
+    -   just to prove that larger context lens make results uncomparable
+        -   train gpt2-xl on a larger context len
+        -   tf-xl is trained on a larger context len and isn't comparable
+    -   long-form generation with sliding windows
+
+        -   Try leaking data to the lm by training on contigous sequences (move the start position of input sequence 1 step up
+            -   would this even work or make a difference?
+        -   can tf-xl be replaced with gpt2 and sliding windows
+        -   eval tf-xl on smaller context lengths
+            -   _is its extended context the reason for low ppl?_
+
+    -   pplm
+
+        -   generalize pplm
+            -   more attribute models for normal generation use
+            -   use a nn for the attribute model
+                -   train to predict topics
+                -   should make pplm edit text to make it more like chosen topic
+
+    -   get sota with large context lengths?
+        -   headshot?
+    -   according to this (https://github.com/NVIDIA/Megatron-LM) moving the layernorm is why gpt2 can scale
+        -   why?
 
 ## Training
 
@@ -96,25 +151,6 @@
 
 ## Evaluation
 
--   see how models trained on different context lengths aren't comparable
-    -   train lms on some set context len, and evaluate on different context lens.
-    -   train lms on different context lens, and evaluate on set context len.
--   see if model size changes anything about ppl
-    -   sample different models
--   does a decrease in ppl lead to better text?
--   effect of tokenizing approach (line by line, seq_len length chunks, lazy loading with random start point)
-    -   what is the best way to tokenize
-    -   have a range of ways for different dataset sizes
-    -   lazy loading
-        -   choose a random start point
-        -   get 1k chars from that point
-        -   tokenize and discard excess
--   how much worse is text generated by a non-finetuned lm?
-    -   run evaluation on non-finetuned lm
--   based on a user's computation budget, should they finetune a small lm or use a large lm
-    -   see other papers' opinions on this
--   any better evaluation metrics than ppl
-
 ## Finetuning Datasets
 
 Some language models might have been pretrained on some of these datasets.
@@ -127,7 +163,7 @@ Some language models might have been pretrained on some of these datasets.
             -   ~550MB
             -   100M words
             -   1M sequences of length 256
-            -   ~10min to process
+            -   ~10min to process with normal
         -   Wikitext2
             -   ~10MB
             -   2M words
@@ -220,6 +256,218 @@ Some language models might have been pretrained on some of these datasets.
 -   all experiments so far are done with epochs = 10
     -   run wikitext2 with 1 epoch
 -   redo all with epochs = 1
+-   train lms on some set context len, and evaluate on different context lens.
+-   see how models trained on different context lengths aren't comparable
+    -   train lms on different context lens, and evaluate on set context len.
+    -   larger context len is better
+-   how much worse is text generated by a non-finetuned lm?
+    -   run evaluation on non-finetuned lm
+-   read through papers
+    -   update md files
+    -   gather notes
+    -   see if gpt2-xl finetuning experiments are similar to papers
+    -   take a look at memory saving techniques in the reformer
+-   sampling
+    -   does a decrease in ppl lead to better text?
+        -   usually, yes
+    -   any better evaluation metrics than ppl
+        -   not that I know of
+        -   pretty much everyone uses ppl
+    -   see if model size changes anything about ppl
+        -   larger models can have lower ppl
+        -   sample different models
+    -   see if trained/eval context len changes anything about text quality
+        -   nope, not much
+    -   generate with sliding windows
+        -   done, no worse than normal text
+-   based on a user's computation budget, should they finetune a small lm or use a large lm
+    -   see other papers' opinions on this
+    -   Scaling laws: pretrain a larger lm
+-   check other models
+    -   check eval ppl code for
+        -   sha-rnn and awd-lstm
+            -   eval at seqlen 1024
+        -   gpt2
+            -   uses word-level
+        -   tf xl
+            -   uses word level pre-tokenized wikitext
+        -   distilgpt2
+            -   not adjusted
+        -   unlikelihood training
+            -   word level pre-tokenized wikitext
+        -   megatron lm
+            -   megatron-lm normalizes the loss in my way (https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L282)
+                -   uses word level wikitext data
+                -   uses invertible tokenizers
+                    -   https://github.com/NVIDIA/Megatron-LM/blob/master/detokenizer.py
+                -   evals on sliding windows
+                    -   https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L350
+    -   gpt2 wikitext ppl numbers are a mess
+        -   **can reproduce openai results when using detokenizers**
+        -   gpt2 uses word level data
+        -   can't reproduce zero-shot results
+            -   code for evaluation isn't available
+            -   most likely possibility: they are reporting un-normalized results
+                -   very close to my un-normalized zero-shot results too
+            -   possible that they run the entire test set/each article in one context length then normalize
+                -   would be like eval at a very high context len
+        -   megatron-lm normalizes the loss in my way (https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L282)
+            -   uses word level wikitext data
+            -   uses invertible tokenizers
+                -   https://github.com/NVIDIA/Megatron-LM/blob/master/detokenizer.py
+            -   evals on sliding windows
+                -   https://github.com/NVIDIA/Megatron-LM/blob/master/evaluate_gpt2.py#L350
+        -   proof:
+            -   https://github.com/huggingface/transformers/issues/483
+            -   https://github.com/openai/gpt-2/issues/78
+            -   https://github.com/huggingface/transformers/issues/491
+            -   https://github.com/openai/gpt-2/issues/131
+            -   https://github.com/openai/gpt-2/issues/131
+-   make sure test set dataloader doesn't drop last batch
+-   use detokenizers
+-   check if pytorch grad accumulation works similarly to tf
+    -   then run gpt2-xl experiments on larger batch sizes
+-   tf doesn't work on colab
+    -   need to roll back to tf2.1- control codes and multiple datasets
+    -   tokenizer doesn't add eos token by default
+    -   multiple datasets works
+    -   for control codes
+        -   prepend to each sequence
+        -   can either use special tokens or just let it get tokenized
+            -   will hardcore
+        -   run temp experiments with wikitext2 and imdb
+    -   make sure --fast and --efficient work
+        -   they work
+        -   both return 3x the number of sequences
+        -   loss is too low because of padding
+            -   masking isn't worth it, just use more ram and the tf version
+    -   can't use more than the default control code with tf
+-   add option to skip lines with less than seqlen tokens
+    -   reduces wikitext103 train seqs from 1.16M to 140k
+        -   100m tokens to 22m tokens
+            -   won't work for wikitext, but it will for larger datasets
+    -   also fixes the padding problem of low losses
+-   expand callback and checkpoint
+-   multiple tfrecord files
+-   figure out
+    -   how the learning rate and scheduler should work
+        -   ctrl
+            -   warmup from 0-0.05 + no lr decay (adagrad)
+            -   batch size 1024
+            -   800k training iterations
+        -   grover
+            -   warmup from 0-1e-4 then linear decay
+            -   batch size 512
+            -   800k iterations (20 epochs)
+    -   val set
+        -   make
+        -   runs every epoch
+        -   can sync wandb checkpoint and eval in colab
+    -   weight init
+        -   N(0, 0.02)
+        -   try local config file
+            -   https://github.com/huggingface/transformers/issues/3767
+            -   https://colab.research.google.com/github/huggingface/blog/blob/master/notebooks/01_how_to_train.ipynb
+            -   https://huggingface.co/transformers/main_classes/model.html#tfpretrainedmodel
+        -   this is only for pt, maybe init with pt, save, then reload as tf
+            -   this works
+-   get tfrecords for tf version
+    -   put tfrecords on gcp buckets
+    -   references
+        -   https://www.tensorflow.org/tutorials/load_data/tfrecord#reading_a_tfrecord_file_2
+        -   https://www.tensorflow.org/guide/data#consuming_tfrecord_data
+        -   https://www.tensorflow.org/api_docs/python/tf/data/TFRecordDataset
+        -   https://www.tensorflow.org/guide/tpu
+        -   https://jkjung-avt.github.io/tfrecords-for-keras/
+        -   https://cloud.google.com/tpu/docs/troubleshooting#cannot_use_local_filesystem
+        -   https://github.com/tensorflow/tensorflow/issues/32651
+        -   https://github.com/tensorflow/models/issues/7753
+        -   https://cloud.google.com/storage/docs/access-control/making-data-public
+        -   https://cloud.google.com/storage/pricing
+-   will see how much data is needed for pretraining
+    -   tf-xl did it with only wikitext103
+    -   gpt2 and variants used giant datasets
+    -   will see if giant datasets are necessary
+        -   giant datasets are more varied
+    -   will need to use tfrecords or on the fly tokenization for giant datasets
+        -   full dataset can't fit in memory
+-   train tokenizer
+    -   will use default byte level bpe tokenizer
+    -   must have a config.json file in same directory as new tokenizer
+-   try effect of detokenizer
+    -   can reproduce openai results
+    -   https://github.com/cybertronai/bflm
+-   add option to read in entire file for tfrecords
+-   find out how to evaluate on full dataset
+    -   issue/email
+    -   might not be a problem
+    -   but implementations vary
+-   use batch_encode_plus for tfrecords
+    -   most of the time is spent tokenizing, not loading lines
+    -   load n files at a time and tokenize in parallel
+        -   no max len, but will have to collect everything and break it up into seqlen chunks
+            -   works identically for eval nonfinetuned
+    -   tokenizer speeds
+        -   https://github.com/huggingface/tokenizers/issues/66
+        -   https://github.com/VKCOM/YouTokenToMe/blob/master/benchmark.md
+        -   https://github.com/VKCOM/YouTokenToMe/blob/master/tests/speed_test/speed_test.py
+        -   https://github.com/huggingface/tokenizers/pull/165
+        -   https://huggingface.co/transformers/main_classes/tokenizer.html#transformers.PreTrainedTokenizer.batch_encode_plus
+-   ask batch_encode_plus truncation
+    -   extra tokens are also returned, but it's easier to not do that and just tokenize the entire file/line and deal with seqlens later
+-   encode wikitext, pg19, and writingprompts with custom tokenizers
+-   <endoftext> wikitext103
+-   redo wikitext103 tfrecords
+-   add tensorboard dev support
+    -   tensorboard logger doesn't work with tpu filesystem
+-   try esperanto, but with gpt2?
+    -   or with mlm on wikitext103
+-   gcp
+    -   custom tokenizer vocab size: 50257
+    -   check ram needed for datasets
+    -   wikitext2
+        -   gpt2
+            -   train: 9563
+            -   valid: 1010
+            -   test: 1160
+        -   custom
+            -   train: 8723
+            -   valid: 956
+            -   test: 1155
+    -   wikitext103
+        -   basic: 60gb ram and 10m
+        -   --fast: 20gb ram and 2 minutes
+        -   --efficient: 2gb, 10m
+        -   gpt2
+            -   train: 466953
+            -   val: 979
+            -   test: 1118
+        -   custom:
+            -   train: 435507
+            -   val: 915
+            -   test: 1039
+    -   pg-19
+        -   gpt2
+            -   valid: 18014
+            -   test: 40983
+        -   custom
+            -   valid: 16155
+            -   test: 39377
+    -   writing prompts
+        -   used --line-by-line
+        -   ~1gb of text
+            -   272k lines; ~15m
+        -   tok
+            -   vocab size 50257
+            -   time: 5m
+        -   gpt2
+            -   train: 740801
+            -   val: 42164
+            -   test: 41236
+        -   custom
+            -   train: 685459
+            -   valid: 39039
+            -   test: 38186
 
 ### Won't do
 
@@ -269,6 +517,24 @@ Some language models might have been pretrained on some of these datasets.
     -   1M words
     -   5k sequences of length 256
 -   online comments
+-   effect of tokenizing approach (line by line, seq_len length chunks, lazy loading with random start point)
+    -   `--fast` doesn't work well with small lines, it gives out 3x more examples than normal for wikitext2
+        -   also makes the result not entirely comparable with most other approaches
+    -   `efficient` has loss at 1.x
+    -   should have a negligble difference, see whats the most efficient and what the performance diff is
+    -   what is the best way to tokenize
+    -   have a range of ways for different dataset sizes
+    -   lazy loading
+        -   choose a random start point
+        -   get 1k chars from that point
+        -   tokenize and discard excess
+-   get restarting to work
+    -   won't do
+    -   get --fast working for tf
+        -   wont do
+-   detokenizer shouldn't be for all datasets
+-   add option to turn off lr decay?
+-   expand make_tfrecords to work with multiple tokenizers
 
 ### Resources
 

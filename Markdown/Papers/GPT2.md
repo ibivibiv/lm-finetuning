@@ -8,6 +8,7 @@
 
 -   seqlen: 1024 tokens
 -   batch size: 512
+-   lr manually tuned
 
 ## Dataset
 
@@ -36,3 +37,5 @@
 ## Notes
 
 -   All models underfit
+-   byte level bpe tokenizer
+    -   stops merges across char categories
