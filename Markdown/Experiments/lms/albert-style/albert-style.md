@@ -6,6 +6,32 @@
     -   default embedding parameter of 128
 -   shares parameters for all layers
 -   uses a sentence-order-prediction auxillary loss
+-   input and output embeddings are supposed to be tied (128x50257)
+    -   https://github.com/huggingface/transformers/issues/2824
+    -   https://github.com/huggingface/transformers/issues/1993
+    -   https://github.com/huggingface/transformers/issues/1663
+    -   https://huggingface.co/transformers/model_doc/gpt2.html#transformers.GPT2LMHeadModel
+-   should the projection layer (128x768) also be tied?
+-   http://jalammar.github.io/illustrated-gpt2/
+
+```
+gpt2-124M:
+50257 x 768 = ~40M
+
+50257 x 128 = ~6M
+128 x 768 = ~100k
+```
+
+```
+gpt2-xl:
+50257 x 1600 = ~80M
+50257 x 128 = ~6M
+128 x 1600 = ~200k
+```
+
+-   35M less params is good for gpt2-124M, but it will only reduce gpt2-xl's #params by 75M
+
+-   parameter sharing will be required
 
 ## Todo
 
@@ -22,3 +48,6 @@
     -   fast?
 -   optimizer
     -   tf and pt
+-   albert citations
+    -   https://scholar.google.com/scholar?sxsrf=ALeKk03GFN1HorSwdI3OK59e3PFkwR5axA:1587936934057&gs_lcp=CgZwc3ktYWIQAzIECCMQJzIECCMQJzICCAAyAggAMgIIADICCAAyAggAMgcIABAUEIcCMgIIADICCAA6BAgAEEc6BAgAEEM6BQgAEJECOgUIABCDAToKCAAQgwEQFBCHAjoECAAQCjoHCCMQsAIQJzoECAAQDVCRBliKFmDSF2gDcAJ4AIABhQGIAeEHkgEDMC44mAEAoAEBqgEHZ3dzLXdpeg&uact=5&um=1&ie=UTF-8&lr&cites=6606720413006378435
+-   how to test new ideas

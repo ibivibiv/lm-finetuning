@@ -25,11 +25,7 @@ from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CT
 
 from optimizers import Adafactor
 from detokenizer import wikitext_detokenizer
-
-MODEL_CLASSES = {
-    'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
-    'ctrl': (CTRLLMHeadModel, CTRLTokenizer)
-}
+from utils import n_params
 
 
 class TextDataset(Dataset):
@@ -227,6 +223,8 @@ def train(args):
     tokenizer.add_special_tokens(
         {'additional_special_tokens': args.control_codes})
     model.resize_token_embeddings(len(tokenizer))
+
+    print(f"Params: {n_params(model)}")
 
     train_dataset = TextDataset(args.train_path, tokenizer, args)
     val_dataset = TextDataset(args.val_path, tokenizer, args)
