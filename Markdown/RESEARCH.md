@@ -39,11 +39,13 @@
 
 ## ToDo
 
--   redo wikitext103 tokenization again
+-   be able to pretrain in pt
 -   train (pre and finetune) on wikitext, pg19, and writingprompts
     -   train tokenizer
     -   pretrain on wikitext2/103, writingprompts, and pg-19
-        -   prelim writingprompt experiments are good
+        -   prelim experiments are good
+        -   wikitext is slightly harder to tell
+            -   no real transformer experiments available
 -   create and validate new lms
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
     -   openwebtext
@@ -67,18 +69,16 @@
     -   writingprompts
     -   cnn/dailymail
 -   new lms
-
     -   albert-style
     -   electra-style
     -   no layernorm
         -   fixup init has been used before
         -   try in-place layer norm?
+        -   new paper
     -   distilled
-        -   ?
     -   unlikelihood
     -   double descent
     -   bert-style, but on webtext
-
 -   ideas
 
     -   does finetuning give better results than grover, ctrl, etc
@@ -440,8 +440,8 @@ Some language models might have been pretrained on some of these datasets.
         -   --efficient: 2gb, 10m
         -   gpt2
             -   train: 466953
-            -   val: 979
-            -   test: 1118
+            -   val: 975
+            -   test: 1114
         -   custom:
             -   train: 435507
             -   val: 915
@@ -468,6 +468,9 @@ Some language models might have been pretrained on some of these datasets.
             -   train: 685459
             -   valid: 39039
             -   test: 38186
+-   redo wikitext103 tokenization again
+-   pretrain on pg19 val
+    -   prelim results good
 
 ### Won't do
 
