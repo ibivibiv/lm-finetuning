@@ -13,6 +13,9 @@
     -   https://huggingface.co/transformers/model_doc/gpt2.html#transformers.GPT2LMHeadModel
 -   should the projection layer (128x768) also be tied?
 -   http://jalammar.github.io/illustrated-gpt2/
+-   gpt2-124 with parameter sharing now only has 12M params
+-   both projection and parameter sharing work well on wikitext2
+    -   check if this extends to other datasets
 
 ```
 gpt2-124M:

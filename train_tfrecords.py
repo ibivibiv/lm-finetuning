@@ -26,7 +26,8 @@ from optimizers_tf import *
 from detokenizer import wikitext_detokenizer
 
 MODEL_CLASSES = {
-    'gpt2': TFGPT2LMHeadModel
+    'gpt2': TFGPT2LMHeadModel,
+    'algpt2': TFALGPT2LMHeadModel
 }
 
 
