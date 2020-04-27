@@ -150,6 +150,8 @@ def main():
         model = MODEL_CLASSES[args.model_type]
         model = model.from_pretrained('./temp', from_pt=True)
 
+    model.summary()
+
     shutil.rmtree('./temp')
 
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
