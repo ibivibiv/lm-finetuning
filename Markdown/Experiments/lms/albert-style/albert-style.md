@@ -16,6 +16,8 @@
 -   gpt2-124 with parameter sharing now only has 12M params
 -   both projection and parameter sharing work well on wikitext2
     -   check if this extends to other datasets
+-   writingprompts is ~20ppl worse
+    -   algpt2 generated text is a lot worse for comparable ppls
 
 ```
 gpt2-124M:
@@ -51,6 +53,9 @@ gpt2-xl:
     -   fast?
 -   optimizer
     -   tf and pt
+-   how to test new ideas
+
+## Done
+
 -   albert citations
     -   https://scholar.google.com/scholar?sxsrf=ALeKk03GFN1HorSwdI3OK59e3PFkwR5axA:1587936934057&gs_lcp=CgZwc3ktYWIQAzIECCMQJzIECCMQJzICCAAyAggAMgIIADICCAAyAggAMgcIABAUEIcCMgIIADICCAA6BAgAEEc6BAgAEEM6BQgAEJECOgUIABCDAToKCAAQgwEQFBCHAjoECAAQCjoHCCMQsAIQJzoECAAQDVCRBliKFmDSF2gDcAJ4AIABhQGIAeEHkgEDMC44mAEAoAEBqgEHZ3dzLXdpeg&uact=5&um=1&ie=UTF-8&lr&cites=6606720413006378435
--   how to test new ideas

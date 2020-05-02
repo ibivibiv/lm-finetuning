@@ -1,5 +1,18 @@
 # ToDo
 
+-   get lms ready
+    -   algpt2
+-   make datasets
+    -   openwebtext
+    -   pg19
+    -   cnn/dailymail
+    -   ctrl news dataset
+-   reapply for tfrc
+-   do evaluation experiments
+-   retrain gpt2
+-   train lms
+-   finetune lms
+
 # info
 
 -   pytorch lightning
@@ -22,6 +35,18 @@
     -   tpu
         -   looks like it doesn't work in colab
         -   error: https://github.com/tensorflow/tensorflow/issues/34391
+
+# next time
+
+-   distillation
+    -   distilgpt2-xl
+-   unlikelihood
+    -   finetune?
+-   no layernorm
+-   control codes
+-   pplm
+-   evaluation context lens
+-   double descent
 
 # Done
 
