@@ -2,13 +2,13 @@
 
 -   get lms ready
     -   algpt2
+-   reapply for tfrc
+-   do evaluation experiments
 -   make datasets
     -   openwebtext
     -   pg19
     -   cnn/dailymail
     -   ctrl news dataset
--   reapply for tfrc
--   do evaluation experiments
 -   retrain gpt2
 -   train lms
 -   finetune lms
