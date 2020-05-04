@@ -62,9 +62,6 @@ class Checkpoint(tf.keras.callbacks.Callback):
         self.n_batch = 0
 
     def on_batch_end(self, batch, logs=None):
-        if self.n_batch % 10 == 0:
-            print(f' lr : {K.eval(self.model.optimizer.lr)}')
-
         if (self.n_batch + 1) % self.args.save_batches == 0:
             checkpoint_dir = os.path.join(
                 self.dir, f'checkpoint-batch-{self.n_batch}')
@@ -192,6 +189,9 @@ def main():
 
     model.compile(optimizer=optimizer, loss=[
                   loss, *[None] * model.config.n_layer])
+
+    results = model.evaluate(val_dataset, batch_size=128)
+    print(results)
 
     initial_epoch = 0
     if args.initial_epoch:
