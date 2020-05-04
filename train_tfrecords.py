@@ -190,7 +190,7 @@ def main():
     model.compile(optimizer=optimizer, loss=[
                   loss, *[None] * model.config.n_layer])
 
-    results = model.evaluate(val_dataset, batch_size=128)
+    results = model.evaluate(val_dataset)
     print(results)
 
     initial_epoch = 0
