@@ -154,13 +154,14 @@ def main():
     strategy = tf.distribute.experimental.TPUStrategy(resolver)
     with strategy.scope():
         model = MODEL_CLASSES[args.model_type]
-        # model = model.from_pretrained('./temp', from_pt=True)
 
         global_step = 0
         if args.checkpoint:
             global_step = int(args.checkpoint.split("-")[-1].split('/')[0])
             print(f'Starting from global step {global_step}')
             model = model.from_pretrained(args.checkpoint)
+        else:
+            model = model.from_pretrained('./temp', from_pt=True)
 
     model.summary()
 
