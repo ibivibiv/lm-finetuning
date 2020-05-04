@@ -154,7 +154,7 @@ def main():
     strategy = tf.distribute.experimental.TPUStrategy(resolver)
     with strategy.scope():
         model = MODEL_CLASSES[args.model_type]
-        model = model.from_pretrained('./temp', from_pt=True)
+        # model = model.from_pretrained('./temp', from_pt=True)
 
         global_step = 0
         if args.checkpoint:
@@ -190,9 +190,6 @@ def main():
     model.compile(optimizer=optimizer, loss=[
                   loss, *[None] * model.config.n_layer])
 
-    results = model.evaluate(val_dataset)
-    print(results)
-
     initial_epoch = 0
     if args.initial_epoch:
         initial_epoch = args.initial_epoch
@@ -206,9 +203,6 @@ def main():
 
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
                   wandb_callback, checkpoint_callback, lr_callback])
-
-    results = model.evaluate(val_dataset)
-    print(results)
 
 
 if __name__ == "__main__":
