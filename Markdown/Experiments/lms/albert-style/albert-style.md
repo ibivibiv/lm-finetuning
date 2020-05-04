@@ -38,6 +38,15 @@ gpt2-xl:
 
 -   parameter sharing will be required
 
+-   algpt2
+
+```
+algpt2: 13M
+algpt2-medium: 19M
+algpt2-large: 26M
+algpt2-xl: 37M
+```
+
 ## Todo
 
 -   deal with multihead config params
@@ -50,10 +59,11 @@ gpt2-xl:
     -   pt model
     -   pt pretrained models
 -   tokenizer
-    -   fast?
+    -   fast
 -   optimizer
     -   tf and pt
 -   how to test new ideas
+-   increase embedding size?
 
 ## Done
 

@@ -1,9 +1,12 @@
 # ToDo
 
--   get lms ready
-    -   algpt2
--   reapply for tfrc
 -   do evaluation experiments
+    -   model size
+    -   train context len
+    -   on wikitext2, wikitext103, and imdb
+    -   non finetuned
+    -   train at multiple context lengths, eval at the same
+    -   train at a set context len, eval at different context lens
 -   make datasets
     -   openwebtext
     -   pg19
@@ -47,6 +50,7 @@
 -   pplm
 -   evaluation context lens
 -   double descent
+-   use tensorboard more
 
 # Done
 
@@ -104,6 +108,9 @@
 -   disable grads for certain layers
     -   disabling grads for bias and layernorm is only used in the adamw paper
         -   https://github.com/huggingface/transformers/issues/492
+-   get lms ready
+    -   algpt2
+-   reapply for tfrc
 
 # Wont do
 
