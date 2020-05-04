@@ -207,6 +207,9 @@ def main():
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
                   wandb_callback, checkpoint_callback, lr_callback])
 
+    results = model.evaluate(val_dataset)
+    print(results)
+
 
 if __name__ == "__main__":
     main()
