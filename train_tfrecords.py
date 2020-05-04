@@ -74,7 +74,8 @@ class Checkpoint(tf.keras.callbacks.Callback):
         self.n_batch += 1
 
     def on_epoch_end(self, epoch, logs=None):
-        checkpoint_dir = os.path.join(self.dir, f'checkpoint-{epoch}')
+        checkpoint_dir = os.path.join(
+            self.dir, f'checkpoint-epoch-{self.n_batch}')
 
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
@@ -103,6 +104,9 @@ def main():
 
     parser.add_argument('--config_path', default='./', type=str)
     parser.add_argument('--model_type', default='gpt2', type=str)
+
+    parser.add_argument('--checkpoint', default=None, type=any)
+    parser.add_argument('--initial_epoch', default=None, type=any)
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
@@ -150,6 +154,12 @@ def main():
         model = MODEL_CLASSES[args.model_type]
         model = model.from_pretrained('./temp', from_pt=True)
 
+    global_step = 0
+    if args.checkpoint:
+        global_step = int(args.checkpoint.split("-")[-1].split('/')[0])
+        print(f'Starting from global step {global_step}')
+        model = model.from_pretrained(args.checkpoint)
+
     model.summary()
 
     shutil.rmtree('./temp')
@@ -178,12 +188,16 @@ def main():
     model.compile(optimizer=optimizer, loss=[
                   loss, *[None] * model.config.n_layer])
 
+    initial_epoch = 0
+    if args.initial_epoch:
+        initial_epoch = args.initial_epoch
+
     if args.disable_lr_schedule:
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
                   wandb_callback, checkpoint_callback])
     else:
         lr_callback = WarmUpLinearDecayScheduler(
-            learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=int(0.1 * n_train_steps))
+            learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=int(0.1 * n_train_steps), global_step_init=global_step)
 
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
                   wandb_callback, checkpoint_callback, lr_callback])
