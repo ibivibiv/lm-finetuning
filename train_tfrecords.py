@@ -107,8 +107,8 @@ def main():
     parser.add_argument('--config_path', default='./', type=str)
     parser.add_argument('--model_type', default='gpt2', type=str)
 
-    parser.add_argument('--checkpoint', default=None, type=any)
-    parser.add_argument('--initial_epoch', default=None, type=any)
+    parser.add_argument('--checkpoint', default=None, type=str)
+    parser.add_argument('--initial_epoch', default=None, type=int)
 
     parser.add_argument('--optimizer', default='AdamW', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
