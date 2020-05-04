@@ -70,6 +70,7 @@ class Checkpoint(tf.keras.callbacks.Callback):
                 os.makedirs(checkpoint_dir)
 
             self.model.save_pretrained(checkpoint_dir)
+            print(f"saving model at iteration {self.n_batch}")
 
         self.n_batch += 1
 
@@ -81,6 +82,7 @@ class Checkpoint(tf.keras.callbacks.Callback):
             os.makedirs(checkpoint_dir)
 
         self.model.save_pretrained(checkpoint_dir)
+        print(f"saving model at end of epoch {epoch}")
 
     def on_train_end(self, logs=None):
         checkpoint_dir = os.path.join(self.dir, 'final_epoch')
