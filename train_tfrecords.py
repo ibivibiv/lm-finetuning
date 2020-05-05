@@ -197,13 +197,13 @@ def main():
 
     if args.disable_lr_schedule:
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback])
+                  wandb_callback, checkpoint_callback], initial_epoch=initial_epoch)
     else:
         lr_callback = WarmUpLinearDecayScheduler(
             learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=int(0.1 * n_train_steps), global_step_init=global_step)
 
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback, lr_callback])
+                  wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
 
 
 if __name__ == "__main__":
