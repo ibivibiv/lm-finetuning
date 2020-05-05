@@ -1,9 +1,11 @@
 # ToDo
 
+-   keep track of everything to reproduce results
 -   do evaluation experiments
-    -   model size
-    -   train context len
-    -   on wikitext2, wikitext103, and imdb
+    -   train
+        -   model size
+        -   train context len
+        -   on wikitext2, wikitext103, and imdb
     -   non finetuned
     -   train at multiple context lengths, eval at the same
     -   train at a set context len, eval at different context lens

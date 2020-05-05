@@ -53,13 +53,13 @@ def get_dataset(args):
 
 
 class Checkpoint(tf.keras.callbacks.Callback):
-    def __init__(self, dir, args):
+    def __init__(self, dir, args, n_batch=0):
         super(Checkpoint, self).__init__()
 
         self.dir = dir
         self.args = args
 
-        self.n_batch = 0
+        self.n_batch = n_batch
 
     def on_batch_end(self, batch, logs=None):
         if (self.n_batch + 1) % self.args.log_batches == 0:
@@ -191,7 +191,7 @@ def main():
     n_train_steps = (args.train_len // args.batch_size) * args.epochs
 
     wandb_callback = WandbCallback()
-    checkpoint_callback = Checkpoint(wandb.run.dir, args)
+    checkpoint_callback = Checkpoint(wandb.run.dir, args, global_step)
 
     model.compile(optimizer=optimizer, loss=[
                   loss, *[None] * model.config.n_layer])
