@@ -258,6 +258,7 @@ def main():
 
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--seed', default=42, type=int)
+    parser.add_argument('--tags', nargs='+')
 
     args = parser.parse_args()
 
@@ -271,7 +272,7 @@ def main():
         breakpoint()
 
     wandb.login()
-    wandb.init(project='lm-finetuning')
+    wandb.init(project='lm-finetuning', tags=args.tags)
 
     resolver = tf.distribute.cluster_resolver.TPUClusterResolver(
         tpu='grpc://' + os.environ['COLAB_TPU_ADDR'])
