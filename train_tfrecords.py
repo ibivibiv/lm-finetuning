@@ -62,6 +62,9 @@ class Checkpoint(tf.keras.callbacks.Callback):
         self.n_batch = 0
 
     def on_batch_end(self, batch, logs=None):
+        if (self.n_batch + 1) % 100 == 0:
+            wandb.log({'loss': logs.get('loss')}, step=self.n_batch)
+
         if (self.n_batch + 1) % self.args.save_batches == 0:
             checkpoint_dir = os.path.join(
                 self.dir, f'checkpoint-batch-{self.n_batch}')
