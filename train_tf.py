@@ -54,9 +54,6 @@ class TextDataset(object):
             f'Num tokens: {self.n_tokens} | Num original tokens: {self.n_original_tokens}')
 
     def _tokenize(self, path, tokenizer, args, i):
-        tokenized_control_code = tokenizer.convert_tokens_to_ids(
-            tokenizer.tokenize(args.control_codes[i]))
-
         batches = []
         labels = []
 
@@ -81,24 +78,21 @@ class TextDataset(object):
                 else:
                     text.append(temp)
 
-        for l in tqdm(text):
-            tokenized_text = tokenizer.convert_tokens_to_ids(
-                tokenizer.tokenize(l))
+        text = tokenizer.batch_encode_plus(text)["input_ids"]
 
+        for line in tqdm(text):
             if args.n_tokens > -1:
-                tokenized_text = tokenized_text[:args.n_tokens]
+                line = line[:args.n_tokens]
 
-            if len(tokenized_text) < args.seq_len - 1:
+            if len(line) < args.seq_len - 1:
                 if not args.min_seq_len:
-                    example = tokenizer.build_inputs_with_special_tokens(
-                        tokenized_control_code + tokenized_text)
+                    example = tokenizer.build_inputs_with_special_tokens(line)
 
                     batches.append(example[:-1])
                     labels.append(example[1:])
             else:
-                for i in range(len(tokenized_text) // (args.seq_len - 1)):
-                    example = tokenizer.build_inputs_with_special_tokens(
-                        tokenized_control_code + tokenized_text[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
+                for i in range(len(line) // (args.seq_len - 1)):
+                    example = tokenizer.build_inputs_with_special_tokens(line[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
 
                     batches.append(example[:-1])
                     labels.append(example[1:])
@@ -225,9 +219,12 @@ def main():
 
     parser.add_argument('--train_path', default='./data/wikitext-2/wiki.train.tokens',
                         type=str, required=False)
-    parser.add_argument('--val_path', default='./data/wikitext-2/wiki.valid.tokens',
+    parser.add_argument('--val_path', default='./data/wikitext-2/wiki.test.tokens',
                         type=str, required=False)
+
     parser.add_argument('--use_serialized', default=False, action='store_true')
+    parser.add_argument('--use_control_codes', default=False,
+                        action="store_true", required=False)
     parser.add_argument('--control_codes', nargs='+',
                         default=['<|endoftext|>'])
 
@@ -244,7 +241,7 @@ def main():
     parser.add_argument('--model_name', default='distilgpt2', type=str)
     parser.add_argument('--checkpoint', default=None, type=str)
 
-    parser.add_argument('--optimizer', default='AdamW', type=str)
+    parser.add_argument('--optimizer', default='Adafactor', type=str)
     parser.add_argument('--lr', default=5e-5, type=float)
     parser.add_argument('--momentum', default=0.0, type=float)
     parser.add_argument('--relative_update_scale',
@@ -252,7 +249,7 @@ def main():
     parser.add_argument('--disable_lr_schedule',
                         default=False, action='store_true')
 
-    parser.add_argument('--batch_size', default=4, type=int)
+    parser.add_argument('--batch_size', default=8, type=int)
     parser.add_argument('--grad_steps', default=1, type=int)
     parser.add_argument('--epochs', default=1, type=int)
 
