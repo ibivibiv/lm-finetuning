@@ -3,3 +3,5 @@ wandb
 git+https://github.com/bkkaggle/transformers.git@albert-style
 git+https://github.com/bkkaggle/pytorch-lightning.git@wandb-fix
 ptvsd
+kaggle
+pandas

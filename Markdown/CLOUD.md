@@ -24,6 +24,13 @@ wandb login 0133b27327cda5d706c51225880c900e9b6878fb
 
 export COLAB_TPU_ADDR="10.160.101.114:8470"
 
+mkdir ~/.kaggle
+vim ~/.kaggle/kaggle.json
+cd data/imdb
+kaggle datasets download lakshmi25npathi/imdb-dataset-of-50k-movie-reviews
+unzip imdb-dataset-of-50k-movie-reviews.zip
+python3 process.py
+
 ```
 
 ## Setup
