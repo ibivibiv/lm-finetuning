@@ -53,6 +53,7 @@ def tokenize(i, paths, tokenizer, args):
             for l in text:
                 if args.min_seq_len:
                     if len(l) < args.seq_len:
+                        print('skipping file')
                         lines_skipped += 1
                         continue
 
