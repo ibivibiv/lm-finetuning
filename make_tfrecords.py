@@ -75,9 +75,6 @@ def tokenize(i, paths, tokenizer, args):
                     example = serialize_example(inputs, labels)
                     writer.write(example)
 
-                    if args.n_batches > -1 and len(n_examples) >= args.n_batches:
-                        break
-
                     n_examples += 1
 
     end = time.time()
@@ -105,8 +102,7 @@ def main():
                         default=['<|endoftext|>'])
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
-    parser.add_argument('--n_tokens', default=-1, type=int, required=False)
-    parser.add_argument('--n_batches', default=-1, type=int, required=False)
+    parser.add_argument('--n_examples', default=-1, type=int, required=False)
     parser.add_argument('--min_seq_len', default=False, action='store_true')
     parser.add_argument('--line_by_line', default=False, action='store_true')
 
@@ -143,6 +139,11 @@ def main():
                                  args.files_per_tfrecord: (i + 1) * args.files_per_tfrecord]
 
             n_examples += tokenize(i, files_subset, tokenizer, args)
+
+            if args.n_examples > -1 and n_examples >= args.n_examples:
+                print(f'Stopping at {n_examples} examples')
+                break
+
     else:
         n_examples += tokenize(0, [args.path], tokenizer, args)
 
