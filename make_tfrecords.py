@@ -31,16 +31,41 @@ def serialize_example(inputs, labels):
     return example_proto.SerializeToString()
 
 
+def _tokenize(l, args, tokenized_control_code, tokenizer, writer):
+    n_examples = 0
+    if args.use_control_codes:
+        seqlen = args.seq_len - 1
+    else:
+        seqlen = args.seq_len
+
+    for i in range(len(l) // seqlen):
+        if args.use_control_codes:
+            example = tokenizer.build_inputs_with_special_tokens(
+                tokenized_control_code + l[i * seqlen: (i + 1) * seqlen])
+        else:
+            example = tokenizer.build_inputs_with_special_tokens(
+                l[i * seqlen: (i + 1) * seqlen])
+
+        inputs = example[:-1]
+        labels = example[1:]
+
+        example = serialize_example(inputs, labels)
+        writer.write(example)
+
+        n_examples += 1
+
+    return n_examples
+
+
 def tokenize(i, paths, tokenizer, args):
     start = time.time()
 
     tokenized_control_code = tokenizer.convert_tokens_to_ids(
         tokenizer.tokenize(args.control_codes[0]))
 
-    line_lens = 0
     n_examples = 0
-    lines_skipped = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
+        small_files = []
         for path in tqdm(paths):
             text = []
             with open(path, encoding="utf-8") as handle:
@@ -53,37 +78,25 @@ def tokenize(i, paths, tokenizer, args):
             text = tokenizer.batch_encode_plus(text)["input_ids"]
 
             for l in text:
-                line_lens += len(l) / (n_examples + 1)
                 if args.min_seq_len:
                     if len(l) < args.seq_len:
-                        lines_skipped += 1
+                        if len(small_files) == 0:
+                            small_files += l
+                        else:
+                            small_files += [tokenized_control_code] + l
                         continue
 
-                if args.use_control_codes:
-                    seqlen = args.seq_len - 1
-                else:
-                    seqlen = args.seq_len
+                n_examples += _tokenize(l, args,
+                                        tokenized_control_code, tokenizer, writer)
 
-                for i in range(len(l) // seqlen):
-                    if args.use_control_codes:
-                        example = tokenizer.build_inputs_with_special_tokens(
-                            tokenized_control_code + l[i * seqlen: (i + 1) * seqlen])
-                    else:
-                        example = tokenizer.build_inputs_with_special_tokens(
-                            l[i * seqlen: (i + 1) * seqlen])
-
-                    inputs = example[:-1]
-                    labels = example[1:]
-
-                    example = serialize_example(inputs, labels)
-                    writer.write(example)
-
-                    n_examples += 1
+            if args.min_seq_len:
+                if len(small_files) >= args.seq_len:
+                    n_examples += _tokenize(small_files, args,
+                                            tokenized_control_code, tokenizer, writer)
+                    small_files = []
 
     end = time.time()
     print(f'#examples: {n_examples}')
-    print(f'lines skipped: {lines_skipped}')
-    print(f'avg line lens: {line_lens}')
     print(f'chunk processed in {int(end - start)} seconds')
 
     return n_examples

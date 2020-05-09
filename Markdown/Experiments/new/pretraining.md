@@ -16,7 +16,12 @@
 ## preprocessing
 
 -   add `<|endoftext|>` to beginning of each sequence
--   use `--min_seq_len`?
+-   use `--min_seq_len` (have to)
+-   seqlen 1024 means that ~67% of files are too small
+-   seqlen 512 means that ~35% of files are too small
+-   seqlen 256 means that ~10% of files are too small
+-   will train on seqlen 256
+-   eventually concat files with smaller seqlens together
 
 ## model
 
