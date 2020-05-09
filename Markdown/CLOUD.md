@@ -50,9 +50,12 @@ git config --global user.name "Bilal Khan"
 git clone https://bkkaggle:5e3fc022d0e763c083f23918224f2bc17e95ec2e@github.com/bkkaggle/lm-finetuning.git
 git checkout dev
 pip3 install -r requirements.txt
+export PATH=$PATH:~/.local/bin
 wandb login 0133b27327cda5d706c51225880c900e9b6878fb
 
 gdown https://drive.google.com/uc?id=1EA5V0oetDCOke7afsktL_JDQ-ETtNOvx
+tar -xf openwebtext.tar.xz
+cat *.xz | tar -J -xf - -i
 ```
 
 ## Setup

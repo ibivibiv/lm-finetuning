@@ -49,6 +49,7 @@ algpt2-xl: 37M
 
 ## Todo
 
+-   try removing dropout
 -   deal with multihead config params
 -   make and upload config files
 -   make conversion script
