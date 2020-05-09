@@ -37,6 +37,7 @@ def tokenize(i, paths, tokenizer, args):
         tokenizer.tokenize(args.control_codes[0]))
 
     n_examples = 0
+    lines_skipped = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
         for path in tqdm(paths):
             text = []
@@ -52,6 +53,7 @@ def tokenize(i, paths, tokenizer, args):
             for l in text:
                 if args.min_seq_len:
                     if len(l) < args.seq_len:
+                        lines_skipped += 1
                         continue
 
                 if args.use_control_codes:
@@ -80,6 +82,7 @@ def tokenize(i, paths, tokenizer, args):
 
     end = time.time()
     print(f'#examples: {n_examples}')
+    print(f'lines skipped: {lines_skipped}')
     print(f'chunk processed in {int(end - start)} seconds')
 
     return n_examples

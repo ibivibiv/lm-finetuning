@@ -16,6 +16,7 @@
 ## preprocessing
 
 -   add `<|endoftext|>` to beginning of each sequence
+-   use `--min_seq_len`?
 
 ## model
 

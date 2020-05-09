@@ -36,6 +36,7 @@ python3 process.py
 Preprocessing:
 
 ```
+(use ssd)
 gcloud compute instances create preprocessing --zone=europe-west4-a --machine-type=n1-standard-16 --image=debian-10-tf-2-1-v20200316 --image-project=ml-images --boot-disk-size=200GB
 
 ssh -i ~/.ssh/google_compute_engine bilal@[IP]
@@ -56,6 +57,18 @@ wandb login 0133b27327cda5d706c51225880c900e9b6878fb
 gdown https://drive.google.com/uc?id=1EA5V0oetDCOke7afsktL_JDQ-ETtNOvx
 tar -xf openwebtext.tar.xz
 cat *.xz | tar -J -xf - -i
+
+(~7 hours)
+
+python3 train_tokenizer.py --train_path ./data/openwebtext/ --save_path ./tokenizer/ --vocab_size 50257 --n_files 1000000
+(~15m)
+
+gsutil -m cp -r tokenizer gs://algpt2/
+gsutil cp ./algpt2/algpt2/algpt2-config.json gs://algpt2/tokenizer/config.json
+
+gsutil iam ch allUsers:objectViewer gs://algpt2
+
+python3 make_tfrecords.py --path ./data/openwebtext/ --save_path ./tfrecords/ --files_per_tfrecord 1000000 --use_control_codes --seq_len 1024 --min_seq_len --tokenizer ./tokenizer/ --n_batches 10000
 ```
 
 ## Setup
