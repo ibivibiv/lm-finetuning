@@ -5,6 +5,7 @@ import glob
 import time
 import argparse
 import pickle
+import logging
 
 import numpy as np
 from tqdm import tqdm
@@ -87,6 +88,9 @@ def tokenize(i, paths, tokenizer, args):
 
 
 def main():
+
+    logger = logging.getLogger()
+    logger.disabled = True
 
     parser = argparse.ArgumentParser()
 
