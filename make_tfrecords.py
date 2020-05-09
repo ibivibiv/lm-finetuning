@@ -37,6 +37,7 @@ def tokenize(i, paths, tokenizer, args):
     tokenized_control_code = tokenizer.convert_tokens_to_ids(
         tokenizer.tokenize(args.control_codes[0]))
 
+    line_lens = 0
     n_examples = 0
     lines_skipped = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
@@ -52,9 +53,9 @@ def tokenize(i, paths, tokenizer, args):
             text = tokenizer.batch_encode_plus(text)["input_ids"]
 
             for l in text:
+                line_lens += len(l) / (n_examples + 1)
                 if args.min_seq_len:
                     if len(l) < args.seq_len:
-                        print('skipping file')
                         lines_skipped += 1
                         continue
 
@@ -82,6 +83,7 @@ def tokenize(i, paths, tokenizer, args):
     end = time.time()
     print(f'#examples: {n_examples}')
     print(f'lines skipped: {lines_skipped}')
+    print(f'avg line lens: {line_lens}')
     print(f'chunk processed in {int(end - start)} seconds')
 
     return n_examples
