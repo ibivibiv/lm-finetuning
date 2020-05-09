@@ -20,8 +20,11 @@
 -   seqlen 1024 means that ~67% of files are too small
 -   seqlen 512 means that ~35% of files are too small
 -   seqlen 256 means that ~10% of files are too small
--   will train on seqlen 256
 -   eventually concat files with smaller seqlens together
+    -   done
+-   approach:
+    -   docs smaller than seqlen get concated together with eos token prepended to each
+    -   eos token gets added at beginning of sequence
 
 ## model
 
