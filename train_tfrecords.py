@@ -112,8 +112,8 @@ def main():
     parser.add_argument('--checkpoint', default=None, type=str)
     parser.add_argument('--initial_epoch', default=None, type=int)
 
-    parser.add_argument('--optimizer', default='AdamW', type=str)
-    parser.add_argument('--lr', default=5e-5, type=float)
+    parser.add_argument('--optimizer', default='Adafactor', type=str)
+    parser.add_argument('--lr', default=1e-4, type=float)
     parser.add_argument('--momentum', default=0.0, type=float)
     parser.add_argument('--relative_update_scale',
                         default=False, action='store_true')

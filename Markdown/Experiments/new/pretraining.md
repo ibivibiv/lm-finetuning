@@ -25,6 +25,7 @@
 -   approach:
     -   docs smaller than seqlen get concated together with eos token prepended to each
     -   eos token gets added at beginning of sequence
+-   val set
 
 ## model
 

@@ -68,7 +68,9 @@ gsutil cp ./algpt2/algpt2/algpt2-config.json gs://algpt2/tokenizer/config.json
 
 gsutil iam ch allUsers:objectViewer gs://algpt2
 
-python3 make_tfrecords.py --path ./data/openwebtext/ --save_path ./tfrecords/ --files_per_tfrecord 1000000 --use_control_codes --seq_len 1024 --min_seq_len --tokenizer ./tokenizer/ --n_batches 10000
+ls -f | head -100000 | xargs -i cp {} ../openwebtext-valid/
+
+python3 make_tfrecords.py --path ./data/openwebtext/ --save_path ./tfrecords/ --files_per_tfrecord 1000000 --use_control_codes --seq_len 1024 --min_seq_len --tokenizer ./tokenizer/
 ```
 
 ## Setup
