@@ -90,7 +90,7 @@ def tokenize(i, paths, tokenizer, args):
 def main():
 
     logger = logging.getLogger()
-    logger.disabled = True
+    logger.setLevel(logging.CRITICAL)
 
     parser = argparse.ArgumentParser()
 
