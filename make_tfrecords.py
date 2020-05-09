@@ -83,7 +83,7 @@ def tokenize(i, paths, tokenizer, args):
                         if len(small_files) == 0:
                             small_files += l
                         else:
-                            small_files += [tokenized_control_code] + l
+                            small_files += tokenized_control_code + l
                         continue
 
                 n_examples += _tokenize(l, args,
