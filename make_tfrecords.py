@@ -157,7 +157,7 @@ def main():
         files = glob.glob(os.path.join(args.path, '*'))
         print(f'Tokenizing {len(files)} files')
 
-        for i in range(len(files) // args.files_per_tfrecord):
+        for i in range(math.ceil(len(files) / args.files_per_tfrecord)):
             if args.continue_from > -1 and i < args.continue_from:
                 continue
 

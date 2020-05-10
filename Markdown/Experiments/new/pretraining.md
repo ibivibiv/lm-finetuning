@@ -1,5 +1,7 @@
 # Pretraining
 
+-   count num records after all done
+
 ## dataset
 
 -   openwebtext
