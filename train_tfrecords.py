@@ -99,6 +99,9 @@ def main():
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--tpu', default='grpc://' +
+                        os.environ['COLAB_TPU_ADDR'], required=False)
+
     parser.add_argument('--train_path', nargs='*',
                         default=['gs://lm-finetuning/wikitext-2/wiki.train.tokens.tfrecord'], required=False)
     parser.add_argument('--val_path', nargs='*',
@@ -148,7 +151,7 @@ def main():
     wandb.init(project='lm-finetuning', config=args, tags=args.tags)
 
     resolver = tf.distribute.cluster_resolver.TPUClusterResolver(
-        tpu='grpc://' + os.environ['COLAB_TPU_ADDR'])
+        tpu=args.tpu)
     tf.config.experimental_connect_to_cluster(resolver)
     tf.tpu.experimental.initialize_tpu_system(resolver)
 

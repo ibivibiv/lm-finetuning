@@ -37,6 +37,7 @@
 -   diminishing returns for increasing model size and context length
 -   context len can decrease ppl values by itself
 -   ctrl also sees small difference when using smaller context lengths
+-   https://gist.github.com/myleott/cdf685b8b3ce20b0221e1842782bce74
 
 ### Evaluation methods
 

@@ -1,5 +1,7 @@
 # Pretraining
 
+## todo
+
 ## dataset
 
 -   openwebtext
@@ -31,7 +33,7 @@
     -   53gb
     -   7913604 files
     -   split into 7 tfrecords
-    -   x examples
+    -   6885499 examples
 -   val set
     -   684mb
     -   99998 files
