@@ -1,7 +1,5 @@
 # Pretraining
 
--   count num records after all done
-
 ## dataset
 
 -   openwebtext
@@ -32,6 +30,7 @@
 -   train set
     -   53gb
     -   7913604 files
+    -   split into 7 tfrecords
     -   x examples
 -   val set
     -   684mb

@@ -72,16 +72,14 @@ ls -f | head -100000 | xargs -i mv {} ../openwebtext-valid/
 
 python3 make_tfrecords.py --path ./data/openwebtext/ --save_path ./train/ --files_per_tfrecord 1000000 --use_control_codes --seq_len 1024 --min_seq_len --tokenizer ./tokenizer/
 
-(xh)
+(8h)
 
 python3 make_tfrecords.py --path ./data/openwebtext-valid/ --save_path ./val/ --files_per_tfrecord 99998 --use_control_codes --seq_len 1024 --min_seq_len --tokenizer ./tokenizer/
 
 (5m)
 
-
 import tensorflow as tf
 import numpy as np
-
 
 ds = tf.data.TFRecordDataset(['./train/0.tfrecord', './train/1.tfrecord', './train/2.tfrecord', './train/3.tfrecord', './train/4.tfrecord', './train/5.tfrecord', './train/6.tfrecord', './train/7.tfrecord'])
 cnt = ds.reduce(np.int64(0), lambda x, _: x + 1)

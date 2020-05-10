@@ -106,6 +106,9 @@ def main():
     parser.add_argument('--train_len', default=100, type=int, required=False)
     parser.add_argument('--seq_len', default=256, type=int, required=False)
 
+    parser.add_argument('--warmup_steps', default=10000,
+                        type=int, required=False)
+
     parser.add_argument('--config_path', default='./', type=str)
     parser.add_argument('--model_type', default='gpt2', type=str)
 
@@ -203,7 +206,7 @@ def main():
                   wandb_callback, checkpoint_callback], initial_epoch=initial_epoch)
     else:
         lr_callback = WarmUpLinearDecayScheduler(
-            learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=int(0.1 * n_train_steps), global_step_init=global_step)
+            learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=args.warmup_steps, global_step_init=global_step)
 
         model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
                   wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
