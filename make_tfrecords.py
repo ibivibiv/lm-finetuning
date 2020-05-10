@@ -112,6 +112,9 @@ def main():
     parser.add_argument('--path', default='./data/wikitext-2/wiki.train.tokens',
                         type=str, required=False)
 
+    parser.add_argument('--continue_from', default=-
+                        1, type=int, required=False)
+
     parser.add_argument('--save_path', default='./', type=str, required=False)
     parser.add_argument('--files_per_tfrecord', default=1,
                         type=int, required=False)
@@ -155,6 +158,9 @@ def main():
         print(f'Tokenizing {len(files)} files')
 
         for i in range(len(files) // args.files_per_tfrecord):
+            if args.continue_from > -1 and i < args.continue_from:
+                continue
+
             files_subset = files[i *
                                  args.files_per_tfrecord: (i + 1) * args.files_per_tfrecord]
 

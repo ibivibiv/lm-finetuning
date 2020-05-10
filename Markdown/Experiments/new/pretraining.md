@@ -12,6 +12,8 @@
 -   byte level bpe
 -   vocab size of 50257
 -   ctrl uses a 5% split of data for training tokenizer
+-   i trained tokenizer on 1m files
+-   same tokenizer for gpt2 and algpt2
 
 ## preprocessing
 
@@ -25,12 +27,20 @@
 -   approach:
     -   docs smaller than seqlen get concated together with eos token prepended to each
     -   eos token gets added at beginning of sequence
+-   train set
+    -   53gb
+    -   7913604 files
+    -   x examples
 -   val set
+    -   684mb
+    -   99998 files
+    -   87017 examples
 
 ## model
 
 -   seqlen 1024
 -   start with gpt2-124M
+-   then also pretrain algpt2-124m
 
 ## training
 
