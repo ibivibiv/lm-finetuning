@@ -185,8 +185,6 @@ def main():
         else:
             model = model.from_pretrained('./temp', from_pt=True)
 
-    train_dataset = strategy.experimental_distribute_dataset(train_dataset)
-
     model.compile(optimizer=optimizer, loss=[
         loss, *[None] * model.config.n_layer])
 
@@ -212,10 +210,8 @@ def main():
         lr_callback = WarmUpLinearDecayScheduler(
             learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=args.warmup_steps, global_step_init=global_step)
 
-        # model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
-        #           wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
-        model.fit(train_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch, steps_per_epoch=1000)
+        model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
+                  wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
 
 
 if __name__ == "__main__":
