@@ -185,6 +185,8 @@ def main():
         else:
             model = model.from_pretrained('./temp', from_pt=True)
 
+    train_dataset = strategy.experimental_distribute_dataset(train_dataset)
+
     model.compile(optimizer=optimizer, loss=[
         loss, *[None] * model.config.n_layer])
 
