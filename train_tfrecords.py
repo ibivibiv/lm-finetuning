@@ -150,8 +150,7 @@ def main():
     wandb.login()
     wandb.init(project='lm-finetuning', config=args, tags=args.tags)
 
-    resolver = tf.distribute.cluster_resolver.TPUClusterResolver(
-        tpu=args.tpu, zone='europe-west4-a', project='trim-sunlight-269718')
+    resolver = tf.distribute.cluster_resolver.TPUClusterResolver(tpu=args.tpu)
     tf.config.experimental_connect_to_cluster(resolver)
     tf.tpu.experimental.initialize_tpu_system(resolver)
 
