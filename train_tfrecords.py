@@ -185,8 +185,8 @@ def main():
         else:
             model = model.from_pretrained('./temp', from_pt=True)
 
-        model.compile(optimizer=optimizer, loss=[
-            loss, *[None] * model.config.n_layer])
+    model.compile(optimizer=optimizer, loss=[
+        loss, *[None] * model.config.n_layer])
 
     model.summary()
 
