@@ -213,7 +213,7 @@ def main():
         # model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
         #           wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
         model.fit(train_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
+                  wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch, n_train_steps=1000)
 
 
 if __name__ == "__main__":
