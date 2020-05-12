@@ -154,6 +154,20 @@ def main():
     tf.config.experimental_connect_to_cluster(resolver)
     tf.tpu.experimental.initialize_tpu_system(resolver)
 
+    if args.optimizer == "SGD":
+        optimizer = keras.optimizers.SGD(lr=args.lr, momentum=args.momentum)
+    if args.optimizer == "AdamW":
+        optimizer = AdamWeightDecay(learning_rate=args.lr)
+    elif args.optimizer == "Adafactor":
+        if args.relative_update_scale:
+            optimizer = AdafactorOptimizer(
+                beta1=args.momentum, multiply_by_parameter_scale=True)
+        else:
+            optimizer = AdafactorOptimizer(
+                learning_rate=args.lr, beta1=args.momentum)
+
+    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+
     config = AutoConfig.from_pretrained(args.config_path)
     model = AutoModelWithLMHead.from_config(config=config)
     os.mkdir('./temp')
@@ -171,23 +185,12 @@ def main():
         else:
             model = model.from_pretrained('./temp', from_pt=True)
 
+        model.compile(optimizer=optimizer, loss=[
+            loss, *[None] * model.config.n_layer])
+
     model.summary()
 
     shutil.rmtree('./temp')
-
-    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-
-    if args.optimizer == "SGD":
-        optimizer = keras.optimizers.SGD(lr=args.lr, momentum=args.momentum)
-    if args.optimizer == "AdamW":
-        optimizer = AdamWeightDecay(learning_rate=args.lr)
-    elif args.optimizer == "Adafactor":
-        if args.relative_update_scale:
-            optimizer = AdafactorOptimizer(
-                beta1=args.momentum, multiply_by_parameter_scale=True)
-        else:
-            optimizer = AdafactorOptimizer(
-                learning_rate=args.lr, beta1=args.momentum)
 
     train_dataset, val_dataset = get_dataset(args)
 
@@ -195,9 +198,6 @@ def main():
 
     wandb_callback = WandbCallback()
     checkpoint_callback = Checkpoint(wandb.run.dir, args, global_step)
-
-    model.compile(optimizer=optimizer, loss=[
-                  loss, *[None] * model.config.n_layer])
 
     initial_epoch = 0
     if args.initial_epoch:
