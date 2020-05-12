@@ -41,11 +41,11 @@ def get_dataset(args):
 
     train_dataset = tf.data.TFRecordDataset(args.train_path)
     train_dataset = train_dataset.map(_parse_function).shuffle(
-        1024).batch(args.batch_size, drop_remainder=True).repeat(args.epochs)
+        1024).batch(args.batch_size, drop_remainder=True)
 
     val_dataset = tf.data.TFRecordDataset(args.val_path)
     val_dataset = val_dataset.map(_parse_function).shuffle(
-        1024).batch(args.batch_size, drop_remainder=True).repeat(args.epochs)
+        1024).batch(args.batch_size, drop_remainder=True)
 
     return train_dataset, val_dataset
 
@@ -210,7 +210,9 @@ def main():
         lr_callback = WarmUpLinearDecayScheduler(
             learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=args.warmup_steps, global_step_init=global_step)
 
-        model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
+        # model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
+        #           wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
+        model.fit(train_dataset, epochs=args.epochs, callbacks=[
                   wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
 
 
