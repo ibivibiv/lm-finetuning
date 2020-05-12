@@ -41,11 +41,11 @@ def get_dataset(args):
 
     train_dataset = tf.data.TFRecordDataset(args.train_path)
     train_dataset = train_dataset.map(_parse_function).shuffle(
-        100).batch(args.batch_size, drop_remainder=True)
+        1024).batch(args.batch_size, drop_remainder=True)
 
     val_dataset = tf.data.TFRecordDataset(args.val_path)
     val_dataset = val_dataset.map(_parse_function).shuffle(
-        100).batch(args.batch_size, drop_remainder=True)
+        1024).batch(args.batch_size, drop_remainder=True)
 
     return train_dataset, val_dataset
 
