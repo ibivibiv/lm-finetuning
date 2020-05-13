@@ -81,7 +81,7 @@ python3 make_tfrecords.py --path ./data/openwebtext-valid/ --save_path ./val/ --
 import tensorflow as tf
 import numpy as np
 
-ds = tf.data.TFRecordDataset(['./train/0.tfrecord', './train/1.tfrecord', './train/2.tfrecord', './train/3.tfrecord', './train/4.tfrecord', './train/5.tfrecord', './train/6.tfrecord', './train/7.tfrecord'])
+ds = tf.data.TFRecordDataset(['./train/0.tfrecord', './train/1.tfrecord', './train/2.tfrecord', './train/3.tfrecord', './train/4.tfrecord', './train/5.tfrecord', './train/6.tfrecord', './train/7.tfrecord' , './train/8.tfrecord' , './train/9.tfrecord' , './train/10.tfrecord' , './train/11.tfrecord' , './train/12.tfrecord' , './train/13.tfrecord' , './train/14.tfrecord' , './train/15.tfrecord'])
 cnt = ds.reduce(np.int64(0), lambda x, _: x + 1)
 
 print(cnt)

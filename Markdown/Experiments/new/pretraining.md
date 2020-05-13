@@ -31,13 +31,14 @@
     -   eos token gets added at beginning of sequence
 -   train set
     -   53gb
+    -   26gb of tfrecords
     -   7913604 files
-    -   split into 7 tfrecords
-    -   6885499 examples
+    -   split into 16 tfrecords
+    -   6885495 examples
 -   val set
     -   339mb
     -   99998 files
-    -   split into 16 files
+    -   split into 16 tfrecords
     -   87011 examples
 
 ## model
@@ -49,7 +50,11 @@
 ## training
 
 -   800k iterations
--   batch size: as high as possible
--   linear warmup for 10% of iterations (or 10k iterations?)
+-   batch size: 512
+-   linear warmup for 10k iterations
 -   use adafactor with beta1 = 0
--   ~20 epochs
+-   60 epochs; ~800k iterations
+
+```
+python3 train_tfrecords.py --tpu algpt2pod --seq_len 1024 --batch_size 512 --train_len 6885495 --warmup_steps 10000 --model_type algpt2 --config_path ./algpt2/algpt2/ --epochs 60 --train_path gs://algpt2/train/0.tfrecord gs://algpt2/train/1.tfrecord gs://algpt2/train/2.tfrecord gs://algpt2/train/3.tfrecord gs://algpt2/train/4.tfrecord gs://algpt2/train/5.tfrecord gs://algpt2/train/6.tfrecord gs://algpt2/train/7.tfrecord gs://algpt2/train/8.tfrecord gs://algpt2/train/9.tfrecord gs://algpt2/train/10.tfrecord gs://algpt2/train/11.tfrecord gs://algpt2/train/12.tfrecord gs://algpt2/train/13.tfrecord gs://algpt2/train/14.tfrecord gs://algpt2/train/15.tfrecord --val_path gs://algpt2/val/0.tfrecord gs://algpt2/val/1.tfrecord gs://algpt2/val/2.tfrecord gs://algpt2/val/3.tfrecord gs://algpt2/val/4.tfrecord gs://algpt2/val/5.tfrecord gs://algpt2/val/6.tfrecord gs://algpt2/val/7.tfrecord gs://algpt2/val/8.tfrecord gs://algpt2/val/9.tfrecord gs://algpt2/val/10.tfrecord gs://algpt2/val/11.tfrecord gs://algpt2/val/12.tfrecord gs://algpt2/val/13.tfrecord gs://algpt2/val/14.tfrecord gs://algpt2/val/15.tfrecord
+```
