@@ -70,11 +70,11 @@ gsutil iam ch allUsers:objectViewer gs://algpt2
 
 ls -f | head -100000 | xargs -i mv {} ../openwebtext-valid/
 
-python3 make_tfrecords.py --path ./data/openwebtext/ --save_path ./train/ --files_per_tfrecord 1000000 --use_control_codes --seq_len 1024 --min_seq_len --tokenizer ./tokenizer/
+python3 make_tfrecords.py --path ./data/openwebtext/ --save_path ./train/ --files_per_tfrecord 500000 --use_control_codes --seq_len 1024 --min_seq_len --tokenizer ./tokenizer/
 
 (8h)
 
-python3 make_tfrecords.py --path ./data/openwebtext-valid/ --save_path ./val/ --files_per_tfrecord 99998 --use_control_codes --seq_len 1024 --min_seq_len --tokenizer ./tokenizer/
+python3 make_tfrecords.py --path ./data/openwebtext-valid/ --save_path ./val/ --files_per_tfrecord 50000 --use_control_codes --seq_len 1024 --min_seq_len --tokenizer ./tokenizer/
 
 (5m)
 

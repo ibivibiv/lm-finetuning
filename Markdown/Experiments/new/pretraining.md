@@ -35,9 +35,10 @@
     -   split into 7 tfrecords
     -   6885499 examples
 -   val set
-    -   684mb
+    -   339mb
     -   99998 files
-    -   87017 examples
+    -   split into 16 files
+    -   87011 examples
 
 ## model
 
