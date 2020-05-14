@@ -1,5 +1,31 @@
 # Pretraining
 
+## notes
+
+-   algpt2-124m doesn't really go below 4.5 loss
+    -   but only tried ~60k iterations so far. more might be needed
+-   tensorboard logs of other reimplementations
+-   try pretraining gpt2-medium
+    -   trains to a lower loss
+-   end goal is to have a 1.5b param model
+-   and ablation experiments with hyperparameters (dropout, factorized embedding dim)
+-   increasing factorized embedding size
+    -   128: 6.6e6
+    -   256: 13e6
+    -   512: 26e6
+    -   1024: 53e6
+    -   none: 80e6
+-   will need to drop batch size to 256 or 128 for gpt2-xl
+    -   if so, reduce num epochs
+-   model performance is pretty normalish
+-   adafactor beta1 0.9
+-   gpt2-124 should get below 3
+-   train with gpt2 tokenizers
+    -   shouldn't have any difference
+-   compare text tokenized by gpt2 and algpt2
+    -   identical
+-   do val on separate server
+
 ## todo
 
 ## dataset

@@ -50,6 +50,7 @@ algpt2-xl: 37M
 ## Todo
 
 -   try removing dropout
+-   increase embedding size
 -   deal with multihead config params
 -   make and upload config files
 -   make conversion script
@@ -64,7 +65,6 @@ algpt2-xl: 37M
 -   optimizer
     -   tf and pt
 -   how to test new ideas
--   increase embedding size?
 
 ## Done
 
