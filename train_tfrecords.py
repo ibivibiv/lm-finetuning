@@ -210,7 +210,9 @@ def main():
         lr_callback = WarmUpLinearDecayScheduler(
             learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=args.warmup_steps, global_step_init=global_step)
 
-        model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
+        # model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
+        #           wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
+        model.fit(train_dataset, epochs=args.epochs, callbacks=[
                   wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
 
 
