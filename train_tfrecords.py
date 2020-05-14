@@ -196,7 +196,7 @@ def main():
 
     n_train_steps = (args.train_len // args.batch_size) * args.epochs
 
-    wandb_callback = WandbCallback()
+    wandb_callback = WandbCallback(save_model=False)
     checkpoint_callback = Checkpoint(wandb.run.dir, args, global_step)
 
     initial_epoch = 0

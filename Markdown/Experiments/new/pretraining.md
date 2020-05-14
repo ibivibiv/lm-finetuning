@@ -4,6 +4,7 @@
 
 -   just increasing the number of layers doesn't help almost at all
 -   increasing the factorized embedding size helps more but its still no where close to as good
+    -   might be because bottleneck layer params arent shared
 
 ## notes
 
