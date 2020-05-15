@@ -1,13 +1,28 @@
 # Pretraining
 
+## todo
+
+-   do val on separate server
+-   let run for longer amount of time
+-   next time:
+    -   use adafactor beta1: 0.9
+    -   use larger learning rate: 1e-3
+-   check processing
+    -   missed about <30% of small examples but should be fine
+
 ## algpt2
 
 -   just increasing the number of layers doesn't help almost at all
 -   increasing the factorized embedding size helps more but its still no where close to as good
     -   might be because bottleneck layer params arent shared
+    -   not using it is almost as good as gpt2-mediums
 
 ## notes
 
+-   grover uses padding
+-   megatron lm: https://arxiv.org/pdf/1909.08053.pdf
+-   scaling laws paper: https://arxiv.org/pdf/2001.08361.pdf
+-   gpt2: https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf
 -   algpt2-124m doesn't really go below 4.5 loss
     -   but only tried ~60k iterations so far. more might be needed
     -   gpt2-124 should get below 3
@@ -17,10 +32,7 @@
     -   512: 26e6
     -   1024: 53e6
     -   none: 80e6
-
-## todo
-
--   do val on separate server
+-   possible but v unlikely that small files are making loss not go down as fast
 
 ## dataset
 
