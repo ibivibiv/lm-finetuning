@@ -66,8 +66,8 @@ def tokenize(i, paths, tokenizer, args):
     n_examples = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
         small_files = []
-        text = []
         for path in tqdm(paths):
+            text = []
             with open(path, encoding="utf-8") as handle:
                 if args.line_by_line:
                     for line in handle:
@@ -75,29 +75,25 @@ def tokenize(i, paths, tokenizer, args):
                 else:
                     text.append(handle.read())
 
-        text = tokenizer.batch_encode_plus(text)["input_ids"]
-        text2 = [[]]
-        for t in text:
-            text2[0] += tokenized_control_code + t
-        text = text2
+            text = tokenizer.batch_encode_plus(text)["input_ids"]
 
-        for l in text:
-            if args.min_seq_len:
-                if len(l) < args.seq_len:
-                    if len(small_files) == 0:
-                        small_files += l
-                    else:
-                        small_files += tokenized_control_code + l
-                    continue
+            for l in text:
+                if args.min_seq_len:
+                    if len(l) < args.seq_len:
+                        if len(small_files) == 0:
+                            small_files += l
+                        else:
+                            small_files += tokenized_control_code + l
+                        continue
 
-            n_examples += _tokenize(l, args,
-                                    tokenized_control_code, tokenizer, writer)
-
-        if args.min_seq_len:
-            if len(small_files) >= args.seq_len:
-                n_examples += _tokenize(small_files, args,
+                n_examples += _tokenize(l, args,
                                         tokenized_control_code, tokenizer, writer)
-                small_files = []
+
+            if args.min_seq_len:
+                if len(small_files) >= args.seq_len:
+                    n_examples += _tokenize(small_files, args,
+                                            tokenized_control_code, tokenizer, writer)
+                    small_files = []
 
     end = time.time()
     print(f'#examples: {n_examples}')
