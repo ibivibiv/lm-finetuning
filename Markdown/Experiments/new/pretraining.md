@@ -8,7 +8,8 @@
     -   use adafactor beta1: 0.9
     -   use larger learning rate: 1e-3
 -   check processing
-    -   missed about <30% of small examples but should be fine
+    -   missed about <30% of small examples
+    -   will reprocess data
 
 ## algpt2
 
