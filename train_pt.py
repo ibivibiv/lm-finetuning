@@ -60,7 +60,7 @@ class TextDataset(Dataset):
         batches = []
 
         text = []
-        with open(path, encoding="rb") as handle:
+        with open(path, encoding="utf-8") as handle:
             if args.efficient or args.fast:
                 for line in handle:
                     self.n_original_tokens += len(line.split(" "))
