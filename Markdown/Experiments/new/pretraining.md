@@ -3,14 +3,17 @@
 ## todo
 
 -   do val on separate server
--   let run for longer amount of time
--   next time:
-    -   use adam
-    -   gpt2
-    -   use adafactor beta1: 0.9
-    -   use larger learning rate: 1e-3
--   check processing
-    -   missed about <30% of small examples
+
+## experiments
+
+-   gpt2-124m
+-   algpt2
+    -   shared parameters
+    -   dropout
+    -   embedding size
+        -   128
+        -   256
+        -   512
 
 ## algpt2
 
@@ -18,6 +21,8 @@
 -   increasing the factorized embedding size helps more but its still no where close to as good
     -   might be because bottleneck layer params arent shared
     -   not using it is almost as good as gpt2-mediums
+-   compare a gpt2-124 and algpt2 on ~100k iterations?
+-   remove dropout and use different factorized embeddings
 
 ## notes
 
@@ -35,6 +40,17 @@
     -   1024: 53e6
     -   none: 80e6
 -   possible but v unlikely that small files are making loss not go down as fast
+-   next time:
+    -   use adamw
+        -   a lot better
+    -   gpt2
+        -   no big difference
+    -   use adafactor beta1: 0.9
+    -   use larger learning rate: 1e-3
+        -   better but not that much
+-   check processing
+    -   missed about <30% of small examples
+-   generation with train_pt with gpt2 fails b/c tokenizer and model aren't same
 
 ## dataset
 
