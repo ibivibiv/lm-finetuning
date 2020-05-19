@@ -9,11 +9,16 @@
 -   gpt2-124m
 -   algpt2
     -   shared parameters
+        -   about 10ppl worse
     -   dropout
+        -   not much difference
+    -   larger models
+        -   algpt2-medium can't compare with gpt2-medium
     -   embedding size
         -   128
-        -   256
-        -   512
+        -   512?
+    -   distilalgpt2/smallalgpt2?
+-   results won't be as good but its good for the parameter count
 
 ## algpt2
 
