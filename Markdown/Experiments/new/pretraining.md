@@ -16,7 +16,8 @@
         -   algpt2-medium can't compare with gpt2-medium
     -   embedding size
         -   128
-        -   512?
+        -   256
+        -   512
     -   distilalgpt2/smallalgpt2?
 -   results won't be as good but its good for the parameter count
 
