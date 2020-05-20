@@ -132,6 +132,8 @@ def main():
     parser.add_argument('--save_batches', default=1000, type=int)
     parser.add_argument('--log_batches', default=10, type=int)
 
+    parser.add_argument('--eval_only', default=False, action="store_true")
+
     parser.add_argument('--debug', default=False, action="store_true")
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--tags', nargs='+')
@@ -192,28 +194,45 @@ def main():
 
     shutil.rmtree('./temp')
 
-    train_dataset, val_dataset = get_dataset(args)
+    if args.eval_only:
+        feature_description = {
+            'inputs': tf.io.FixedLenFeature((args.seq_len - 1), tf.int64),
+            'labels': tf.io.FixedLenFeature((args.seq_len - 1), tf.int64),
+        }
 
-    n_train_steps = (args.train_len // args.batch_size) * args.epochs
+        def _parse_function(example_proto):
+            x = tf.io.parse_single_example(example_proto, feature_description)
+            return (x['inputs'], x['labels'])
 
-    wandb_callback = WandbCallback(save_model=False)
-    checkpoint_callback = Checkpoint(wandb.run.dir, args, global_step)
+        val_dataset = tf.data.TFRecordDataset(args.val_path)
+        val_dataset = val_dataset.map(_parse_function).shuffle(
+            1024).batch(args.batch_size, drop_remainder=True)
 
-    initial_epoch = 0
-    if args.initial_epoch:
-        initial_epoch = args.initial_epoch
-
-    if args.disable_lr_schedule:
-        model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback], initial_epoch=initial_epoch)
+        out = model.evaluate(val_dataset)
+        print(out)
     else:
-        lr_callback = WarmUpLinearDecayScheduler(
-            learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=args.warmup_steps, global_step_init=global_step)
+        train_dataset, val_dataset = get_dataset(args)
 
-        # model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
-        #           wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
-        model.fit(train_dataset, epochs=args.epochs, callbacks=[
-                  wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
+        n_train_steps = (args.train_len // args.batch_size) * args.epochs
+
+        wandb_callback = WandbCallback(save_model=False)
+        checkpoint_callback = Checkpoint(wandb.run.dir, args, global_step)
+
+        initial_epoch = 0
+        if args.initial_epoch:
+            initial_epoch = args.initial_epoch
+
+        if args.disable_lr_schedule:
+            model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
+                wandb_callback, checkpoint_callback], initial_epoch=initial_epoch)
+        else:
+            lr_callback = WarmUpLinearDecayScheduler(
+                learning_rate_base=args.lr, total_steps=n_train_steps, warmup_steps=args.warmup_steps, global_step_init=global_step)
+
+            # model.fit(train_dataset, validation_data=val_dataset, epochs=args.epochs, callbacks=[
+            #           wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
+            model.fit(train_dataset, epochs=args.epochs, callbacks=[
+                wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,10 @@
 # Pretraining
 
+## results
+
+-   bad on wikitext2 zero-shot
+-   cant generate coherent text
+
 ## todo
 
 -   do val on separate server
