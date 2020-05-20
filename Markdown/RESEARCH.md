@@ -43,6 +43,12 @@
 
 -   writeup
 
+### Context len research
+
+-   diminishing returns for increasing model size and context length
+-   context len can decrease ppl values by itself
+-   ctrl also sees small difference when using smaller context lengths
+
 ## ToDo
 
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
@@ -112,7 +118,6 @@
             -   _is its extended context the reason for low ppl?_
 
     -   pplm
-
         -   generalize pplm
             -   more attribute models for normal generation use
             -   use a nn for the attribute model
