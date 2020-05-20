@@ -199,7 +199,7 @@ def run_eval(args):
     adjusted_val_perplexity = torch.exp(torch.tensor(
         val_loss) * ((val_dataset.n_tokens - 1) / (val_dataset.n_original_tokens - 1)))
 
-    sample(model, tokenizer, args)
+    # sample(model, tokenizer, args)
 
     message = f'Loss: {round(val_loss, 4)} | Perplexity: {round(val_perplexity.item(), 4)} | Adjusted Perplexity: {round(adjusted_val_perplexity.item(), 4)}'
     print(message)

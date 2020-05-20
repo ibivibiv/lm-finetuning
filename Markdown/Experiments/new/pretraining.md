@@ -4,10 +4,16 @@
 
 -   bad on wikitext2 zero-shot
 -   cant generate coherent text
+-   but text shouldn't be that bad for 30/25ppl
 
 ## todo
 
 -   do val on separate server
+    -   algpt2-medium: 3.26
+-   generate with algpt2-medium
+    -   still bad
+-   check generation
+-   get old gpt2 checkpoint
 
 ## experiments
 
