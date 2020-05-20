@@ -1,5 +1,12 @@
 # Pretraining
 
+## final comments
+
+-   parameter sharing for gpt2 doesn't work as well.
+-   algpt2 plateaus a lot faster that gpt2
+-   chance that something is wrong with the code for algpt2 but unlikely
+-   also a chance that more train iterations are needed
+
 ## results
 
 -   bad on wikitext2 zero-shot
@@ -14,6 +21,8 @@
     -   still bad
 -   check generation
 -   get old gpt2 checkpoint
+-   finetune on wikitext
+    -   not good
 
 ## experiments
 
@@ -31,6 +40,7 @@
         -   512
     -   distilalgpt2/smallalgpt2?
 -   results won't be as good but its good for the parameter count
+    -   not really
 
 ## algpt2
 

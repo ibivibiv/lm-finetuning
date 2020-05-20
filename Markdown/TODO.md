@@ -53,6 +53,7 @@
 -   evaluation context lens
 -   double descent
 -   use tensorboard more
+-   dropout/inplace dropout
 
 # Done
 
