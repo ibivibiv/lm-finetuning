@@ -1,5 +1,23 @@
 # ToDo
 
+-   keep track of everything to reproduce results
+-   do evaluation experiments
+    -   train
+        -   model size
+        -   train context len
+        -   on wikitext2, wikitext103, and imdb
+    -   non finetuned
+    -   train at multiple context lengths, eval at the same
+    -   train at a set context len, eval at different context lens
+-   make datasets
+    -   openwebtext
+    -   pg19
+    -   cnn/dailymail
+    -   ctrl news dataset
+-   retrain gpt2
+-   train lms
+-   finetune lms
+
 # info
 
 -   pytorch lightning
@@ -22,6 +40,20 @@
     -   tpu
         -   looks like it doesn't work in colab
         -   error: https://github.com/tensorflow/tensorflow/issues/34391
+
+# next time
+
+-   distillation
+    -   distilgpt2-xl
+-   unlikelihood
+    -   finetune?
+-   no layernorm
+-   control codes
+-   pplm
+-   evaluation context lens
+-   double descent
+-   use tensorboard more
+-   dropout/inplace dropout
 
 # Done
 
@@ -79,6 +111,9 @@
 -   disable grads for certain layers
     -   disabling grads for bias and layernorm is only used in the adamw paper
         -   https://github.com/huggingface/transformers/issues/492
+-   get lms ready
+    -   algpt2
+-   reapply for tfrc
 
 # Wont do
 

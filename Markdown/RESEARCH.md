@@ -30,6 +30,18 @@
 -   publish LMs with transformers-cli
 -   have a pytorch and TF codebase for easy finetuning
 -   writeup the whole process
+    -   gradient/distil?
+
+### Context len research
+
+-   diminishing returns for increasing model size and context length
+-   context len can decrease ppl values by itself
+-   ctrl also sees small difference when using smaller context lengths
+-   https://gist.github.com/myleott/cdf685b8b3ce20b0221e1842782bce74
+
+### Evaluation methods
+
+-   writeup
 
 ### Context len research
 
@@ -39,15 +51,12 @@
 
 ## ToDo
 
--   redo wikitext103 tokenization again
--   train (pre and finetune) on wikitext, pg19, and writingprompts
-    -   train tokenizer
-    -   pretrain on wikitext2/103, writingprompts, and pg-19
-        -   prelim writingprompt experiments are good
--   create and validate new lms
 -   get framework ready for quickly running large scale experiments then reapply for tfrc
     -   openwebtext
     -   train tokenizer on openwebtext
+    -   pg19 train
+    -   cnn/daily
+    -   ctrl news dataset
 -   evaluation experiments
     -   redo wikitext2 and imdb experiments
         -   use word level
@@ -56,29 +65,35 @@
 -   retrain gpt2 or similar first to prove that code works
 -   training experiments
 -   new lm experiments
-
-## New LMs
-
 -   gpt2 on
     -   pg-19
         -   for large datasets, train for n iterations/batches instead of epochs
     -   wikitext103
     -   imdb
     -   writingprompts
-    -   cnn/dailymail
+    -   cnn/daily
+    -   ctrl news dataset
+    -   openwebtext
 -   new lms
-
     -   albert-style
+        -   maybe scale up embedding dim from 128?
+        -   pretrain
     -   electra-style
-    -   no layernorm
-        -   fixup init has been used before
-        -   try in-place layer norm?
-    -   distilled
-        -   ?
+        -   electra can't really be adapted for autoregessive language modeling
     -   unlikelihood
+    -   distilled
+        -   distil gpt2-xl?
     -   double descent
     -   bert-style, but on webtext
-
+-   no layernorm
+    -   fixup init has been used before
+        -   fixup probably won't reduce memory usage
+    -   metainit
+        -   code for metainit in pytorch is available in paper, no github repository
+        -   metainit also has scale parameters
+    -   try in-place layer norm?
+    -   try reversible scaling parameters for fixup and metainit
+    -   new paper
 -   ideas
 
     -   does finetuning give better results than grover, ctrl, etc
@@ -103,7 +118,6 @@
             -   _is its extended context the reason for low ppl?_
 
     -   pplm
-
         -   generalize pplm
             -   more attribute models for normal generation use
             -   use a nn for the attribute model
@@ -440,8 +454,8 @@ Some language models might have been pretrained on some of these datasets.
         -   --efficient: 2gb, 10m
         -   gpt2
             -   train: 466953
-            -   val: 979
-            -   test: 1118
+            -   val: 975
+            -   test: 1114
         -   custom:
             -   train: 435507
             -   val: 915
@@ -468,6 +482,16 @@ Some language models might have been pretrained on some of these datasets.
             -   train: 685459
             -   valid: 39039
             -   test: 38186
+-   redo wikitext103 tokenization again
+-   pretrain on pg19 val
+    -   prelim results good
+-   train (pre and finetune) on wikitext, pg19, and writingprompts
+    -   train tokenizer
+    -   pretrain on wikitext2/103, writingprompts, and pg-19
+        -   prelim experiments are good
+        -   wikitext is slightly harder to tell
+            -   no real transformer experiments available
+-   be able to pretrain in pt
 
 ### Won't do
 

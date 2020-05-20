@@ -5,6 +5,7 @@ import glob
 import time
 import argparse
 import pickle
+import logging
 
 import numpy as np
 from tqdm import tqdm
@@ -30,6 +31,32 @@ def serialize_example(inputs, labels):
     return example_proto.SerializeToString()
 
 
+def _tokenize(l, args, tokenized_control_code, tokenizer, writer):
+    n_examples = 0
+    if args.use_control_codes:
+        seqlen = args.seq_len - 1
+    else:
+        seqlen = args.seq_len
+
+    for i in range(len(l) // seqlen):
+        if args.use_control_codes:
+            example = tokenizer.build_inputs_with_special_tokens(
+                tokenized_control_code + l[i * seqlen: (i + 1) * seqlen])
+        else:
+            example = tokenizer.build_inputs_with_special_tokens(
+                l[i * seqlen: (i + 1) * seqlen])
+
+        inputs = example[:-1]
+        labels = example[1:]
+
+        example = serialize_example(inputs, labels)
+        writer.write(example)
+
+        n_examples += 1
+
+    return n_examples
+
+
 def tokenize(i, paths, tokenizer, args):
     start = time.time()
 
@@ -38,6 +65,7 @@ def tokenize(i, paths, tokenizer, args):
 
     n_examples = 0
     with tf.io.TFRecordWriter(os.path.join(args.save_path, f'{i}.tfrecord')) as writer:
+        small_files = []
         for path in tqdm(paths):
             text = []
             with open(path, encoding="utf-8") as handle:
@@ -52,31 +80,20 @@ def tokenize(i, paths, tokenizer, args):
             for l in text:
                 if args.min_seq_len:
                     if len(l) < args.seq_len:
+                        if len(small_files) == 0:
+                            small_files += l
+                        else:
+                            small_files += tokenized_control_code + l
                         continue
 
-                if args.use_control_codes:
-                    seqlen = args.seq_len - 1
-                else:
-                    seqlen = args.seq_len
+                n_examples += _tokenize(l, args,
+                                        tokenized_control_code, tokenizer, writer)
 
-                for i in range(len(l) // seqlen):
-                    if args.use_control_codes:
-                        example = tokenizer.build_inputs_with_special_tokens(
-                            tokenized_control_code + l[i * seqlen: (i + 1) * seqlen])
-                    else:
-                        example = tokenizer.build_inputs_with_special_tokens(
-                            l[i * seqlen: (i + 1) * seqlen])
-
-                    inputs = example[:-1]
-                    labels = example[1:]
-
-                    example = serialize_example(inputs, labels)
-                    writer.write(example)
-
-                    if args.n_batches > -1 and len(n_examples) >= args.n_batches:
-                        break
-
-                    n_examples += 1
+            if args.min_seq_len:
+                if len(small_files) >= args.seq_len:
+                    n_examples += _tokenize(small_files, args,
+                                            tokenized_control_code, tokenizer, writer)
+                    small_files = []
 
     end = time.time()
     print(f'#examples: {n_examples}')
@@ -87,10 +104,16 @@ def tokenize(i, paths, tokenizer, args):
 
 def main():
 
+    logger = logging.getLogger()
+    logger.setLevel(logging.CRITICAL)
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--path', default='./data/wikitext-2/wiki.train.tokens',
                         type=str, required=False)
+
+    parser.add_argument('--continue_from', default=-
+                        1, type=int, required=False)
 
     parser.add_argument('--save_path', default='./', type=str, required=False)
     parser.add_argument('--files_per_tfrecord', default=1,
@@ -102,8 +125,7 @@ def main():
                         default=['<|endoftext|>'])
 
     parser.add_argument('--seq_len', default=256, type=int, required=False)
-    parser.add_argument('--n_tokens', default=-1, type=int, required=False)
-    parser.add_argument('--n_batches', default=-1, type=int, required=False)
+    parser.add_argument('--n_examples', default=-1, type=int, required=False)
     parser.add_argument('--min_seq_len', default=False, action='store_true')
     parser.add_argument('--line_by_line', default=False, action='store_true')
 
@@ -135,11 +157,19 @@ def main():
         files = glob.glob(os.path.join(args.path, '*'))
         print(f'Tokenizing {len(files)} files')
 
-        for i in range(len(files) // args.files_per_tfrecord):
+        for i in range(math.ceil(len(files) / args.files_per_tfrecord)):
+            if args.continue_from > -1 and i < args.continue_from:
+                continue
+
             files_subset = files[i *
                                  args.files_per_tfrecord: (i + 1) * args.files_per_tfrecord]
 
             n_examples += tokenize(i, files_subset, tokenizer, args)
+
+            if args.n_examples > -1 and n_examples >= args.n_examples:
+                print(f'Stopping at {n_examples} examples')
+                break
+
     else:
         n_examples += tokenize(0, [args.path], tokenizer, args)
 

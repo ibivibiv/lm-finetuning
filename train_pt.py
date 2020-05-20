@@ -25,11 +25,7 @@ from transformers import GPT2LMHeadModel, CTRLLMHeadModel, GPT2TokenizerFast, CT
 
 from optimizers import Adafactor
 from detokenizer import wikitext_detokenizer
-
-MODEL_CLASSES = {
-    'gpt2': (GPT2LMHeadModel, GPT2TokenizerFast),
-    'ctrl': (CTRLLMHeadModel, CTRLTokenizer)
-}
+from utils import n_params
 
 
 class TextDataset(Dataset):
@@ -117,7 +113,7 @@ class TextDataset(Dataset):
 
 def sample(model, tokenizer, args):
     prompt = torch.tensor(tokenizer.encode(
-        "<|endoftext|> ")).unsqueeze(0).to(args.device)
+        "<|endoftext|>")).unsqueeze(0).to(args.device)
 
     outputs = model.generate(input_ids=prompt, max_length=args.max_length, do_sample=args.do_sample, temperature=args.temperature,
                              top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=args.n_samples)
@@ -203,7 +199,7 @@ def run_eval(args):
     adjusted_val_perplexity = torch.exp(torch.tensor(
         val_loss) * ((val_dataset.n_tokens - 1) / (val_dataset.n_original_tokens - 1)))
 
-    sample(model, tokenizer, args)
+    # sample(model, tokenizer, args)
 
     message = f'Loss: {round(val_loss, 4)} | Perplexity: {round(val_perplexity.item(), 4)} | Adjusted Perplexity: {round(adjusted_val_perplexity.item(), 4)}'
     print(message)
@@ -227,6 +223,8 @@ def train(args):
     tokenizer.add_special_tokens(
         {'additional_special_tokens': args.control_codes})
     model.resize_token_embeddings(len(tokenizer))
+
+    print(f"Params: {n_params(model)}")
 
     train_dataset = TextDataset(args.train_path, tokenizer, args)
     val_dataset = TextDataset(args.val_path, tokenizer, args)

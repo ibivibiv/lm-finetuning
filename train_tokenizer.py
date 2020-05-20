@@ -9,6 +9,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--train_path', type=str)
+    parser.add_argument('--n_files', type=int)
     parser.add_argument('--save_path', type=str)
     parser.add_argument('--vocab_size', type=int)
     parser.add_argument('--control_codes', nargs='+',
@@ -20,6 +21,8 @@ if __name__ == "__main__":
         paths = glob.glob(os.path.join(args.train_path, '*'))
     else:
         paths = [args.train_path]
+
+    paths = paths[:args.n_files]
 
     tok = ByteLevelBPETokenizer()
 
