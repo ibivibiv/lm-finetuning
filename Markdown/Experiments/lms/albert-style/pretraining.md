@@ -78,6 +78,8 @@
 -   check processing
     -   missed about <30% of small examples
 -   generation with train_pt with gpt2 fails b/c tokenizer and model aren't same
+-   model.generate doesn't exactly work
+-   doesn't look like there is anything wrong with text generation code, its just that the model isn't very good
 
 ## dataset
 

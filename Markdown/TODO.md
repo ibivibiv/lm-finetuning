@@ -9,14 +9,6 @@
     -   non finetuned
     -   train at multiple context lengths, eval at the same
     -   train at a set context len, eval at different context lens
--   make datasets
-    -   openwebtext
-    -   pg19
-    -   cnn/dailymail
-    -   ctrl news dataset
--   retrain gpt2
--   train lms
--   finetune lms
 
 # info
 
@@ -114,6 +106,14 @@
 -   get lms ready
     -   algpt2
 -   reapply for tfrc
+-   make datasets
+    -   openwebtext
+    -   pg19
+    -   cnn/dailymail
+    -   ctrl news dataset
+-   retrain gpt2
+-   train lms
+-   finetune lms
 
 # Wont do
 

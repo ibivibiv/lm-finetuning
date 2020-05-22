@@ -1,5 +1,19 @@
 # Research
 
+## next
+
+-   publish code and blog post
+-   c++
+-   l2
+-   open source contributions
+-   writeups
+-   nlp
+-   low resource ml
+    -   dropout
+    -   init
+    -   layer norm
+    -   distillation
+
 ## Notes
 
 -   don't use `--fast`, `--efficient`, `--n_batches`, or `--n_tokens` if you want correct results
@@ -38,6 +52,10 @@
 -   context len can decrease ppl values by itself
 -   ctrl also sees small difference when using smaller context lengths
 -   https://gist.github.com/myleott/cdf685b8b3ce20b0221e1842782bce74
+-   how to finetune lms
+-   you don't need to use a lot of epochs or a large context length
+-   make it about the effect of context length on generated text?
+-   wrap it up by running evaluation experiments
 
 ### Evaluation methods
 
@@ -118,6 +136,7 @@
             -   _is its extended context the reason for low ppl?_
 
     -   pplm
+
         -   generalize pplm
             -   more attribute models for normal generation use
             -   use a nn for the attribute model
