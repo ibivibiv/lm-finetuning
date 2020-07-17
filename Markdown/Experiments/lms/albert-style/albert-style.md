@@ -6,6 +6,7 @@
     -   default embedding parameter of 128
 -   shares parameters for all layers
 -   uses a sentence-order-prediction auxillary loss
+-   removes dropout
 -   input and output embeddings are supposed to be tied (128x50257)
     -   https://github.com/huggingface/transformers/issues/2824
     -   https://github.com/huggingface/transformers/issues/1993

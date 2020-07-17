@@ -233,5 +233,6 @@ def main():
             model.fit(train_dataset, epochs=args.epochs, callbacks=[
                 wandb_callback, checkpoint_callback, lr_callback], initial_epoch=initial_epoch)
 
+
 if __name__ == "__main__":
     main()

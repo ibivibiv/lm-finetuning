@@ -92,7 +92,8 @@ class TextDataset(object):
                     labels.append(example[1:])
             else:
                 for i in range(len(line) // (args.seq_len - 1)):
-                    example = tokenizer.build_inputs_with_special_tokens(line[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
+                    example = tokenizer.build_inputs_with_special_tokens(
+                        line[i * (args.seq_len - 1): (i + 1) * (args.seq_len - 1)])
 
                     batches.append(example[:-1])
                     labels.append(example[1:])
