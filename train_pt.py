@@ -113,8 +113,10 @@ class TextDataset(Dataset):
 
 def sample(model, tokenizer, args):
     if args.prompt == False:
-        args.prompt = torch.tensor(tokenizer.encode(
-            "<|endoftext|>")).unsqueeze(0).to(args.device)
+        args.prompt = "<|endoftext|>"
+
+    args.prompt = torch.tensor(tokenizer.encode(
+        args.prompt)).unsqueeze(0).to(args.device)
 
     outputs = model.generate(input_ids=args.prompt, max_length=args.max_length, do_sample=args.do_sample, temperature=args.temperature,
                              top_k=args.top_k, top_p=args.top_p, repetition_penalty=args.repetition_penalty, num_return_sequences=args.n_samples)
